@@ -14,6 +14,9 @@ sys.setdefaultencoding("utf-8")
 # 5x+3y+z/3 = 100
 
 print """ version 1 """
+"""
+暴力枚举算法
+"""
 
 for x in xrange(1, 100/5 + 1, 1):
     for y in xrange(1, 100/3 + 1, 1):
@@ -23,6 +26,9 @@ for x in xrange(1, 100/5 + 1, 1):
 
 
 print """ version 2 """
+"""
+结合一个条件 (x+y+z=100)，解出z 的枚举算法
+"""
 
 for x in xrange(1, 100/5 + 1, 1):
     for y in xrange(1, 100/3 + 1, 1):
@@ -33,6 +39,9 @@ for x in xrange(1, 100/5 + 1, 1):
 
 
 print """ version 3 """
+"""
+结合两个条件 (x+y+z=100，5x+3y+z/3=100)，解出y，z 的枚举算法
+"""
 
 for x in xrange(1, 100/5 + 1, 1):
     x = x + 0.0
@@ -44,6 +53,12 @@ for x in xrange(1, 100/5 + 1, 1):
 
 
 print """ version 4 """
+"""
+结合两个条件 (x+y+z=100，5x+3y+z/3=100)，解出y，z
+代入 x=4k 解方程，再判断自然数k的范围 (0< k && 25-7k >0)
+思路1：将浮点数换成整数计算
+思路2：代入 x=4k 统一解方程？
+"""
 
 for k in xrange(1, 4, 1):
     x = 4.0*k

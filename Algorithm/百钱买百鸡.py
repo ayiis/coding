@@ -68,26 +68,50 @@ for k in xrange(1, 4, 1):
     print "x, y, z:", x, y, z
 
 
-# x + y + z == 100
-# 5*x + 3*y + z/3.0 == 100
+print """ version 5 """
+"""
+通解：（任意钱买任意鸡）
+1. 全排列
+2. 筛选累加值等于总价格的组合
+"""
 
-# y = 100 - x - z
-
-# 5*x + 3*(100 -x - z) + z/3 == 100
-# 5x + 300 - 3x -3z +z/3 == 100
-# 2x - 8z/3 + 200 == 0
-# z = (3x + 300)/4
-
-# y = 100 - x - (3x + 300) / 4
-# 4y = 400 - 4x - 3x - 300
-# 4y = 100 - 7x
-# y = (100 - 7x)/4
+m = 100                 # 总钱
+n = 100                 # 要买的鸡数
+m_abc = [5, 3, 1.0/3]   # 每种鸡的价格
 
 
+def foobar(n_abc, depth, lefts):
+    """
+    N球放M格的全排列
+    """
+    # 最后一位直接算出剩余数
+    if depth == len(m_abc) - 1:
+        n_abc[depth] = lefts
+        yield n_abc
+    else:
+        for i in xrange(1, lefts + 1, 1):
+            n_abc[depth] = i
+            result = foobar(n_abc, depth + 1, lefts - i + 1)
+            for z in result:
+                yield z
+        return
 
-# x, y, z: 3 20 77
-# x, y, z: 4 18 78
-# x, y, z: 7 13 80
-# x, y, z: 8 11 81
-# x, y, z: 11 6 83
-# x, y, z: 12 4 84
+
+def boofar():
+
+    # 每种鸡至少要有一只
+    t_abc = len(m_abc)
+    n_abc = [1] * t_abc
+    for x in foobar(n_abc, 0, n - sum(n_abc) + 1):
+        ma = 0
+        # 累加每种鸡的总价
+        for i in xrange(t_abc):
+            ma += m_abc[i] * x[i] * 1.0
+        else:
+            # 总价格等于总钱数
+            if ma == m:
+                yield x
+
+for x in boofar():
+    print x
+

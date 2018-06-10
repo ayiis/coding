@@ -1,5 +1,5 @@
 
-proxy_source_site: {
+proxy_source_site = {
     "https://duckduckgo.com",
     "https://tisocks.net/",
     "https://www.zoomeye.org/",
@@ -28,7 +28,7 @@ table.fail_pool
 table.shit_pool
 
 
-score: {
+score = {
     "in use secceed": 2 / -2,
     "in cron1 secceed": 1 / -1,
     "in cron2 secceed": 0.75 / -0.75,
@@ -38,7 +38,7 @@ score: {
     "response every 10s -10% ": 0,
 }
 
-{
+db_struct = {
     "id",
     "proxy_ip",
     "proxy_port",
@@ -63,11 +63,14 @@ score: {
         0: "非匿名",
         1: "匿名",
         2: "高匿名",
-    }
+    },
+
+    "score": 100,
+    "data_source": "www.baidu.com",
+
 }
 
-import urllib2,os; pf='Package Control.sublime-package'; ipp = sublime.installed_packages_path(); os.makedirs( ipp ) if not os.path.exists(ipp) else None; urllib2.install_opener( urllib2.build_opener( urllib2.ProxyHandler( ))); open( os.path.join( ipp, pf), 'wb' ).write( urllib2.urlopen( 'http://sublime.wbond.net/' +pf.replace( ' ','%20' )).read()); print( 'Please restart Sublime Text to finish installation')
-cronjob {
+cronjob = {
     "cron1 60 * 20分钟": "检查可用IP池内的IP" / double_check / 60 * timeout / fail_to_save_to_cron2,
 
     "cron2 60 * 60 * 2小时": "检查暂时不可用IP池内的IP" / double_check / 60 * timeout / fail_to_save_to_cron3,
@@ -77,10 +80,28 @@ cronjob {
     "cron4 60 * 60 * 24 * 20天": "检查废弃IP池内的IP" / double_check / 60 * timeout,
 }
 
-api {
-    "get_a_proxy": ["id", "proxy_ip", "proxy_port", "proxy_username", "proxy_password", "anoy"],
-    "free_a_proxy": ["id"],
-    "free_a_proxy": ["id"],
+
+api = {
+    "get_a_proxy": {
+        "req": [
+            "system_id",    # which system is this request come form
+            "expire_time",  # [exclusive mode used]: how long should this proxy be realeased for this system
+            "anoy",         # anonymous level(equal & large than) of required proxy
+        ],
+        "res": [
+            "id",
+            "proxy_ip",
+            "proxy_port",
+            "proxy_username",
+            "proxy_password",
+        ],
+    },
+    "feedback_a_proxy": {
+        "req": [
+            "id",
+            "success",      # True or False
+            "request_time", # Eg. 12s
+        ],
+        "res": True,
+    },
 }
-
-

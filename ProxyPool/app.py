@@ -10,53 +10,11 @@ from tornado.options import define, options
 import datetime, traceback, os
 
 import config
-from common import (
-    my_redis,
-    my_mongodb,
-    user,
-)
-from routes import (
-    add_get_url_handlers,
-    add_post_url_handlers,
-    DefaultRouterHandler,
-    user,
-    note,
-    log,
-)
 
 import logging
 logging.basicConfig(level=logging.DEBUG)
 logging.getLogger("tornado.application")
 
-add_get_url_handlers({
-    "/": "deny.html",
-    "/login": "login.html",
-    "/account": "account.html",
-    "/profile": "account.html",
-    "/records": "records.html",
-    "/notes": "notes.html",
-    "/note_create": "note_create.html",
-    "/note_edit": "note_edit.html",
-    "/note_list": "note_list.html",
-    "/test": "test.html",
-    "/log": "log.html",
-    "/password": "password.html",
-})
-
-add_post_url_handlers({
-    "/user_login": user.login,
-    "/user_logout": user.logout,
-    "/user_change": user.change,
-    "/user_create": user.create,
-    "/user_delete": user.delete,
-
-    "/note_create": note.create,
-    "/note_edit": note.edit,
-    "/note_list": note.list,
-    "/note_query": note.query,
-
-    "/log_list": log.list,
-})
 
 
 @tornado.gen.coroutine
@@ -88,7 +46,9 @@ def main():
 # 启动api
 if __name__ == "__main__":
     try:
-        main()
+        from proxy_crawler import proxy_coderbusy_com
+        proxy_coderbusy_com.test()
+        # main()
         tornado.ioloop.IOLoop.current().start()
     except Exception as e:
         print traceback.format_exc()

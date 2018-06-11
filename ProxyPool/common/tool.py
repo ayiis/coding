@@ -112,7 +112,7 @@ def fixed_float(num, fixed=2):
 
 
 import tornado.httpclient
-async_http_client = httpclient.AsyncHTTPClient(max_clients=1000)
+async_http_client = tornado.httpclient.AsyncHTTPClient(max_clients=1000)
 
 def http_request(req_data):
     return async_http_client.fetch(tornado.httpclient.HTTPRequest(
@@ -121,6 +121,6 @@ def http_request(req_data):
         headers=req_data["headers"],
         body=req_data.get("body"),
         decompress_response=True,
-        request_timeout=req_data["request_timeout"],
-        connect_timeout=req_data["request_timeout"]
+        request_timeout=req_data.get("request_timeout") or 30,
+        connect_timeout=req_data.get("request_timeout") or 30
     ), raise_error=False)

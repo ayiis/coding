@@ -57,10 +57,9 @@ def construct_page_url_string(target_page_struct, page):
 
 
 def grep_page_ip_list(page_html):
-    ip_table = page_html.xpath("/html/body//table")
-    ip_table = ip_table[0]
+    ip_table = page_html.xpath("/html/body//table")[0]
     ip_trs = ip_table.xpath("tbody/tr")
-    return [ [item.strip() for item in tr.xpath("td/text()") if item.strip()] for tr in ip_trs]
+    return [ [ td.xpath("string()").strip() for td in tr.xpath("td") ] for tr in ip_trs ]
 
 
 def grep_end_page(start_page_html):
@@ -68,46 +67,41 @@ def grep_end_page(start_page_html):
     return re.search('[\d]+$', last_end[0]).group()
 
 
-'124.172.232.49\x0068.48\x0034763\x00\u4e2d\u56fd \u5e7f\u4e1c \u5e7f\u5dde\x00HTTP\x002.26\u79d2\x001\u59294\u65f6'
-
-
-
 def convert_ip_list_format(ip_list):
-    for item in ip_list:
-        ip_data = {
-            "id": None,
-            "proxy_ip": item[0],
-            "proxy_port": item[2],
-            "proxy_username": None,
-            "proxy_password": None,
+    return [{
+        "id": None,
+        "proxy_ip": item[0],
+        "proxy_port": item[2],
+        "proxy_username": None,
+        "proxy_password": None,
 
-            "location": item[3],
-            "delay": item[10].replace("秒", ""),
-            "create_datetime": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "last_validate_datetime": None,
+        "location": item[3],
+        "delay": item[10].replace("秒", ""),
+        "create_datetime": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "last_validate_datetime": None,
 
-            "a_https": None,
-            "a_post": None,
+        "a_https": None,
+        "a_post": None,
 
-            "anoy": {
-                "透明": 0,
-                "匿名": 1,
-                "高匿名": 2,
-            }.get(item[7], 0),
+        "anoy": {
+            "透明": 0,
+            "匿名": 1,
+            "高匿名": 2,
+        }.get(item[7], 0),
 
-            "score": 0,
-            "data_source": "proxy.coderbusy.com",
-
-        }
+        "score": 0,
+        "data_source": "proxy.coderbusy.com",
+    } for item in ip_list ]
 
 
 @gen.coroutine
-def save_to_db():
+def save_to_db(ip_data):
+    open("ip_data.json", "a").write( tool.json_stringify(ip_data))
     raise gen.Return(True)   #DEBUG
 
 
 @gen.coroutine
-def test():
+def do():
 
     for target_page_base in target_page_struct_list:
 
@@ -134,5 +128,13 @@ def test():
             ip_list = grep_page_ip_list(page_html)
             ip_data = convert_ip_list_format(ip_list)
             yield save_to_db(ip_data)
+
+
+@gen.coroutine
+def test():
+    try:
+        do()
+    except Exception as e:
+        print traceback.format_exc()
 
     ioloop.IOLoop.current().stop()

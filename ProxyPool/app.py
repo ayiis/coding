@@ -11,10 +11,11 @@ import datetime, traceback, os
 
 import config
 
-import logging
-logging.basicConfig(level=logging.DEBUG)
-logging.getLogger("tornado.application")
+# import logging
+# logging.basicConfig(level=logging.DEBUG)
+# logging.getLogger("tornado.application")
 
+from common import my_mongodb
 
 
 @tornado.gen.coroutine
@@ -25,12 +26,12 @@ def main():
         define("port", default=config.SYSTEM["api_port"], help="run on the given port", type=int)
         options.parse_command_line()
 
-        yield my_mongodb.init()
-
         settings = {
             "debug": True,
             "autoreload": True,
         }
+        mongodbs = yield my_mongodb.init(config.MONGODB)
+        settings.update(mongodbs)
 
         tornado.web.Application([
             (r"/.*", DefaultRouterHandler)  # 默认处理方法，其他处理方法需在此方法之前声明
@@ -43,11 +44,17 @@ def main():
         print "[SUCCESS] listening %s" % options.port
 
 
+@tornado.gen.coroutine
+def test():
+    from proxy_crawler import proxy_coderbusy_com
+    mongodbs = yield my_mongodb.init(config.MONGODB)
+    yield proxy_coderbusy_com.test(mongodbs["DB_PROXY_POOL"])
+
+
 # 启动api
 if __name__ == "__main__":
     try:
-        from proxy_crawler import proxy_coderbusy_com
-        proxy_coderbusy_com.test()
+        test()
         # main()
         tornado.ioloop.IOLoop.current().start()
     except Exception as e:

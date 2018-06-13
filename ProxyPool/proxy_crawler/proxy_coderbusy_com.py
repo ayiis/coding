@@ -1,8 +1,6 @@
 #!/usr/bin/env python2.7
 # -*- coding: utf-8 -*-
 
-#!/usr/bin/env python2.7
-# -*- coding: utf-8 -*-
 import datetime, time
 import re
 import traceback
@@ -14,6 +12,7 @@ import tornado
 from tornado import gen, ioloop, httpclient
 from urllib import urlencode
 from common import tool, tornado_timmer
+import validate
 
 target_page_struct_list = [
     ["https://proxy.coderbusy.com/classical/https-ready.aspx?page=%s", 1],
@@ -23,11 +22,11 @@ target_page_struct_list = [
     ["https://proxy.coderbusy.com/classical/anonymous-type/highanonymous.aspx?page=%s", 1],
 ]
 
+db_name = "proxy.coderbusy.com.ip_date_raw"
+
 
 @gen.coroutine
 def crawler_page_html(page_url, retry=True):
-
-    raise gen.Return(open("td.html", "r").read())   #DEBUG
 
     req_data = {
         "url": page_url,
@@ -38,8 +37,10 @@ def crawler_page_html(page_url, retry=True):
             "accept-language": "zh-CN,zh;q=0.9,en;q=0.8",
             "cache-control": "max-age=0",
             "upgrade-insecure-requests": "1",
-            "user-agent": "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.119 Safari/537.36",
+            "user-agent": "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3282.119 Safari/537.36",
         },
+        "proxy_host": None,
+        "proxy_port": None,
         "request_timeout": 30,
     }
     response = yield tool.http_request(req_data)
@@ -63,77 +64,96 @@ def grep_page_ip_list(page_html):
 
 
 def grep_end_page(start_page_html):
-    last_end = start_page_html.xpath(u"//div[@class=\"card-footer\"]/nav/ul/li[@title=\"尾页\"]/a//@href")
-    return re.search('[\d]+$', last_end[0]).group()
+    try:
+        last_end = start_page_html.xpath(u"//div[@class=\"card-footer\"]/nav/ul/li[@title=\"尾页\"]/a//@href")
+        return re.search("[\d]+$", last_end[0]).group()
+    except Exception as e:
+        # 只有一页时，末页返回0
+        return 0
 
 
 def convert_ip_list_format(ip_list):
-    return [{
-        "id": None,
-        "proxy_ip": item[0],
-        "proxy_port": item[2],
-        "proxy_username": None,
-        "proxy_password": None,
+    retult_list = []
+    for item in ip_list:
+        try:
+            retult_list.append({
+                "proxy_ip": item[0],
+                "proxy_port": float(item[2]),
+                "proxy_username": None,
+                "proxy_password": None,
 
-        "location": item[3],
-        "delay": item[10].replace("秒", ""),
-        "create_datetime": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "last_validate_datetime": None,
+                "location": item[3],
+                "delay": float(item[10].replace("秒", "")),
+                "create_datetime": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "last_validate_datetime": None,
 
-        "a_https": None,
-        "a_post": None,
+                "a_https": None,
+                "a_post": None,
 
-        "anoy": {
-            "透明": 0,
-            "匿名": 1,
-            "高匿名": 2,
-        }.get(item[7], 0),
+                "anoy": {
+                    "透明": 0,
+                    "匿名": 1,
+                    "高匿名": 2,
+                }.get(item[7], 0),
 
-        "score": 0,
-        "data_source": "proxy.coderbusy.com",
-    } for item in ip_list ]
+                "score": 0,
+                "data_source": "proxy.coderbusy.com",
+            })
+        except Exception as e:
+            print item
+            print traceback.format_exc()
+            pass
+
+    return retult_list
 
 
 @gen.coroutine
-def save_to_db(ip_data):
-    open("ip_data.json", "a").write( tool.json_stringify(ip_data))
+def save_to_db(mongodb, ip_data):
+    insert_result = yield mongodb[db_name].insert(ip_data)
+
+    print "insert_result len:", len(insert_result)
+
     raise gen.Return(True)   #DEBUG
 
 
 @gen.coroutine
-def do():
+def do(mongodb):
 
     for target_page_base in target_page_struct_list:
 
         start_page = int(target_page_base[1])
         start_page_url = construct_page_url_string(target_page_base[0], start_page)
-        print "start_page_url:", start_page_url
 
         start_page_html = yield crawler_page_html(start_page_url, True)
         start_page_html = etree.HTML(start_page_html)
 
-        end_page = int(grep_end_page(start_page_html))
-        end_page_url = construct_page_url_string(target_page_base[0], end_page)
-        print "end_page_url:", end_page_url
-
         ip_list = grep_page_ip_list(start_page_html)
         ip_data = convert_ip_list_format(ip_list)
-        yield save_to_db(ip_data)
+        yield save_to_db(mongodb, ip_data)
+
+        end_page = int(grep_end_page(start_page_html))
 
         for page in range(start_page +1, end_page +1):
             page_url = construct_page_url_string(target_page_base[0], page)
+            print "working page:", page_url
             page_html = yield crawler_page_html(page_url, True)
             page_html = etree.HTML(page_html)
 
             ip_list = grep_page_ip_list(page_html)
             ip_data = convert_ip_list_format(ip_list)
-            yield save_to_db(ip_data)
+            yield save_to_db(mongodb, ip_data)
+
+            # dont do request too frequent | or set proxy to do
+            yield tornado_timmer.sleep(3)
+
+    ## done, validate whether the proxies are available
+    yield validate.do(mongodb, db_name)
 
 
 @gen.coroutine
-def test():
+def test(mongodb):
     try:
-        do()
+        yield do(mongodb)
     except Exception as e:
         print traceback.format_exc()
 

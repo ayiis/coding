@@ -1,5 +1,9 @@
-#!/usr/local/bin/python
-#encoding:utf8
+#!/usr/bin/env python2.7
+# -*- coding: utf-8 -*-
+"""
+归并排序，O(n log n)
+"""
+
 import sys
 reload(sys)
 sys.setdefaultencoding("utf-8")
@@ -11,9 +15,7 @@ print target
 print sorted(target)
 
 
-
 def guibing(final_list, item):
-    # print item
     dlen = len(item)
     if dlen == 1:
         return final_list.append(item[0])
@@ -22,20 +24,24 @@ def guibing(final_list, item):
     left_list = []
     right_list = []
 
+    # 左右数组各处理一半
     guibing(left_list, item[:hlen])
     guibing(right_list, item[hlen:])
 
-    fl1, m_fl1 = 0, len(left_list)
-    fl2, m_fl2 = 0, len(right_list)
-    while fl1 < m_fl1 and fl2 < m_fl2:
-        if left_list[fl1] < right_list[fl2]:
-            final_list.append(left_list[fl1])
-            fl1 = fl1 +1
+    left_list_index, left_list_lenth = 0, len(left_list)
+    right_list_index, right_list_length = 0, len(right_list)
+
+    # 比较左右数组中的第index个元素，并将较小的元素放到 结果数组中
+    while left_list_index < left_list_lenth and right_list_index < right_list_length:
+        if left_list[left_list_index] < right_list[right_list_index]:
+            final_list.append(left_list[left_list_index])
+            left_list_index = left_list_index +1
         else:
-            final_list.append(right_list[fl2])
-            fl2 = fl2 +1
-    final_list[:] = final_list + left_list[fl1:] + right_list[fl2:]
-    # print left_list, "+" , right_list, "==>" , final_list[:]
+            final_list.append(right_list[right_list_index])
+            right_list_index = right_list_index +1
+
+    # 将其余的元素放入 结果数组中
+    final_list[:] = final_list + left_list[left_list_index:] + right_list[right_list_index:]
 
 
 def main():

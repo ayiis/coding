@@ -47,8 +47,11 @@ def main():
 @tornado.gen.coroutine
 def test():
     from proxy_crawler import proxy_coderbusy_com
+    from proxy_crawler import validate
     mongodbs = yield my_mongodb.init(config.MONGODB)
-    yield proxy_coderbusy_com.test(mongodbs["DB_PROXY_POOL"])
+
+    # yield proxy_coderbusy_com.test(mongodbs["DB_PROXY_POOL"])
+    yield validate.test(mongodbs["DB_PROXY_POOL"], "proxy.coderbusy.com.ip_date_raw", "proxy.coderbusy.com")
 
 
 # 启动api

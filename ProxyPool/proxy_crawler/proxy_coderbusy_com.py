@@ -23,6 +23,7 @@ target_page_struct_list = [
 ]
 
 db_name = "proxy.coderbusy.com.ip_date_raw"
+data_source = "proxy.coderbusy.com"
 
 
 @gen.coroutine
@@ -97,7 +98,7 @@ def convert_ip_list_format(ip_list):
                 }.get(item[7], 0),
 
                 "score": 0,
-                "data_source": "proxy.coderbusy.com",
+                "data_source": data_source,
             })
         except Exception as e:
             print item
@@ -112,8 +113,6 @@ def save_to_db(mongodb, ip_data):
     insert_result = yield mongodb[db_name].insert(ip_data)
 
     print "insert_result len:", len(insert_result)
-
-    raise gen.Return(True)   #DEBUG
 
 
 @gen.coroutine
@@ -143,11 +142,11 @@ def do(mongodb):
             ip_data = convert_ip_list_format(ip_list)
             yield save_to_db(mongodb, ip_data)
 
-            # dont do request too frequent | or set proxy to do
+            # 防屏蔽，请求降频 | 或者使用代理提高频率
             yield tornado_timmer.sleep(3)
 
-    ## done, validate whether the proxies are available
-    yield validate.do(mongodb, db_name)
+    ## 验证代理ip是否有效
+    yield validate.do(mongodb, db_name, data_source)
 
 
 @gen.coroutine

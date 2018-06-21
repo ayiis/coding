@@ -14,7 +14,7 @@ def init(mongodb_config):
         for db_name in mongodb_config:
             db = mongodb_config[db_name]
             my_world_star_dbs[db_name] = MotorClient(db["HOST"], db["PORT"])[ db["DATABASE_NAME"] ]
-            authenticate_list.append(my_world_star_dbs[db_name].authenticate(db["USERNAME"], db["PASSWORD"] ))
+            # authenticate_list.append(my_world_star_dbs[db_name].authenticate(db["USERNAME"], db["PASSWORD"] ))
 
             setattr(my_world_star_dbs[db_name], "get_next_sequence", lambda sequence_name: get_next_sequence(my_world_star_dbs[db_name], sequence_name))
 

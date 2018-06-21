@@ -45,19 +45,45 @@ def main():
 
 
 @tornado.gen.coroutine
-def test():
+def test_proxy_coderbusy_com():
     from proxy_crawler import proxy_coderbusy_com
     from proxy_crawler import validate
-    mongodbs = yield my_mongodb.init(config.MONGODB)
+    try:
+        print "START TEST"
 
-    # yield proxy_coderbusy_com.test(mongodbs["DB_PROXY_POOL"])
-    yield validate.test(mongodbs["DB_PROXY_POOL"], "proxy.coderbusy.com.ip_date_raw", "proxy.coderbusy.com")
+        mongodbs = yield my_mongodb.init(config.MONGODB)
+
+        # yield proxy_coderbusy_com.test(mongodbs["DB_PROXY_POOL"])
+        yield validate.test(mongodbs["DB_PROXY_POOL"], "proxy.coderbusy.com.ip_date_raw", "proxy.coderbusy.com")
+
+    except Exception, e:
+        print traceback.format_exc()
+
+    print "DONE"
+
+
+@tornado.gen.coroutine
+def test_www_cicidaili_com():
+    from proxy_crawler import www_cicidaili_com
+    from proxy_crawler import validate
+    try:
+        print "START TEST"
+
+        mongodbs = yield my_mongodb.init(config.MONGODB)
+
+        yield www_cicidaili_com.test(mongodbs["DB_PROXY_POOL"])
+
+    except Exception, e:
+        print traceback.format_exc()
+
+    print "DONE"
 
 
 # 启动api
 if __name__ == "__main__":
     try:
-        test()
+        # test_proxy_coderbusy_com()
+        test_www_cicidaili_com()
         # main()
         tornado.ioloop.IOLoop.current().start()
     except Exception as e:

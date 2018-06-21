@@ -19,7 +19,7 @@ validate_site = "https://ayiis.me/ip"
 def do(mongodb, db_name, data_source):
 
     # 以IP为单位，整合到一个临时表里
-    mongodb[db_name].aggregate([{
+    yield mongodb[db_name].aggregate([{
         "$group": {
             "_id": "$proxy_ip",
             "port": {
@@ -40,7 +40,7 @@ def do(mongodb, db_name, data_source):
         }
     }, {
         "$out": tmp_db_name
-    }])
+    }]).to_list(length=None)
 
     # 每次从临时表中取N个IP进行验证
     page_size = config.validate_setting["count"]

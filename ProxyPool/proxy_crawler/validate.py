@@ -13,7 +13,7 @@ from urllib import urlencode
 from common import tool, tornado_timmer
 
 tmp_db_name = "tmp_validate_db"
-validate_site = "https://ayiis.me/ip"
+# validate_site = "https://ayiis.me/ip"
 validate_site = "http://www.3322.org/dyndns/getip"
 request_timeout = 30
 
@@ -96,7 +96,7 @@ def analyze_response(yield_list_id, yield_list):
         if response.code != 200:
             open("bad_result.json", "a").write("%s\r\n" % (proxy_host))
             continue
-        elif response.body not in proxy_host:
+        elif response.body.strip() not in proxy_host:
             print "200 but. %s not in %s:" % (proxy_host, response.body)
             open("warning_result.json", "a").write("%s in %s\r\n" % (proxy_host, response.body))
             continue

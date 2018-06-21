@@ -71,7 +71,8 @@ def test_www_cicidaili_com():
 
         mongodbs = yield my_mongodb.init(config.MONGODB)
 
-        yield www_cicidaili_com.test(mongodbs["DB_PROXY_POOL"])
+        # yield www_cicidaili_com.test(mongodbs["DB_PROXY_POOL"])
+        yield validate.test(mongodbs["DB_PROXY_POOL"], "www.xicidaili.com.ip_date_raw", "www.xicidaili.com")
 
     except Exception, e:
         print traceback.format_exc()

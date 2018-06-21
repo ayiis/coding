@@ -15,9 +15,9 @@ from common import tool, tornado_timmer
 import validate
 
 target_page_struct_list = [
-    ["http://www.xicidaili.com/nn/%s", 1],  # 国内高匿
-    ["http://www.xicidaili.com/nt/%s", 1],  # 国内透明
-    ["http://www.xicidaili.com/wn/%s", 1],  # HTTPS
+    # ["http://www.xicidaili.com/nn/%s", 1],  # 国内高匿
+    # ["http://www.xicidaili.com/nt/%s", 1],  # 国内透明
+    ["http://www.xicidaili.com/wn/%s", 92],  # HTTPS
     ["http://www.xicidaili.com/wt/%s", 1],  # HTTP
 ]
 
@@ -50,7 +50,8 @@ def crawler_page_html(page_url, retry=True):
         response = yield tool.http_request(req_data)
 
     if response.code != 200:
-        raise Exception("http status code %s,%s" % (response.code, response.error))
+        # raise Exception("http status code %s,%s" % (response.code, response.error))
+        raise gen.Return("")
 
     raise gen.Return(response.body)
 
@@ -143,6 +144,8 @@ def do(mongodb):
             page_url = construct_page_url_string(target_page_base[0], page)
             print "working page:", page_url
             page_html = yield crawler_page_html(page_url, True)
+            if not page_html:
+                continue
             page_html = etree.HTML(page_html)
 
             ip_list = grep_page_ip_list(page_html)

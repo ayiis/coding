@@ -14,6 +14,8 @@ from common import tool, tornado_timmer
 
 tmp_db_name = "tmp_validate_db"
 validate_site = "https://ayiis.me/ip"
+validate_site = "http://www.3322.org/dyndns/getip"
+request_timeout = 30
 
 @gen.coroutine
 def do(mongodb, db_name, data_source):
@@ -72,7 +74,7 @@ def do(mongodb, db_name, data_source):
                     "body": "{\"username\": \"ayiis\"}",
                     "proxy_host": item["_id"],
                     "proxy_port": port,
-                    "request_timeout": 30,
+                    "request_timeout": request_timeout,
                 })
 
                 yield_list_id.append( "%s:%s" % (item["_id"], port) )
@@ -94,14 +96,14 @@ def analyze_response(yield_list_id, yield_list):
         if response.code != 200:
             open("bad_result.json", "a").write("%s\r\n" % (proxy_host))
             continue
-        elif response.content not in proxy_host:
-            print "200 but. %s not in %s:" % (proxy_host, response.content)
-            open("warning_result.json", "a").write("%s in %s\r\n" % (proxy_host, response.content))
+        elif response.body not in proxy_host:
+            print "200 but. %s not in %s:" % (proxy_host, response.body)
+            open("warning_result.json", "a").write("%s in %s\r\n" % (proxy_host, response.body))
             continue
         else:
             print "GOOD!"
-            print "%s in %s:", proxy_host, response.content
-            open("good_result.json", "a").write("%s in %s\r\n" % (proxy_host, response.content))
+            print "%s in %s:", proxy_host, response.body
+            open("good_result.json", "a").write("%s in %s\r\n" % (proxy_host, response.body))
 
 
 @gen.coroutine

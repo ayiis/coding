@@ -12,16 +12,26 @@ from tornado import gen, ioloop, httpclient
 from urllib import urlencode
 from common import tool, tornado_timmer
 
-tmp_db_name = "tmp_validate_db"
-# validate_site = "https://ayiis.me/ip"
-validate_site = "http://www.3322.org/dyndns/getip"
+from proxy_crawler import (
+    validate_www_3322_org as default_validate_site,
+    validate_ayiis_me,
+)
+
+tmp_collection_name = "tmp_validate_db"
+target_collection_name = "available_pool"
 request_timeout = 30
+my_ip = "59.42.106.170"
+
+
+def get_my_ip():
+    return my_ip
+
 
 @gen.coroutine
-def do(mongodb, db_name, data_source):
+def do(mongodb, collection_name, data_source):
 
     # 以IP为单位，整合到一个临时表里
-    yield mongodb[db_name].aggregate([{
+    yield mongodb[collection_name].aggregate([{
         "$group": {
             "_id": "$proxy_ip",
             "port": {
@@ -41,75 +51,86 @@ def do(mongodb, db_name, data_source):
             }
         }
     }, {
-        "$out": tmp_db_name
+        "$out": tmp_collection_name
     }]).to_list(length=None)
 
     # 每次从临时表中取N个IP进行验证
     page_size = config.validate_setting["count"]
-    total_size = yield mongodb[tmp_db_name].count()
+    total_size = yield mongodb[tmp_collection_name].count()
 
     total_page = total_size / page_size
     total_page = total_size % page_size == 0 and total_page or total_page + 1
     for page_index in xrange(total_page + 1):
-    # for page_index in xrange(1):
-
-        ip_results = yield mongodb[tmp_db_name].find({}, {"_id": 1, "port": 1}).skip(page_index * page_size).limit(page_size).to_list(length=None)
+        ip_results = yield mongodb[tmp_collection_name].find({}, {"_id": 1, "port": 1}).skip(page_index * page_size).limit(page_size).to_list(length=None)
 
         print "ip_results:", ip_results
 
-        yield_list_id = []
+        datetime_now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         yield_list = []
-
         for item in ip_results:
             for port in item["port"]:
-                port = int(port)
-                print "%s:%s" % (item["_id"], port)
-                validate_request = tool.http_request({
-                    "url": validate_site,
-                    "method": "POST",
-                    "headers": {
-                        "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
-                        "user-agent": "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3282.119 Safari/537.36",
-                    },
-                    "body": "{\"username\": \"ayiis\"}",
-                    "proxy_host": item["_id"],
-                    "proxy_port": port,
-                    "request_timeout": request_timeout,
-                })
+                yield_list.append(
+                    default_validate_site.validate(item["_id"], int(port), get_my_ip())
+                )
 
-                yield_list_id.append( "%s:%s" % (item["_id"], port) )
-                yield_list.append(validate_request)
+        yield_list = yield yield_list
+        for ip_data in yield_list:
+            if not ip_data:
+                continue
 
-                if len(yield_list) >= page_size:
-                    yield analyze_response(yield_list_id, yield_list)
-                    yield_list_id, yield_list = [], []
+            print "good ip_data:", ip_data
 
-        yield analyze_response(yield_list_id, yield_list)
-        yield_list_id, yield_list = [], []
+            ip_data.update({
+                "data_source": data_source,
+                "last_validate_datetime": datetime_now,
+                "create_datetime": datetime_now,
+            })
+            yield save_to_db(mongodb, target_collection_name, ip_data)
 
 
 @gen.coroutine
-def analyze_response(yield_list_id, yield_list):
-    yield_list_result = yield yield_list
-    for index, proxy_host in enumerate(yield_list_id):
-        response = yield_list_result[index]
-        if response.code != 200:
-            open("bad_result.json", "a").write("%s\r\n" % (proxy_host))
-            continue
-        elif response.body.strip() not in proxy_host:
-            print "200 but. %s not in %s:" % (proxy_host, response.body)
-            open("warning_result.json", "a").write("%s in %s\r\n" % (proxy_host, response.body))
-            continue
-        else:
-            print "GOOD!"
-            print "%s in %s:", proxy_host, response.body
-            open("good_result.json", "a").write("%s in %s\r\n" % (proxy_host, response.body))
+def save_to_db(mongodb, collection_name, ip_data):
+    insert_result = yield mongodb[collection_name].insert(ip_data)
 
 
 @gen.coroutine
-def test(mongodb, db_name, data_source):
+def do2(mongodb, collection_name, data_source):
+
+    ff = open("reason.txt", "r").read()
+    ip_results = [ item.split("in")[0].strip() for item in ff.split("\n") if item.strip() ]
+
+    print "list ip_results:", len(ip_results)
+    ip_results = list(set(ip_results))
+    print " set ip_results:", len(ip_results)
+    ip_results = [ item.split(":") for item in ip_results]
+
+    yield_list = []
+
+    for item in ip_results:
+        yield_list.append(
+            default_validate_site.validate(item[0], int(item[1]), get_my_ip())
+        )
+
+    datetime_now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    yield_list = yield yield_list
+    for item in yield_list:
+        if not item:
+            continue
+
+        item.update({
+            "data_source": data_source,
+            "last_validate_datetime": datetime_now,
+            "create_datetime": datetime_now,
+        })
+        print "item:", item
+        yield save_to_db(mongodb, target_collection_name, item)
+
+
+@gen.coroutine
+def test(mongodb, collection_name, data_source):
     try:
-        yield do(mongodb, db_name, data_source)
+        yield do(mongodb, collection_name, data_source)
     except Exception as e:
         print traceback.format_exc()
 

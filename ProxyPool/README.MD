@@ -6,11 +6,48 @@ proxy_source_site = {
     "https://www.shodan.io/",
     "https://www.censys.io/",
 
+    https://hide.me/en/proxy
+
 
     "https://leakedforums.com/threads/socks-proxy-list-06-08-2018-by-tisocks-net.2067/",
     "https://proxy.coderbusy.com/",
     "https://proxy.horocn.com/",
+
+    http://www.ip3366.net/free/?page=2
+    https://proxy.horocn.com/free-proxy.html
+    https://proxy.horocn.com/api/proxies?order_id=Q2801603964049822446&num=10&format=text&line_separator=win
+
+    http://cn-proxy.com/
+    http://cn-proxy.com/archives/218
+
+    https://www.us-proxy.org/
+    https://free-proxy-list.net/
+    https://free-proxy-list.net/anonymous-proxy.html
+    http://www.gatherproxy.com/proxylist/country/?c=Singapore
+    https://www.proxynova.com/proxy-server-list/country-sg/
+    https://hidemy.name/en/proxy-list/
+    http://spys.one/en/
+    http://www.freeproxylists.net/zh/
+    http://www.goubanjia.com/
+
 }
+
+/*
+
+https://proxy.horocn.com/api-doc.html?order_id=Q2801603964049822446
+
+220.163.19.202:34736
+119.96.195.161:25020
+61.130.231.40:45979
+112.194.95.36:22395
+117.27.111.156:19029
+114.221.116.77:43496
+222.189.246.117:16697
+27.204.121.142:16973
+14.118.160.206:19496
+117.81.204.215:32662
+
+*/
 
 
 2 3 5 10 -- 5
@@ -40,7 +77,7 @@ score = {
 
 db_struct = {
     "id",
-    "proxy_ip",
+    "proxy_host",
     "proxy_port",
     "proxy_username",
     "proxy_password",
@@ -50,14 +87,10 @@ db_struct = {
     "create_datetime",
     "last_validate_datetime",
 
-    "a_https": {
-        0: "不支持",
-        1: "支持",
-    },
-    "a_post": {
-        0: "不支持",
-        1: "支持",
-    },
+    "http_get": False,
+    "https_get": False,
+    "http_post": False,
+    "https_post": False,
 
     "anoy": {
         0: "非匿名",
@@ -90,7 +123,7 @@ api = {
         ],
         "res": [
             "id",
-            "proxy_ip",
+            "proxy_host",
             "proxy_port",
             "proxy_username",
             "proxy_password",

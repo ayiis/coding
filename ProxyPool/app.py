@@ -11,9 +11,9 @@ import datetime, traceback, os
 
 import config
 
-# import logging
-# logging.basicConfig(level=logging.DEBUG)
-# logging.getLogger("tornado.application")
+import logging
+logging.basicConfig(level=logging.ERROR)
+logging.getLogger("tornado.application")
 
 from common import my_mongodb
 
@@ -63,16 +63,73 @@ def test_proxy_coderbusy_com():
 
 
 @tornado.gen.coroutine
-def test_www_cicidaili_com():
-    from proxy_crawler import www_cicidaili_com
+def test_proxy_xicidaili_com():
+    from proxy_crawler import proxy_xicidaili_com
     from proxy_crawler import validate
     try:
         print "START TEST"
 
         mongodbs = yield my_mongodb.init(config.MONGODB)
 
-        # yield www_cicidaili_com.test(mongodbs["DB_PROXY_POOL"])
+        # yield proxy_xicidaili_com.test(mongodbs["DB_PROXY_POOL"])
         yield validate.test(mongodbs["DB_PROXY_POOL"], "www.xicidaili.com.ip_date_raw", "www.xicidaili.com")
+
+    except Exception, e:
+        print traceback.format_exc()
+
+    print "DONE"
+
+
+@tornado.gen.coroutine
+def test_proxy_kuaidaili_com():
+    from proxy_crawler import proxy_kuaidaili_com
+    from proxy_crawler import validate
+    try:
+        print "START TEST"
+
+        mongodbs = yield my_mongodb.init(config.MONGODB)
+
+        yield proxy_kuaidaili_com.test(mongodbs["DB_PROXY_POOL"])
+
+        # yield validate.test(mongodbs["DB_PROXY_POOL"], "www.kuaidaili.com.ip_date_raw", "www.kuaidaili.com")
+
+    except Exception, e:
+        print traceback.format_exc()
+
+    print "DONE"
+
+
+@tornado.gen.coroutine
+def test_proxy_66ip_cn():
+    from proxy_crawler import proxy_66ip_cn
+    from proxy_crawler import validate
+    try:
+        print "START TEST"
+
+        mongodbs = yield my_mongodb.init(config.MONGODB)
+
+        yield proxy_66ip_cn.test(mongodbs["DB_PROXY_POOL"])
+
+        # yield validate.test(mongodbs["DB_PROXY_POOL"], "www.66ip.cn.ip_date_raw", "www.66ip.cn")
+
+    except Exception, e:
+        print traceback.format_exc()
+
+    print "DONE"
+
+
+@tornado.gen.coroutine
+def test_proxy_89ip_cn():
+    from proxy_crawler import proxy_89ip_cn
+    from proxy_crawler import validate
+    try:
+        print "START TEST proxy_89ip_cn"
+
+        mongodbs = yield my_mongodb.init(config.MONGODB)
+
+        yield proxy_89ip_cn.test(mongodbs["DB_PROXY_POOL"])
+
+        # yield validate.test(mongodbs["DB_PROXY_POOL"], "www.89ip.cn.ip_date_raw", "www.89ip.cn")
 
     except Exception, e:
         print traceback.format_exc()
@@ -84,7 +141,10 @@ def test_www_cicidaili_com():
 if __name__ == "__main__":
     try:
         # test_proxy_coderbusy_com()
-        test_www_cicidaili_com()
+        # test_proxy_xicidaili_com()
+        # test_proxy_kuaidaili_com()
+        # test_proxy_66ip_cn()
+        test_proxy_89ip_cn()
         # main()
         tornado.ioloop.IOLoop.current().start()
     except Exception as e:

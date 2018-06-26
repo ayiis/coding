@@ -113,9 +113,9 @@ def fixed_float(num, fixed=2):
 
 import tornado.httpclient
 tornado.httpclient.AsyncHTTPClient.configure("tornado.curl_httpclient.CurlAsyncHTTPClient")
-async_http_client = tornado.httpclient.AsyncHTTPClient(max_clients=1000)
+async_http_client = tornado.httpclient.AsyncHTTPClient(max_clients=2000)
 
-def http_request(req_data):
+def http_request(req_data, **kwargs):
     return async_http_client.fetch(tornado.httpclient.HTTPRequest(
         url=req_data["url"],
         method=req_data["method"],
@@ -125,5 +125,10 @@ def http_request(req_data):
         proxy_host=req_data.get("proxy_host"),
         proxy_port=req_data.get("proxy_port"),
         request_timeout=req_data.get("request_timeout") or 30,
-        connect_timeout=req_data.get("request_timeout") or 30
+        connect_timeout=req_data.get("request_timeout") or 30,
+        **kwargs
     ), raise_error=False)
+
+
+def get_my_ip():
+    return "59.42.106.170"

@@ -62,8 +62,6 @@ table.unavailable_pool
 
 table.fail_pool
 
-table.shit_pool
-
 
 score = {
     "in use secceed": 2 / -2,
@@ -104,13 +102,12 @@ db_struct = {
 }
 
 cronjob = {
-    "cron1 60 * 20分钟": "检查可用IP池内的IP" / double_check / 60 * timeout / fail_to_save_to_cron2,
+    "cron1 60 * 15分钟": "检查可用IP池内的IP" / double_check / 60 * timeout / fail_to_save_to_cron2,
 
-    "cron2 60 * 60 * 2小时": "检查暂时不可用IP池内的IP" / double_check / 60 * timeout / fail_to_save_to_cron3,
+    "cron2 60 * 60 * 3小时": "检查暂时不可用IP池内的IP" / double_check / 60 * timeout / fail_to_save_to_cron3,
 
-    "cron3 60 * 60 * 24 * 2天": "检查持续不可用IP池内的IP" / double_check / 60 * timeout,
+    "cron3 60 * 60 * 24 * 3天": "检查持续不可用IP池内的IP" / double_check / 60 * timeout,
 
-    "cron4 60 * 60 * 24 * 20天": "检查废弃IP池内的IP" / double_check / 60 * timeout,
 }
 
 

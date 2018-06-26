@@ -13,6 +13,7 @@ import config
 
 import logging
 logging.basicConfig(level=logging.ERROR)
+# logging.basicConfig(level=logging.DEBUG)
 logging.getLogger("tornado.application")
 
 from common import my_mongodb
@@ -137,6 +138,30 @@ def test_proxy_89ip_cn():
     print "DONE"
 
 
+@tornado.gen.coroutine
+def test_schedules_init():
+    import schedules
+    mongodbs = yield my_mongodb.init(config.MONGODB)
+    yield schedules.init(mongodbs["DB_PROXY_POOL"])
+    tornado.ioloop.IOLoop.current().stop()
+
+
+@tornado.gen.coroutine
+def test_start_proxy():
+    from routes import proxy
+    from routes import proxy_manager
+
+    mongodbs = yield my_mongodb.init(config.MONGODB)
+
+    proxy_manager.ProxyManager({
+        "name": "default",
+        "collection": mongodbs["DB_PROXY_POOL"]["available_pool"],
+        "unavailable_collection": mongodbs["DB_PROXY_POOL"]["unavailable_pool"],
+    })
+
+    proxy.run_proxy(8888)
+
+
 # 启动api
 if __name__ == "__main__":
     try:
@@ -144,7 +169,9 @@ if __name__ == "__main__":
         # test_proxy_xicidaili_com()
         # test_proxy_kuaidaili_com()
         # test_proxy_66ip_cn()
-        test_proxy_89ip_cn()
+        # test_proxy_89ip_cn()
+        # test_schedules_init()
+        test_start_proxy()
         # main()
         tornado.ioloop.IOLoop.current().start()
     except Exception as e:

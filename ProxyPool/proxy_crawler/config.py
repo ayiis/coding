@@ -12,6 +12,6 @@ settings = {
 }
 
 validate_setting = {
-    "count": 50,    # 每次验证从数据库中取多少个IP
+    "count": 50,    # 每次验证从数据库中取多少个IP()
 }
 

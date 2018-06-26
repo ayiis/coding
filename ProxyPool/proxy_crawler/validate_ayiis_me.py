@@ -7,6 +7,7 @@ import tornado
 from tornado import gen, ioloop, httpclient
 from urllib import urlencode
 from common import tool, tornado_timmer
+import datetime
 
 URL = "http://www.ayiis.me/ip"
 HTTPS_URL = "https://www.ayiis.me/ip"
@@ -119,6 +120,7 @@ def do_validate(req, my_ip):
 @gen.coroutine
 def validate(proxy_host, proxy_port, my_ip=None):
 
+    datetime_now = datetime.datetime.now()
     result = {
         "proxy_host": proxy_host,
         "proxy_port": proxy_port,
@@ -127,6 +129,8 @@ def validate(proxy_host, proxy_port, my_ip=None):
         "https_get": False,
         "http_post": False,
         "https_post": False,
+        "last_validate_datetime": datetime_now.strftime("%Y-%m-%d %H:%M:%S"),
+        "delay": 0,
     }
 
     # validate http get
@@ -138,6 +142,8 @@ def validate(proxy_host, proxy_port, my_ip=None):
         else:
             result["http_get"] = True
             result["anoy"] = http_get_status
+            result["delay"] = max( (datetime.datetime.now() - datetime_now).total_seconds(), result["delay"])
+            datetime_now = datetime.datetime.now()
 
     # validate https get
     https_get = construct_https_get(proxy_host, proxy_port)
@@ -148,6 +154,8 @@ def validate(proxy_host, proxy_port, my_ip=None):
         else:
             result["https_get"] = True
             result["anoy"] = https_get_status
+            result["delay"] = max( (datetime.datetime.now() - datetime_now).total_seconds(), result["delay"])
+            datetime_now = datetime.datetime.now()
 
     # validate http post
     http_post = construct_http_post(proxy_host, proxy_port)
@@ -158,6 +166,8 @@ def validate(proxy_host, proxy_port, my_ip=None):
         else:
             result["http_post"] = True
             result["anoy"] = http_post_status
+            result["delay"] = max( (datetime.datetime.now() - datetime_now).total_seconds(), result["delay"])
+            datetime_now = datetime.datetime.now()
 
     # validate https post
     https_post = construct_https_post(proxy_host, proxy_port)
@@ -168,6 +178,7 @@ def validate(proxy_host, proxy_port, my_ip=None):
         else:
             result["https_post"] = True
             result["anoy"] = https_post_status
+            result["delay"] = max( (datetime.datetime.now() - datetime_now).total_seconds(), result["delay"])
 
     if result["http_get"] or result["https_get"] or result["http_post"] or result["https_post"]:
         raise gen.Return(result)

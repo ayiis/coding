@@ -20,11 +20,6 @@ from proxy_crawler import (
 tmp_collection_name = "tmp_validate_db"
 target_collection_name = "available_pool"
 request_timeout = 30
-my_ip = "59.42.106.170"
-
-
-def get_my_ip():
-    return my_ip
 
 
 @gen.coroutine
@@ -70,7 +65,7 @@ def do(mongodb, collection_name, data_source):
         for item in ip_results:
             for port in item["port"]:
                 yield_list.append(
-                    default_validate_site.validate(item["_id"], int(port), get_my_ip())
+                    default_validate_site.validate(item["_id"], int(port), tool.get_my_ip())
                 )
 
         yield_list = yield yield_list
@@ -108,7 +103,7 @@ def do2(mongodb, collection_name, data_source):
 
     for item in ip_results:
         yield_list.append(
-            default_validate_site.validate(item[0], int(item[1]), get_my_ip())
+            default_validate_site.validate(item[0], int(item[1]), tool.get_my_ip())
         )
 
     datetime_now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")

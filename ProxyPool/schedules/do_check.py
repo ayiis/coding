@@ -57,9 +57,10 @@ class DoCheck(object):
             find_req = {}
 
         return self.setting["collection"].find(find_req, {
-            "proxy_host" : 1,
-            "proxy_port" : 1,
-            "data_source" : 1,
+            "proxy_host": 1,
+            "proxy_port": 1,
+            "data_source": 1,
+            "fail_time": 1,
         }).sort([("_id", 1)]).limit(self.setting["page_size"]).to_list(length=None)
 
 

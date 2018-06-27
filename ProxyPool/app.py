@@ -79,8 +79,8 @@ def test():
 # 启动api
 if __name__ == "__main__":
     try:
-        test()
-        # main()
+        # test()
+        main()
         tornado.ioloop.IOLoop.current().start()
     except Exception as e:
         logging.my_exc("start fail.")

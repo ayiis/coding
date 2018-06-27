@@ -36,8 +36,20 @@ def do_check_fail(proxy_item, ip_data):
     else:
         setting["count_remove"] += 1
 
-        # remove forever
-        yield setting["db"][config.setting["fail_pool"]["db_name"]].remove({"_id": proxy_item["_id"]})
+        if proxy_item.get("fail_time", 0) >= 3:
+            # remove forever
+            yield setting["db"][config.setting["fail_pool"]["db_name"]].remove({"_id": proxy_item["_id"]})
+        else:
+            # another chance
+            yield setting["db"][config.setting["fail_pool"]["db_name"]].update(
+                {
+                    "_id": proxy_item["_id"]
+                }, {
+                    "$inc": {
+                        "fail_time": 1
+                    }
+                }
+            )
 
 
 @tornado.gen.coroutine

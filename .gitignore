@@ -4,4 +4,4 @@ __pycache__/
 *$py.class
 *.zip
 ./ProxyPool/config.pro.py
-./ProxyPool/logs/*
+./ProxyPool/logs/

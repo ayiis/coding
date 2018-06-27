@@ -1,4 +1,11 @@
 
+Special settings by Header
+{
+    "ay-auth": "username:timestamp:token"
+    "ay-conf": "default"
+}
+
+
 proxy_source_site = {
     "https://duckduckgo.com",
     "https://tisocks.net/",

@@ -38,6 +38,10 @@ import config as schedules_config
 @tornado.gen.coroutine
 def init(db):
 
+    yield check_fail.do(db)
+
+    raise Exception("done")
+
     # check proxies pool periodically
     tornado_timmer.set_interval(schedules_config.setting["available_pool"]["period"], lambda: check_available.do(db))
     tornado_timmer.set_interval(schedules_config.setting["unavailable_pool"]["period"], lambda: check_unavailable.do(db))

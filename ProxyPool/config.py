@@ -1,6 +1,10 @@
 #!/usr/bin/env python2.7
 # -*- coding: utf-8 -*-
 
+SYSTEM = {
+    "listening_port": 8888,
+}
+
 MONGODB = {
     "DB_PROXY_POOL": {
         "HOST": "192.168.206.128",

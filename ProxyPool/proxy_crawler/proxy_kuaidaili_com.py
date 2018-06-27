@@ -14,13 +14,9 @@ from urllib import urlencode
 from common import tool, tornado_timmer
 import validate
 
-target_page_struct_list = [
-    ["https://www.kuaidaili.com/free/inha/%s/", 1],  # 国内高匿代理
-    ["https://www.kuaidaili.com/free/intr/%s/", 1],  # 国内普通代理
-]
-
-collection_name = "www.kuaidaili.com.ip_date_raw"
-data_source = "www.kuaidaili.com"
+target_page_struct_list = config.crawler_setting["proxy.kuaidaili.com"]["target_page_struct_list"]
+collection_name = config.crawler_setting["proxy.kuaidaili.com"]["collection_name"]
+data_source = config.crawler_setting["proxy.kuaidaili.com"]["data_source"]
 
 
 @gen.coroutine
@@ -31,7 +27,7 @@ def crawler_page_html(page_url, retry=True):
         "method": "GET",
         "headers": {
             "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
-            "accept-encoding": "gzip, deflate, br",
+            "accept-encoding": "gzip, deflate",
             "accept-language": "zh-CN,zh;q=0.9,en;q=0.8",
             "cache-control": "max-age=0",
             "upgrade-insecure-requests": "1",
@@ -77,7 +73,7 @@ def convert_ip_list_format(ip_list):
     for item in ip_list:
         try:
             retult_list.append({
-                "proxy_ip": item[0],
+                "proxy_host": item[0],
                 "proxy_port": float(item[1]),
                 "proxy_username": None,
                 "proxy_password": None,
@@ -109,13 +105,22 @@ def convert_ip_list_format(ip_list):
 
 @gen.coroutine
 def save_to_db(mongodb, ip_data):
-    insert_result = yield mongodb[collection_name].insert(ip_data)
 
-    print "insert_result len:", len(insert_result)
+    try:
+        insert_result = yield mongodb[collection_name].insert(ip_data)
+    except Exception, e:
+        print traceback.format_exc()
+    else:
+        print "insert_result len:", len(insert_result)
 
 
 @gen.coroutine
 def do(mongodb):
+
+    yield mongodb[collection_name].aggregate([{
+        "$out": "%s_bak" % collection_name
+    }]).to_list(length=None)
+    yield mongodb[collection_name].remove({})
 
     for target_page_base in target_page_struct_list:
 
@@ -134,14 +139,17 @@ def do(mongodb):
 
         print "end_page is:", end_page
 
-        if end_page > 100:
-            end_page = 100
+        if end_page > target_page_base[2]:
+            end_page = target_page_base[2]
 
+        yield tornado_timmer.sleep(1)
         for page in range(start_page +1, end_page +1):
             page_url = construct_page_url_string(target_page_base[0], page)
             print "working page:", page_url
             page_html = yield crawler_page_html(page_url, True)
             if not page_html:
+                print "no page_html:", page_url
+                yield tornado_timmer.sleep(1)
                 continue
             page_html = etree.HTML(page_html)
 
@@ -154,13 +162,3 @@ def do(mongodb):
 
     ## 验证代理ip是否有效
     yield validate.do(mongodb, collection_name, data_source)
-
-
-@gen.coroutine
-def test(mongodb):
-    try:
-        yield do(mongodb)
-    except Exception as e:
-        print traceback.format_exc()
-
-    ioloop.IOLoop.current().stop()

@@ -26,88 +26,96 @@ __all__ = ['ProxyHandler', 'run_proxy']
 
 class ProxyHandler(tornado.web.RequestHandler):
     SUPPORTED_METHODS = ['GET', 'POST', 'CONNECT']
+    ERROR_STATUS_CODE = 305 # FAIL TO BUILD CONNECTION
+
+    def initialize(self):
+        self.proxy_item = None
 
     def compute_etag(self):
         return None # disable tornado Etag
 
     @tornado.gen.coroutine
-    def get_proxy(self):
+    def set_new_proxy(self):
         try:
-            proxy_item = yield proxy_manager.GetProxy("default").get_a_proxy()
+            self.proxy_item = yield proxy_manager.GetProxy("default").get_a_proxy()
         except Exception, e:
             print traceback.format_exc()
-            tornado.gen.Return( None )
-
-        raise tornado.gen.Return( proxy_item )
 
     @tornado.gen.coroutine
     def construct_request(self):
-        proxy = yield self.get_proxy()
-        if proxy:
-            logger.debug('Forward request via upstream proxy %s', proxy)
-            print "using:", proxy
-            raise tornado.gen.Return([ tool.http_request({
+
+        yield self.set_new_proxy()
+
+        if self.proxy_item:
+            logger.debug('Forward request via upstream proxy %s', self.proxy_item)
+            # print "using:", self.proxy_item
+
+            # Changing the `X-Forwarded-For`, works for some cases
+            if self.proxy_item["anoy"] != True:
+                self.request.headers["Via"] = "None"
+                self.request.headers["X-Forwarded-For"] = self.proxy_item['proxy_host']
+
+            raise tornado.gen.Return( tool.http_request({
                 "url": self.request.uri,
                 "method": self.request.method,
                 "headers": self.request.headers,
                 "body": self.request.body or None,
-                "proxy_host": proxy['proxy_host'],
-                "proxy_port": proxy['proxy_port'],
-                "request_timeout": 10,
+                "proxy_host": self.proxy_item['proxy_host'],
+                "proxy_port": self.proxy_item['proxy_port'],
+                "request_timeout": 15,
                 "follow_redirects": False,
                 "allow_nonstandard_methods": True
-            }), proxy] )
+            }) )
         else:
-            self.set_status(500)
+            self.set_status(self.ERROR_STATUS_CODE)
             self.finish("Proxy server error:\n No available proxy.")
-            raise tornado.gen.Return([None, None])
+
+            raise tornado.gen.Return(None)
 
     @tornado.gen.coroutine
     def fetch_request(self, retry):
-        request, proxy_item = yield self.construct_request()
+        request = yield self.construct_request()
         if request:
             response = yield request
             # print "response:", response
-            if ( response.error and not isinstance(response.error, tornado.httpclient.HTTPError) ) or response.code in (599, 502):
+            if ( response.error and not isinstance(response.error, tornado.httpclient.HTTPError) ) or response.code >= 500:
                 if retry > 0:
-                    print "Retry next proxy."
-                    yield proxy_manager.GetProxy("default").disable_a_proxy(proxy_item)
+                    print "Warning: try next proxy."
+                    yield proxy_manager.GetProxy("default").disable_a_proxy(self.proxy_item)
                     yield self.fetch_request(retry - 1)
                     raise tornado.gen.Return( None )
                 else:
-                    self.set_status(500)
-                    self.finish('Internal server error:\n' + str(response.error))
+                    yield proxy_manager.GetProxy("default").disable_a_proxy(self.proxy_item)
+                    self.set_status(self.ERROR_STATUS_CODE)
+                    self.finish("Internal server error:\n" + str(response.error))
             else:
                 self.set_status(response.code, response.reason)
                 self._headers = tornado.httputil.HTTPHeaders() # clear tornado default header
 
                 for header, v in response.headers.get_all():
-                    if header not in ('Content-Length', 'Transfer-Encoding', 'Content-Encoding', 'Connection'):
-                        self.add_header(header, v) # some header appear multiple times, eg 'Set-Cookie'
+                    if header not in ("Content-Length", "Transfer-Encoding", "Content-Encoding", "Connection"):
+                        self.add_header(header, v) # some header appear multiple times, eg "Set-Cookie"
 
                 if response.body:
-                    self.set_header('Content-Length', len(response.body))
+                    self.set_header("Content-Length", len(response.body))
                     self.finish(response.body)
                 else:
                     self.finish()
 
     @tornado.web.asynchronous
+    @tornado.gen.coroutine
     def get(self):
-        logger.debug('Handle %s request to %s', self.request.method, self.request.uri)
+        logger.debug("Handle %s request to %s", self.request.method, self.request.uri)
+
+        # print "self.request.headers:", self.request.headers
+        if "Proxy-Connection" in self.request.headers:
+            del self.request.headers["Proxy-Connection"]
+
         try:
-            # print "self.request.headers:", self.request.headers
-            if 'Proxy-Connection' in self.request.headers:
-                del self.request.headers['Proxy-Connection']
-
-            self.fetch_request(retry=1)
-
-        except tornado.httpclient.HTTPError as e:
-            if hasattr(e, 'response') and e.response:
-                handle_response(e.response)
-            else:
-                self.set_status(500)
-                self.write('Internal server error:\n' + str(e))
-                self.finish()
+            yield self.fetch_request(retry=1)
+        except Exception, e:
+            print traceback.format_exc()
+            self.finish("Unexpected Error: %s" % e)
 
     @tornado.web.asynchronous
     def post(self):
@@ -151,11 +159,11 @@ class ProxyHandler(tornado.web.RequestHandler):
                 first_line = data.splitlines()[0]
                 http_v, status, text = first_line.split(None, 2)
                 if int(status) == 200:
-                    logger.debug('Connected to upstream proxy %s', proxy)
+                    logger.debug('Connected to upstream proxy %s', self.proxy_item)
                     start_tunnel()
                     return
 
-            self.set_status(500)
+            self.set_status(self.ERROR_STATUS_CODE)
             self.finish()
 
         def start_proxy_tunnel():
@@ -167,9 +175,9 @@ class ProxyHandler(tornado.web.RequestHandler):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM, 0)
         upstream = tornado.iostream.IOStream(s)
 
-        proxy = yield self.get_proxy()
-        if proxy:
-            upstream.connect((proxy['proxy_host'], proxy['proxy_port']), start_proxy_tunnel)
+        yield self.set_new_proxy()
+        if self.proxy_item:
+            upstream.connect((self.proxy_item['proxy_host'], self.proxy_item['proxy_port']), start_proxy_tunnel)
         else:
             upstream.connect((host, int(port)), start_tunnel)
 

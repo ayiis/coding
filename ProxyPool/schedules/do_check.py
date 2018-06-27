@@ -31,7 +31,7 @@ class DoCheck(object):
             "callback_func": arg["callback_func"],
             "timeout": arg["timeout"],
 
-            "db": arg["db"],
+            "collection": arg["collection"],
             "ObjectId": None,
             "page_size": arg["page_size"],
             "my_ip": tool.get_my_ip(),
@@ -52,7 +52,7 @@ class DoCheck(object):
         else:
             find_req = {}
 
-        return self.setting["db"].find(find_req, {
+        return self.setting["collection"].find(find_req, {
             "proxy_host" : 1,
             "proxy_port" : 1,
             "data_source" : 1,
@@ -80,7 +80,7 @@ class DoCheck(object):
         if not self.setting["stop"]:
             raise tornado.gen.Return(self.setting["data_list"].pop())
         else:
-            # will be call many time
+            # will be call many times
             pool.stop()
             raise tornado.gen.Return(None)
 
@@ -96,7 +96,7 @@ class DoCheck(object):
 
             self.setting["done"] = self.setting["done"] + 1
 
-            # print {x:self.setting[x] for x in self.setting if x not in ("data_list", "db") }
+            # print {x:self.setting[x] for x in self.setting if x not in ("data_list", "collection") }
 
         # exit pool
         if self.setting["stop"] and self.setting["done"] == self.setting["total"]:
@@ -123,4 +123,5 @@ class DoCheck(object):
 
         yield pool.start_pool()
 
-        print {x:self.setting[x] for x in self.setting if x not in ("data_list", "db", "generate_next_hold") }
+        # print for debug
+        print { x:self.setting[x] for x in self.setting if x not in ("data_list", "collection", "generate_next_hold") }

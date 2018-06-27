@@ -25,7 +25,10 @@ def do_check_fail(proxy_item, ip_data):
         # move to available_pool
         yield [
             setting["db"][config.setting["fail_pool"]["db_name"]].remove({"_id": proxy_item["_id"]}),
-            setting["db"][config.setting["available_pool"]["db_name"]].insert(ip_data),
+            setting["db"][config.setting["available_pool"]["db_name"]].update({
+                "proxy_host": proxy_item["proxy_host"],
+                "proxy_port": proxy_item["proxy_port"],
+            }, ip_data, upsert=True, multi=False)
         ]
     else:
         setting["count_remove"] += 1
@@ -37,10 +40,12 @@ def do_check_fail(proxy_item, ip_data):
 @tornado.gen.coroutine
 def do(db):
 
+    print "Job check_fail start!", datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
     setting["db"] = db
 
     job_check = do_check.DoCheck({
-        "db": setting["db"][config.setting["fail_pool"]["db_name"]],
+        "collection": setting["db"][config.setting["fail_pool"]["db_name"]],
         "callback_func": do_check_fail,
         "page_size":config.setting["fail_pool"]["count"] * 2,
         "timeout":config.setting["fail_pool"]["timeout"],

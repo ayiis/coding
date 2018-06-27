@@ -11,49 +11,42 @@ import datetime
 
 URL = "http://www.ayiis.me/ip"
 HTTPS_URL = "https://www.ayiis.me/ip"
-REQUEST_TIMEOUT = 30
 
-def construct_http_get(proxy_host, proxy_port):
+def construct_http_get(proxy_host, proxy_port, timeout):
     return tool.http_request({
         "url": URL,
         "method": "GET",
         "headers": {
-            # "Via": "none",
-            # "X-Forwarded-For": proxy_host,
             "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
             "user-agent": "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3282.119 Safari/537.36",
         },
         "body": None,
         "proxy_host": proxy_host,
         "proxy_port": proxy_port,
-        "request_timeout": REQUEST_TIMEOUT,
+        "request_timeout": timeout,
     })
 
 
-def construct_https_get(proxy_host, proxy_port):
+def construct_https_get(proxy_host, proxy_port, timeout):
     return tool.http_request({
         "url": HTTPS_URL,
         "method": "GET",
         "headers": {
-            # "Via": "none",
-            # "X-Forwarded-For": proxy_host,
             "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
             "user-agent": "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3282.119 Safari/537.36",
         },
         "body": None,
         "proxy_host": proxy_host,
         "proxy_port": proxy_port,
-        "request_timeout": REQUEST_TIMEOUT,
+        "request_timeout": timeout,
     })
 
 
-def construct_http_post(proxy_host, proxy_port):
+def construct_http_post(proxy_host, proxy_port, timeout):
     return tool.http_request({
         "url": URL,
         "method": "POST",
         "headers": {
-            # "Via": "none",
-            # "X-Forwarded-For": proxy_host,
             "Content-Length": "17",
             "Content-Type": "application/x-www-form-urlencoded",
             "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
@@ -62,16 +55,14 @@ def construct_http_post(proxy_host, proxy_port):
         "body": "username=bogeming",
         "proxy_host": proxy_host,
         "proxy_port": proxy_port,
-        "request_timeout": REQUEST_TIMEOUT,
+        "request_timeout": timeout,
     })
 
-def construct_https_post(proxy_host, proxy_port):
+def construct_https_post(proxy_host, proxy_port, timeout):
     return tool.http_request({
         "url": HTTPS_URL,
         "method": "POST",
         "headers": {
-            # "Via": "none",
-            # "X-Forwarded-For": proxy_host,
             "Content-Length": "17",
             "Content-Type": "application/x-www-form-urlencoded",
             "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
@@ -80,9 +71,8 @@ def construct_https_post(proxy_host, proxy_port):
         "body": "username=bogeming",
         "proxy_host": proxy_host,
         "proxy_port": proxy_port,
-        "request_timeout": REQUEST_TIMEOUT,
+        "request_timeout": timeout,
     })
-
 
 
 @gen.coroutine
@@ -118,7 +108,7 @@ def do_validate(req, my_ip):
 
 
 @gen.coroutine
-def validate(proxy_host, proxy_port, my_ip=None):
+def validate(proxy_host, proxy_port, my_ip=None, timeout=30):
 
     datetime_now = datetime.datetime.now()
     result = {
@@ -134,7 +124,7 @@ def validate(proxy_host, proxy_port, my_ip=None):
     }
 
     # validate http get
-    http_get = construct_http_get(proxy_host, proxy_port)
+    http_get = construct_http_get(proxy_host, proxy_port, timeout)
     if http_get:
         http_get_status = yield do_validate(http_get, my_ip)
         if http_get_status < 0:
@@ -143,10 +133,11 @@ def validate(proxy_host, proxy_port, my_ip=None):
             result["http_get"] = True
             result["anoy"] = http_get_status
             result["delay"] = max( (datetime.datetime.now() - datetime_now).total_seconds(), result["delay"])
-            datetime_now = datetime.datetime.now()
+
+    datetime_now = datetime.datetime.now()
 
     # validate https get
-    https_get = construct_https_get(proxy_host, proxy_port)
+    https_get = construct_https_get(proxy_host, proxy_port, timeout)
     if https_get and result["http_get"]:
         https_get_status = yield do_validate(https_get, my_ip)
         if https_get_status < 0:
@@ -155,10 +146,11 @@ def validate(proxy_host, proxy_port, my_ip=None):
             result["https_get"] = True
             result["anoy"] = https_get_status
             result["delay"] = max( (datetime.datetime.now() - datetime_now).total_seconds(), result["delay"])
-            datetime_now = datetime.datetime.now()
+
+    datetime_now = datetime.datetime.now()
 
     # validate http post
-    http_post = construct_http_post(proxy_host, proxy_port)
+    http_post = construct_http_post(proxy_host, proxy_port, timeout)
     if http_post:
         http_post_status = yield do_validate(http_post, my_ip)
         if http_post_status < 0:
@@ -167,10 +159,11 @@ def validate(proxy_host, proxy_port, my_ip=None):
             result["http_post"] = True
             result["anoy"] = http_post_status
             result["delay"] = max( (datetime.datetime.now() - datetime_now).total_seconds(), result["delay"])
-            datetime_now = datetime.datetime.now()
+
+    datetime_now = datetime.datetime.now()
 
     # validate https post
-    https_post = construct_https_post(proxy_host, proxy_port)
+    https_post = construct_https_post(proxy_host, proxy_port, timeout)
     if https_post and result["http_post"]:
         https_post_status = yield do_validate(https_post, my_ip)
         if https_post_status < 0:

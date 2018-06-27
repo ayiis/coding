@@ -16,8 +16,6 @@ def construct_http_get(proxy_host, proxy_port, timeout):
         "url": URL,
         "method": "GET",
         "headers": {
-            # "Via": "none",
-            # "X-Forwarded-For": proxy_host,
             "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
             "user-agent": "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3282.119 Safari/537.36",
         },
@@ -37,8 +35,6 @@ def construct_http_post(proxy_host, proxy_port, timeout):
         "url": URL,
         "method": "POST",
         "headers": {
-            # "Via": "none",
-            # "X-Forwarded-For": proxy_host,
             "Content-Length": "17",
             "Content-Type": "application/x-www-form-urlencoded",
             "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
@@ -53,7 +49,6 @@ def construct_http_post(proxy_host, proxy_port, timeout):
 
 def construct_https_post(proxy_host, proxy_port, timeout):
     return None
-
 
 
 @gen.coroutine
@@ -114,7 +109,8 @@ def validate(proxy_host, proxy_port, my_ip=None, timeout=30):
             result["http_get"] = True
             result["anoy"] = http_get_status
             result["delay"] = max( (datetime.datetime.now() - datetime_now).total_seconds(), result["delay"])
-            datetime_now = datetime.datetime.now()
+
+    datetime_now = datetime.datetime.now()
 
     # validate https get
     https_get = construct_https_get(proxy_host, proxy_port, timeout)
@@ -126,7 +122,8 @@ def validate(proxy_host, proxy_port, my_ip=None, timeout=30):
             result["https_get"] = True
             result["anoy"] = https_get_status
             result["delay"] = max( (datetime.datetime.now() - datetime_now).total_seconds(), result["delay"])
-            datetime_now = datetime.datetime.now()
+
+    datetime_now = datetime.datetime.now()
 
     # validate http post
     http_post = construct_http_post(proxy_host, proxy_port, timeout)
@@ -138,7 +135,8 @@ def validate(proxy_host, proxy_port, my_ip=None, timeout=30):
             result["http_post"] = True
             result["anoy"] = http_post_status
             result["delay"] = max( (datetime.datetime.now() - datetime_now).total_seconds(), result["delay"])
-            datetime_now = datetime.datetime.now()
+
+    datetime_now = datetime.datetime.now()
 
     # validate https post
     https_post = construct_https_post(proxy_host, proxy_port, timeout)

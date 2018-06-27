@@ -14,29 +14,22 @@ import tornado.web
 import tornado.httpclient
 import tornado.httputil
 
-
 ProxyList = {}
 
 
 def GetProxy(name):
-    return ProxyList[name]
+    return ProxyList.get(name) or None
 
 
 class ProxyManager(object):
 
 
     def __init__(self, arg):
-
-        print "arg:", arg
-
-        if arg.get("name", "default") in ProxyList:
-            return ProxyList[ arg.get("name", "default") ]
-
         super(ProxyManager, self).__init__()
-        self.arg = arg
         self.setting = {
             "proxy_list": None,
             "ObjectId": None,
+            "anoy": arg.get("anoy") == True,
             "cache_size": arg.get("cache_size") or 100,
             "collection": arg["collection"],
             "unavailable_collection": arg["unavailable_collection"],
@@ -49,30 +42,41 @@ class ProxyManager(object):
 
         if self.setting["ObjectId"]:
             find_req = {
-                "anoy": True,
+                "anoy": self.setting["anoy"],
                 "_id": {
                     "$gt": self.setting["ObjectId"]
                 }
             }
         else:
             find_req = {
-                "anoy": True,
+                "anoy": self.setting["anoy"],
             }
-
-        print self.setting["collection"]
-        print find_req
 
         return self.setting["collection"].find(find_req, {
             "proxy_host": 1,
             "proxy_port": 1,
+            "anoy": 1,
             "data_source": 1,
         }).sort([("_id", 1)]).limit(self.setting["cache_size"]).to_list(length=None)
 
 
     @tornado.gen.coroutine
     def get_a_proxy(self):
+
         if not self.setting["proxy_list"]:
-            self.setting["proxy_list"] = yield self.grep_proxy_from_db()
+            try:
+                self.setting["proxy_list"] = yield self.grep_proxy_from_db()
+            except Exception, e:
+                print traceback.format_exc()
+
+            # come to an end of loop, start form the beginning again
+            if len(self.setting["proxy_list"]) != self.setting["cache_size"]:
+
+                print "Warning: obtained %s new available proxies, less than expected %d." % (len(self.setting["proxy_list"]), self.setting["cache_size"])
+
+                self.setting["ObjectId"] = None
+                if not self.setting["proxy_list"]:
+                    self.setting["proxy_list"] = yield self.grep_proxy_from_db()
 
         if not self.setting["proxy_list"]:
             raise Exception("No available proxy..")
@@ -86,5 +90,8 @@ class ProxyManager(object):
         # move to unavailable_pool
         yield [
             self.setting["collection"].remove({"_id": proxy_item["_id"]}),
-            self.setting["unavailable_collection"].insert(proxy_item),
+            self.setting["unavailable_collection"].update({
+                "proxy_host": proxy_item["proxy_host"],
+                "proxy_port": proxy_item["proxy_port"],
+            }, { x:proxy_item[x] for x in proxy_item if x != "_id" }, upsert=True, multi=False)
         ]

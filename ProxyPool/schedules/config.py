@@ -7,7 +7,7 @@ setting = {
         "db_name": "available_pool",
         "count": 100,    # 每次验证多少个IP
         "timeout": 15,    # 超时
-        "period": 60 * 15,    # 检验周期 15 minutes
+        "period": 60 * 30,    # 检验周期 30 minutes
     },
 
     "unavailable_pool": {
@@ -25,4 +25,3 @@ setting = {
     },
 
 }
-

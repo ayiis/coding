@@ -31,17 +31,22 @@ def do_check_available(proxy_item, ip_data):
         # move to unavailable_pool
         yield [
             setting["db"][config.setting["available_pool"]["db_name"]].remove({"_id": proxy_item["_id"]}),
-            setting["db"][config.setting["unavailable_pool"]["db_name"]].insert(proxy_item),
+            setting["db"][config.setting["unavailable_pool"]["db_name"]].update({
+                "proxy_host": proxy_item["proxy_host"],
+                "proxy_port": proxy_item["proxy_port"],
+            }, { x:proxy_item[x] for x in proxy_item if x != "_id" }, upsert=True, multi=False)
         ]
 
 
 @tornado.gen.coroutine
 def do(db):
 
+    print "Job check_available start!", datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
     setting["db"] = db
 
     job_check = do_check.DoCheck({
-        "db": setting["db"][config.setting["available_pool"]["db_name"]],
+        "collection": setting["db"][config.setting["available_pool"]["db_name"]],
         "callback_func": do_check_available,
         "page_size":config.setting["available_pool"]["count"] * 2,
         "timeout":config.setting["available_pool"]["timeout"],

@@ -9,20 +9,19 @@ proxy_source_site = {
     https://hide.me/en/proxy
 
 
-    "https://leakedforums.com/threads/socks-proxy-list-06-08-2018-by-tisocks-net.2067/",
     "https://proxy.coderbusy.com/",
-    "https://proxy.horocn.com/",
-
     http://www.ip3366.net/free/?page=2
+    "https://leakedforums.com/threads/socks-proxy-list-06-08-2018-by-tisocks-net.2067/",
+    https://www.us-proxy.org/
+    https://free-proxy-list.net/
+
+    # OCR REQUIRED
     https://proxy.horocn.com/free-proxy.html
     https://proxy.horocn.com/api/proxies?order_id=Q2801603964049822446&num=10&format=text&line_separator=win
 
     http://cn-proxy.com/
     http://cn-proxy.com/archives/218
 
-    https://www.us-proxy.org/
-    https://free-proxy-list.net/
-    https://free-proxy-list.net/anonymous-proxy.html
     http://www.gatherproxy.com/proxylist/country/?c=Singapore
     https://www.proxynova.com/proxy-server-list/country-sg/
     https://hidemy.name/en/proxy-list/

@@ -14,25 +14,20 @@ from urllib import urlencode
 from common import tool, tornado_timmer
 import validate
 
-target_page_struct_list = [
-    ["http://www.89ip.cn/tqdl.html?num=300&address=&kill_address=&port=&kill_port=&isp=&#%s", 1, 1],  # FROM http://www.89ip.cn/ti.html
-]
-
-collection_name = "www.89ip.cn.ip_date_raw"
-data_source = "www.89ip.cn"
+target_page_struct_list = config.crawler_setting["proxy.89ip.cn"]["target_page_struct_list"]
+collection_name = config.crawler_setting["proxy.89ip.cn"]["collection_name"]
+data_source = config.crawler_setting["proxy.89ip.cn"]["data_source"]
 
 
 @gen.coroutine
 def crawler_page_html(page_url, retry=True):
-
-    raise gen.Return( open("test.html", "r").read() ) # DEBUG
 
     req_data = {
         "url": page_url,
         "method": "GET",
         "headers": {
             "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
-            "accept-encoding": "gzip, deflate, br",
+            "accept-encoding": "gzip, deflate",
             "accept-language": "zh-CN,zh;q=0.9,en;q=0.8",
             "cache-control": "max-age=0",
             "upgrade-insecure-requests": "1",
@@ -68,7 +63,7 @@ def convert_ip_list_format(ip_list):
         item = item.split(":")
         try:
             retult_list.append({
-                "proxy_ip": item[0],
+                "proxy_host": item[0],
                 "proxy_port": float(item[1]),
                 "proxy_username": None,
                 "proxy_password": None,
@@ -96,13 +91,22 @@ def convert_ip_list_format(ip_list):
 
 @gen.coroutine
 def save_to_db(mongodb, ip_data):
-    insert_result = yield mongodb[collection_name].insert(ip_data)
 
-    print "insert_result len:", len(insert_result)
+    try:
+        insert_result = yield mongodb[collection_name].insert(ip_data)
+    except Exception, e:
+        print traceback.format_exc()
+    else:
+        print "insert_result len:", len(insert_result)
 
 
 @gen.coroutine
 def do(mongodb):
+
+    yield mongodb[collection_name].aggregate([{
+        "$out": "%s_bak" % collection_name
+    }]).to_list(length=None)
+    yield mongodb[collection_name].remove({})
 
     for target_page_base in target_page_struct_list:
 
@@ -115,15 +119,5 @@ def do(mongodb):
         ip_data = convert_ip_list_format(ip_list)
         yield save_to_db(mongodb, ip_data)
 
-    ## 验证代理ip是否有效
-    # yield validate.do(mongodb, collection_name, data_source)
-
-
-@gen.coroutine
-def test(mongodb):
-    try:
-        yield do(mongodb)
-    except Exception as e:
-        print traceback.format_exc()
-
-    ioloop.IOLoop.current().stop()
+    # 验证代理ip是否有效
+    yield validate.do(mongodb, collection_name, data_source)

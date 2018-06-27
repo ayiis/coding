@@ -8,6 +8,9 @@ import datetime
 import config
 import do_check
 
+from common import my_logger
+logging = my_logger.Logger("schedules.check_fail.py", False, True, True)
+
 setting = {
     "db": None,
     "count_remove": 0,
@@ -28,7 +31,7 @@ def do_check_fail(proxy_item, ip_data):
             setting["db"][config.setting["available_pool"]["db_name"]].update({
                 "proxy_host": proxy_item["proxy_host"],
                 "proxy_port": proxy_item["proxy_port"],
-            }, ip_data, upsert=True, multi=False)
+            }, { x:ip_data[x] for x in ip_data if x != "_id" }, upsert=True, multi=False)
         ]
     else:
         setting["count_remove"] += 1
@@ -40,7 +43,7 @@ def do_check_fail(proxy_item, ip_data):
 @tornado.gen.coroutine
 def do(db):
 
-    print "Job check_fail start!", datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    logging.info("Job check_fail start!")
 
     setting["db"] = db
 
@@ -52,5 +55,5 @@ def do(db):
     })
     yield job_check.do()
 
-    print "Job check_fail Done!", datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    print "OUTTER DONE!", setting
+    logging.info("Job check_fail Done!")
+    logging.info(setting)

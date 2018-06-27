@@ -5,43 +5,26 @@
 import sys
 reload(sys).setdefaultencoding("utf-8")
 
-import tornado, tornado.gen, tornado.web
-from tornado.options import define, options
-import datetime, traceback, os
+import tornado
+import tornado.gen
+import tornado.web
+from tornado.options import define
+from tornado.options import options
 
-import config
 from common import my_mongodb
+from common import my_logger
+import schedules
+import config
+
 from routes import router
+from routes import proxy
+from routes import proxy_manager
 
-import logging
-logging.basicConfig(level=logging.ERROR)
-# logging.basicConfig(level=logging.DEBUG)
-logging.getLogger("tornado.application")
-
-
-@tornado.gen.coroutine
-def test_proxy_coderbusy_com():
-    from proxy_crawler import proxy_coderbusy_com
-    from proxy_crawler import validate
-    try:
-        print "START TEST"
-
-        mongodbs = yield my_mongodb.init(config.MONGODB)
-
-        yield proxy_coderbusy_com.test(mongodbs["DB_PROXY_POOL"])
-        # yield validate.test(mongodbs["DB_PROXY_POOL"], "proxy.coderbusy.com.ip_date_raw", "proxy.coderbusy.com")
-
-    except Exception, e:
-        print traceback.format_exc()
-
-    print "DONE"
+logging = my_logger.Logger("app.py", True, True, True)
 
 
 @tornado.gen.coroutine
 def main():
-    import schedules
-    from routes import proxy
-    from routes import proxy_manager
 
     try:
 
@@ -67,29 +50,37 @@ def main():
 
         tornado.web.Application([
             (r"/.*", router.DefaultRouterHandler),  # 默认处理方法，其他处理方法需在此方法之前声明
-            (r".*", proxy.ProxyHandler),     # ProxyHandler
+            (r".*", proxy.ProxyHandler),            # ProxyHandler
         ], **settings).listen(options.port)
 
     except Exception as e:
-        print traceback.format_exc()
+        logging.my_exc("start fail.")
         tornado.ioloop.IOLoop.current().stop()
     else:
-        print "[SUCCESS] listening %s" % options.port
+        logging.info("[SUCCESS] listening %s" % options.port)
+
+
+@tornado.gen.coroutine
+def test():
+    from proxy_crawler import proxy_freeproxylists_net
+    from proxy_crawler import validate
+
+    mongodbs = yield my_mongodb.init(config.MONGODB)
+
+    yield proxy_freeproxylists_net.do(mongodbs["DB_PROXY_POOL"])
+
+    # yield validate.do(mongodbs["DB_PROXY_POOL"], "proxy.freeproxylists.net.ip_date_raw", "www.freeproxylists.net")
+
+    print "DONE."
+
+    tornado.ioloop.IOLoop.current().stop()
 
 
 # 启动api
 if __name__ == "__main__":
     try:
-        # test_proxy_coderbusy_com()
-        # test_proxy_xicidaili_com()
-        # test_proxy_kuaidaili_com()
-        # test_proxy_66ip_cn()
-        # test_proxy_89ip_cn()
-        # test_proxy_ip3366_net()
-        # test_proxy_cn_proxy_com()
-        # test_proxy_us_proxy_org()
-        # test_schedules_init()
-        main()
+        test()
+        # main()
         tornado.ioloop.IOLoop.current().start()
     except Exception as e:
-        print traceback.format_exc()
+        logging.my_exc("start fail.")

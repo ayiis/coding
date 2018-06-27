@@ -3,6 +3,9 @@
 import tornado, tornado.gen
 import traceback
 
+from common import my_logger
+logging = my_logger.Logger("common.tornado_pool.py", False, True, True)
+
 
 class WorkerPool(object):
 
@@ -41,7 +44,7 @@ class WorkerPool(object):
 
         yield tornado.gen.sleep(1)
 
-        print {x:self.settings[x] for x in self.settings if x not in ("func", "stop_condition", "exit_condition") }
+        logging.debug({x:self.settings[x] for x in self.settings if x not in ("func", "stop_condition", "exit_condition") })
 
         if not self.settings["exited"]: self.debug_pring()
 
@@ -54,11 +57,11 @@ class WorkerPool(object):
         try:
             # fork target function with this
             yield self.settings["func"](self)
+
         except Exception, e:
-            print traceback.format_exc()
+            logging.my_exc("Callback fail.")
 
         self.settings["working"] -= 1
-
         self.settings["done"] += 1
 
 
@@ -66,7 +69,7 @@ class WorkerPool(object):
     def start_pool(self):
 
         # print worker status
-        # self.debug_pring()
+        self.debug_pring()
 
         # when to stop
         while not self.settings["exited"]:

@@ -22,6 +22,9 @@ from proxy_crawler import (
     validate_ayiis_me,
 )
 
+from common import my_logger
+logging = my_logger.Logger("proxy_crawler.validate.py", False, True, True)
+
 target_collection_name = "available_pool"
 
 
@@ -82,6 +85,7 @@ class DoValidate(object):
                 self.setting["ObjectId"] = self.setting["data_list"][-1]["_id"]
             else:
                 # shall be stop
+                logging.info("stop generate_next")
                 self.setting["stop"] = True
 
         if not self.setting["stop"]:
@@ -103,10 +107,11 @@ class DoValidate(object):
 
             self.setting["done"] = self.setting["done"] + 1
 
-            # print {x:self.setting[x] for x in self.setting if x not in ("data_list", "collection") }
+            logging.debug({x:self.setting[x] for x in self.setting if x in ("total", "done", "good", "ObjectId", "stop") })
 
         # exit pool
         if self.setting["stop"] and self.setting["done"] == self.setting["total"]:
+            logging.info("exiting validate")
             pool.exit()
 
 
@@ -122,8 +127,8 @@ class DoValidate(object):
 
         try:
             yield self.setting["callback_func"](proxy_item, ip_data)
-        except Exception, e:
-            print traceback.format_exc()
+        except:
+            logging.my_exc("Do callback_func failed.")
 
 
     @tornado.gen.coroutine
@@ -137,13 +142,13 @@ class DoValidate(object):
         yield pool.start_pool()
 
         # DONE - print for debug
-        print { x:self.setting[x] for x in self.setting if x not in ("data_list", "collection", "generate_next_hold") }
+        logging.info({ x:self.setting[x] for x in self.setting if x not in ("data_list", "collection", "generate_next_hold") })
 
 
 @gen.coroutine
 def do(mongodb, collection_name, data_source):
 
-    print "Job validate for %s (%s) start at %s!" % (collection_name, data_source, datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+    logging.info("Job validate for %s (%s) start." % (collection_name, data_source))
 
     @tornado.gen.coroutine
     def do_validate(proxy_item, ip_data):
@@ -195,5 +200,5 @@ def do(mongodb, collection_name, data_source):
     # drop tmp collection
     yield mongodb[tmp_collection_name].drop()
 
-    print "Job validate for %s (%s) Done at %s!" % (collection_name, data_source, datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-    print "OUTTER DONE!", job_check.setting
+    logging.info("Job validate for %s (%s) Done." % (collection_name, data_source))
+    logging.info(job_check.setting)

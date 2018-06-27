@@ -132,4 +132,21 @@ crawler_setting = {
         ],
     },
 
+    # google recaptcha V1
+    "proxy.freeproxylists.net": {
+        "enable": False,
+        "period": 60 * 30, # every 30 minutes
+        "request_timeout": 90,
+
+        "collection_name": "proxy.freeproxylists.net.ip_date_raw",
+        "data_source": "www.freeproxylists.net",
+
+        # 要翻墙
+        "gfw": True,
+
+        "target_page_struct_list": [
+            ["http://www.freeproxylists.net/zh/?page=%s", 1, 20],   # 10
+        ],
+    },
+
 }

@@ -117,6 +117,8 @@ def save_to_db(mongodb, ip_data):
 @gen.coroutine
 def do(mongodb):
 
+    print "Job proxy_xicidaili_com start at %s!" % datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
     yield mongodb[collection_name].aggregate([{
         "$out": "%s_bak" % collection_name
     }]).to_list(length=None)
@@ -160,3 +162,5 @@ def do(mongodb):
 
     ## 验证代理ip是否有效
     yield validate.do(mongodb, collection_name, data_source)
+
+    print "Job proxy_xicidaili_com done at %s!" % datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")

@@ -14,6 +14,9 @@ import tornado.web
 import tornado.httpclient
 import tornado.httputil
 
+from common import my_logger
+logging = my_logger.Logger("routes.proxy_manager.py", False, True, True)
+
 ProxyList = {}
 
 
@@ -66,20 +69,22 @@ class ProxyManager(object):
         if not self.setting["proxy_list"]:
             try:
                 self.setting["proxy_list"] = yield self.grep_proxy_from_db()
-            except Exception, e:
-                print traceback.format_exc()
+            except:
+                logging.my_exc("Find proxy_item from mongodb failed.")
+                raise Exception("Find proxy_item from mongodb failed.")
 
             # come to an end of loop, start form the beginning again
             if len(self.setting["proxy_list"]) != self.setting["cache_size"]:
 
-                print "Warning: obtained %s new available proxies, less than expected %d." % (len(self.setting["proxy_list"]), self.setting["cache_size"])
+                logging.info("Warning: obtained %s new available proxies, less than expected %d." % (len(self.setting["proxy_list"]), self.setting["cache_size"]))
 
                 self.setting["ObjectId"] = None
                 if not self.setting["proxy_list"]:
                     self.setting["proxy_list"] = yield self.grep_proxy_from_db()
 
         if not self.setting["proxy_list"]:
-            raise Exception("No available proxy..")
+            logging.error("No available proxy: proxy_list is empty.")
+            raise Exception("No available proxy.")
 
         raise tornado.gen.Return( self.setting["proxy_list"].pop() )
 

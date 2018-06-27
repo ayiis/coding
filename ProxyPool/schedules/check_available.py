@@ -8,11 +8,15 @@ import datetime
 import config
 import do_check
 
+from common import my_logger
+logging = my_logger.Logger("schedules.check_available.py", False, True, True)
+
 setting = {
     "db": None,
     "count_remove": 0,
     "count_update": 0,
 }
+
 
 @tornado.gen.coroutine
 def do_check_available(proxy_item, ip_data):
@@ -41,7 +45,7 @@ def do_check_available(proxy_item, ip_data):
 @tornado.gen.coroutine
 def do(db):
 
-    print "Job check_available start!", datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    logging.info("Job check_available start!")
 
     setting["db"] = db
 
@@ -53,5 +57,5 @@ def do(db):
     })
     yield job_check.do()
 
-    print "Job check_available Done!", datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    print "OUTTER DONE!", setting
+    logging.info("Job check_available Done!")
+    logging.info(setting)

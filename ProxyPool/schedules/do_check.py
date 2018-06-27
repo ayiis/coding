@@ -10,12 +10,16 @@ import config
 from common import (
     tool,
     tornado_pool,
+    my_logger,
 )
 
 from proxy_crawler import (
     validate_www_3322_org as default_validate_site,
     validate_ayiis_me,
 )
+
+from common import my_logger
+logging = my_logger.Logger("schedules.do_check.py", False, True, True)
 
 
 class DoCheck(object):
@@ -88,7 +92,11 @@ class DoCheck(object):
     @tornado.gen.coroutine
     def fork(self, pool):
 
-        proxy_item = yield self.generate_next(pool)
+        try:
+            proxy_item = yield self.generate_next(pool)
+        except:
+            logging.my_exc("Do generate_next proxy item failed.")
+            raise
 
         if proxy_item:
 
@@ -96,7 +104,7 @@ class DoCheck(object):
 
             self.setting["done"] = self.setting["done"] + 1
 
-            # print {x:self.setting[x] for x in self.setting if x not in ("data_list", "collection") }
+            logging.debug({x:self.setting[x] for x in self.setting if x not in ("data_list", "collection") })
 
         # exit pool
         if self.setting["stop"] and self.setting["done"] == self.setting["total"]:
@@ -106,11 +114,11 @@ class DoCheck(object):
     @tornado.gen.coroutine
     def check(self, proxy_item):
 
-        ip_data = yield default_validate_site.validate(proxy_item["proxy_host"], int(proxy_item["proxy_port"]), self.setting["my_ip"], self.setting["timeout"])
         try:
+            ip_data = yield default_validate_site.validate(proxy_item["proxy_host"], int(proxy_item["proxy_port"]), self.setting["my_ip"], self.setting["timeout"])
             yield self.setting["callback_func"](proxy_item, ip_data)
-        except Exception, e:
-            print traceback.format_exc()
+        except:
+            logging.my_exc("Do callback_func failed.")
 
 
     @tornado.gen.coroutine
@@ -123,5 +131,4 @@ class DoCheck(object):
 
         yield pool.start_pool()
 
-        # print for debug
-        print { x:self.setting[x] for x in self.setting if x not in ("data_list", "collection", "generate_next_hold") }
+        logging.info({ x:self.setting[x] for x in self.setting if x not in ("data_list", "collection", "generate_next_hold") })

@@ -3,5 +3,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 *.zip
-./ProxyPool/config.pro.py
-./ProxyPool/logs/*
+*.txt
+ProxyPool/config.pro.py
+ProxyPool/logs/*
+

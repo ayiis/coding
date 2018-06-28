@@ -12,6 +12,7 @@ from common import my_logger
 logging = my_logger.Logger("schedules.check_fail.py", False, True, True)
 
 setting = {
+    "running": False,   # when i was running, Lock me
     "db": None,
     "count_remove": 0,
     "count_update": 0,
@@ -57,6 +58,12 @@ def do(db):
 
     logging.info("Job check_fail start!")
 
+    if setting["running"] == True:
+        logging.warn("Another Job check_available still running!")
+
+    while setting["running"] == True:
+        yield tornado.gen.sleep(1)
+
     setting["db"] = db
 
     job_check = do_check.DoCheck({
@@ -65,7 +72,14 @@ def do(db):
         "page_size":config.setting["fail_pool"]["count"] * 2,
         "timeout":config.setting["fail_pool"]["timeout"],
     })
-    yield job_check.do()
+
+    try:
+        setting["running"] = True
+        yield job_check.do()
+    except:
+        logging.my_exc("Exception on check_available.")
+    finally:
+        setting["running"] = False
 
     logging.info("Job check_fail Done!")
     logging.info(setting)

@@ -48,18 +48,20 @@ def init(db):
         proxy_crawler_config = crawler_config.crawler_setting[proxy_crawler_name]
         if proxy_crawler_config["enable"]:
 
+            print "Enable crawler job:", proxy_crawler_name
+
             # run in time of day
             if proxy_crawler_config.get("time_of_day"):
                 tornado_timmer.set_clock(
                     proxy_crawler_config["time_of_day"],
-                    lambda: proxy_crawler_setting[proxy_crawler_name].do(db)
+                    lambda proxy_crawler_name=proxy_crawler_name: proxy_crawler_setting[proxy_crawler_name].do(db)
                 )
 
             # run in the period
             elif proxy_crawler_config.get("period"):
                 tornado_timmer.set_interval(
                     proxy_crawler_config["period"],
-                    lambda: proxy_crawler_setting[proxy_crawler_name].do(db)
+                    lambda proxy_crawler_name=proxy_crawler_name: proxy_crawler_setting[proxy_crawler_name].do(db)
                 )
             else:
                 print "No running plan for %s" % proxy_crawler_name

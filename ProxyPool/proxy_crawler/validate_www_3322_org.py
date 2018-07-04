@@ -1,7 +1,6 @@
 #!/usr/bin/env python2.7
 # -*- coding: utf-8 -*-
 import re
-import re
 
 import tornado
 from tornado import gen, ioloop, httpclient
@@ -9,7 +8,11 @@ from urllib import urlencode
 from common import tool, tornado_timmer
 import datetime
 
+from proxy_crawler import (
+    validate_google as default_gfw_validate_site,
+)
 URL = "http://www.3322.org/dyndns/getip"
+
 
 def construct_http_get(proxy_host, proxy_port, timeout):
     return tool.http_request({
@@ -52,24 +55,6 @@ def construct_https_post(proxy_host, proxy_port, timeout):
 
 
 @gen.coroutine
-def analyze_response(yield_list_id, yield_list):
-    yield_list_result = yield yield_list
-    for index, proxy_host in enumerate(yield_list_id):
-        response = yield_list_result[index]
-        if response.code != 200:
-            open("bad_result.json", "a").write("%s\r\n" % (proxy_host))
-            continue
-        elif response.body.strip() not in proxy_host:
-            print "200 but. %s not in %s:" % (proxy_host, response.body)
-            open("warning_result.json", "a").write("%s in %s\r\n" % (proxy_host, response.body))
-            continue
-        else:
-            print "GOOD!"
-            print "%s in %s:", proxy_host, response.body
-            open("good_result.json", "a").write("%s in %s\r\n" % (proxy_host, response.body))
-
-
-@gen.coroutine
 def do_validate(req, my_ip):
 
     http_get_response = yield req
@@ -97,6 +82,7 @@ def validate(proxy_host, proxy_port, my_ip=None, timeout=30):
         "https_post": False,
         "last_validate_datetime": datetime_now.strftime("%Y-%m-%d %H:%M:%S"),
         "delay": 0,
+        "gfw": False,
     }
 
     # validate http get
@@ -122,6 +108,9 @@ def validate(proxy_host, proxy_port, my_ip=None, timeout=30):
             result["https_get"] = True
             result["anoy"] = https_get_status
             result["delay"] = max( (datetime.datetime.now() - datetime_now).total_seconds(), result["delay"])
+
+            # If https get is available, validate gfw
+            result["gfw"] = yield default_gfw_validate_site.validate(proxy_host, proxy_port, my_ip, timeout)
 
     datetime_now = datetime.datetime.now()
 

@@ -115,7 +115,7 @@ crawler_setting = {
     },
 
     "proxy.us-proxy.org": {
-        "enable": True,
+        "enable": False,
         "period": 60 * 30, # every 30 minutes
         "request_timeout": 90,
 
@@ -123,7 +123,7 @@ crawler_setting = {
         "data_source": "www.us-proxy.org",
 
         # 要翻墙
-        # "gfw": True,
+        "gfw": True,
 
         # www.us-proxy.org == free-proxy-list.net
         "target_page_struct_list": [

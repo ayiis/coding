@@ -126,6 +126,8 @@ def http_request(req_data, **kwargs):
         proxy_port=req_data.get("proxy_port"),
         request_timeout=req_data.get("request_timeout") or 30,
         connect_timeout=req_data.get("request_timeout") or 30,
+        # validate_cert=False,
+        # allow_nonstandard_methods=True,
         **kwargs
     ), raise_error=False)
 

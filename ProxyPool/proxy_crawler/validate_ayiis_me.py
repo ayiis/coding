@@ -1,7 +1,6 @@
 #!/usr/bin/env python2.7
 # -*- coding: utf-8 -*-
 import re
-import re
 
 import tornado
 from tornado import gen, ioloop, httpclient
@@ -9,10 +8,19 @@ from urllib import urlencode
 from common import tool, tornado_timmer
 import datetime
 
-URL = "http://www.ayiis.me/ip"
-HTTPS_URL = "https://www.ayiis.me/ip"
+from proxy_crawler import (
+    validate_google as default_gfw_validate_site,
+)
+
+from common import my_logger
+logging = my_logger.Logger("proxy_crawler.validate_ayiis_me.py", False, True, True)
+
+URL = "http://wodove.com/ip"
+HTTPS_URL = "https://wodove.com/ip"
+
 
 def construct_http_get(proxy_host, proxy_port, timeout):
+
     return tool.http_request({
         "url": URL,
         "method": "GET",
@@ -76,27 +84,14 @@ def construct_https_post(proxy_host, proxy_port, timeout):
 
 
 @gen.coroutine
-def analyze_response(yield_list_id, yield_list):
-    yield_list_result = yield yield_list
-    for index, proxy_host in enumerate(yield_list_id):
-        response = yield_list_result[index]
-        if response.code != 200:
-            open("bad_result.json", "a").write("%s\r\n" % (proxy_host))
-            continue
-        elif response.body.strip() not in proxy_host:
-            print "200 but. %s not in %s:" % (proxy_host, response.body)
-            open("warning_result.json", "a").write("%s in %s\r\n" % (proxy_host, response.body))
-            continue
-        else:
-            print "GOOD!"
-            print "%s in %s:", proxy_host, response.body
-            open("good_result.json", "a").write("%s in %s\r\n" % (proxy_host, response.body))
+def do_validate(req, my_ip, proxy_host, proxy_port):
 
+    try:
+        http_get_response = yield req
+    except:
+        logging.my_exc("Requset Error on:", proxy_host, proxy_port)
+        raise gen.Return(-3)
 
-@gen.coroutine
-def do_validate(req, my_ip):
-
-    http_get_response = yield req
     if http_get_response.code != 200:
         raise gen.Return(-1)
 
@@ -121,12 +116,13 @@ def validate(proxy_host, proxy_port, my_ip=None, timeout=30):
         "https_post": False,
         "last_validate_datetime": datetime_now.strftime("%Y-%m-%d %H:%M:%S"),
         "delay": 0,
+        "gfw": False,
     }
 
     # validate http get
     http_get = construct_http_get(proxy_host, proxy_port, timeout)
     if http_get:
-        http_get_status = yield do_validate(http_get, my_ip)
+        http_get_status = yield do_validate(http_get, my_ip, proxy_host, proxy_port)
         if http_get_status < 0:
             result["http_get"] = False
         else:
@@ -139,7 +135,7 @@ def validate(proxy_host, proxy_port, my_ip=None, timeout=30):
     # validate https get
     https_get = construct_https_get(proxy_host, proxy_port, timeout)
     if https_get and result["http_get"]:
-        https_get_status = yield do_validate(https_get, my_ip)
+        https_get_status = yield do_validate(https_get, my_ip, proxy_host, proxy_port)
         if https_get_status < 0:
             result["https_get"] = False
         else:
@@ -147,12 +143,15 @@ def validate(proxy_host, proxy_port, my_ip=None, timeout=30):
             result["anoy"] = https_get_status
             result["delay"] = max( (datetime.datetime.now() - datetime_now).total_seconds(), result["delay"])
 
+            # If https get is available, validate gfw
+            result["gfw"] = yield default_gfw_validate_site.validate(proxy_host, proxy_port, my_ip, timeout)
+
     datetime_now = datetime.datetime.now()
 
     # validate http post
     http_post = construct_http_post(proxy_host, proxy_port, timeout)
     if http_post:
-        http_post_status = yield do_validate(http_post, my_ip)
+        http_post_status = yield do_validate(http_post, my_ip, proxy_host, proxy_port)
         if http_post_status < 0:
             result["http_post"] = False
         else:
@@ -165,7 +164,7 @@ def validate(proxy_host, proxy_port, my_ip=None, timeout=30):
     # validate https post
     https_post = construct_https_post(proxy_host, proxy_port, timeout)
     if https_post and result["http_post"]:
-        https_post_status = yield do_validate(https_post, my_ip)
+        https_post_status = yield do_validate(https_post, my_ip, proxy_host, proxy_port)
         if https_post_status < 0:
             result["https_post"] = False
         else:

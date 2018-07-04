@@ -134,12 +134,9 @@ def do(mongodb):
 
         ip_list = grep_page_ip_list(start_page_html)
         ip_data = convert_ip_list_format(ip_list)
-        print "ip_data:", ip_data
         yield save_to_db(mongodb, ip_data)
 
         end_page = int(grep_end_page(start_page_html))
-
-        print "end_page is:", end_page
 
         if end_page > target_page_base[2]:
             end_page = target_page_base[2]
@@ -147,10 +144,8 @@ def do(mongodb):
         yield tornado_timmer.sleep(1)
         for page in range(start_page +1, end_page +1):
             page_url = construct_page_url_string(target_page_base[0], page)
-            print "working page:", page_url
             page_html = yield crawler_page_html(page_url, True)
             if not page_html:
-                print "no page_html:", page_url
                 yield tornado_timmer.sleep(1)
                 continue
             page_html = etree.HTML(page_html)

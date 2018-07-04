@@ -14,8 +14,8 @@ from common import (
 )
 
 from proxy_crawler import (
-    validate_www_3322_org as default_validate_site,
-    validate_ayiis_me,
+    # validate_www_3322_org as default_validate_site,
+    validate_ayiis_me as default_validate_site,
 )
 
 from common import my_logger

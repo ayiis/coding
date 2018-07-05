@@ -7,7 +7,7 @@ SYSTEM = {
 
 MONGODB = {
     "DB_PROXY_POOL": {
-        "HOST": "192.168.206.128",
+        "HOST": "192.168.2.25",
         "PORT": 27017,
         "DATABASE_NAME": "my_world_star_dev",
         "USERNAME": "WORLD_STAR",

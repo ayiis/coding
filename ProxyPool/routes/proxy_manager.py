@@ -33,6 +33,7 @@ class ProxyManager(object):
             "proxy_list": None,
             "ObjectId": None,
             "anoy": arg.get("anoy") == True,
+            "gfw": arg.get("gfw") == True,
             "cache_size": arg.get("cache_size") or 100,
             "collection": arg["collection"],
             "unavailable_collection": arg["unavailable_collection"],

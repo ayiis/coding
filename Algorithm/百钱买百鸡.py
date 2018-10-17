@@ -37,7 +37,6 @@ for x in xrange(1, 100/5 + 1, 1):
             print "x, y, z:", x, y, z
 
 
-
 print """ version 3 """
 """
 结合两个条件 (x+y+z=100，5x+3y+z/3=100)，解出y，z 的枚举算法
@@ -112,6 +111,6 @@ def boofar():
             if ma == m:
                 yield x
 
+
 for x in boofar():
     print x
-

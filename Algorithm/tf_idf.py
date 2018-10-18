@@ -37,6 +37,9 @@ target_doc = [
     "用户忙，请稍后再拨。",
     "大象大象大象大象大象大象大象用户忙大象",
     "大象大象大象大象大象大象大象用户忙大象稍后大象再拨",
+    "文章中出现次数最多的词的出现次数",
+    "大象大象大象大象大象大象大象大象大象大象大象关机关机关机关机关机关机关机关机关机关机关机",
+    "大象大象大象大象大象大象大象大象大象大象大象提醒",
 ]
 
 
@@ -98,17 +101,17 @@ print "\r\nmax_appear_list:\r\n", max_appear_list
 # ###### ###### ###### ###### ###### ###### ###### ###### ###### ######
 # 3. 计算 TF-IDF
 # TF = 某个词出现的次数 / 文章中出现次数最多的词的出现次数
-# IDF = 文档总数 / 包含该词的文档数
+# IDF = log(文档总数 / 包含该词的文档数)
 tfidf_list = []
 for i, doc2word in enumerate(doc2word_list):
     maxc = max_appear_list[i]
     tfidf_list.append([])
-    for word in doc2word:
-        tf = 1.0 * doc2word[word] / maxc
+    for word in all_word:
+        tf = 1.0 * doc2word.get(word, 0) / maxc
         idf = math.log(1.0 * len(doc2word_list) / (1 + len([True for x in doc2word_list if word in x])))
         tfidf_list[-1].append(tf * idf)
 
-print "tfidf_list:"
+print "\r\ntfidf_list:"
 for item in tfidf_list:
     print item
 
@@ -116,32 +119,68 @@ for item in tfidf_list:
 # ###### ###### ###### ###### ###### ###### ###### ###### ###### ######
 # 4. 同理获取目标文档的向量
 
-target_word = []
+target_doc2word_list = []
 target_word2vector_list = []
+target_max_appear_list = []
 
 for tdoc in target_doc:
     target_word2vector_list.append([])
+    target_doc2word_list.append({})
+    maxc = 1
     for word in all_word:
-        # if word in tdoc:
-        target_word2vector_list[-1].append(tdoc.count(word))
+        if word in tdoc:
+            target_doc2word_list[-1][word] = tdoc.count(word)
+            target_word2vector_list[-1].append(tdoc.count(word))
+            maxc = max(target_word2vector_list[-1][-1], maxc)
+        else:
+            target_word2vector_list[-1].append(0)
+
+    target_max_appear_list.append(maxc)
+
+print "\r\ntarget_doc2word_list:"
+for item in target_doc2word_list:
+    print str(item).decode("string_escape")
 
 print "\r\ntarget_word2vector_list:"
 for item in target_word2vector_list:
     print item
 
+print "\r\ntarget_max_appear_list:\r\n", target_max_appear_list
 
 # ###### ###### ###### ###### ###### ###### ###### ###### ###### ######
-# 5. 计算余弦夹角值
+# 5. 计算目标文档的 TF-IDF
+# TF = 某个词出现的次数 / 文章中出现次数最多的词的出现次数
+# IDF = log(文档总数 / 包含该词的文档数)
+target_tfidf_list = []
+
+for i, tword in enumerate(target_word2vector_list):
+    target_tfidf_list.append([])
+    maxc = target_max_appear_list[i]
+    for word in all_word:
+        tf = 1.0 * target_doc2word_list[i].get(word, 0) / maxc
+        idf = math.log(1.0 * len(doc2word_list) / (1 + len([True for x in doc2word_list if word in x])))
+        target_tfidf_list[-1].append(tf * idf)
+
+print "\r\ntarget_tfidf_list:"
+for item in target_tfidf_list:
+    print item
+
+
+# ###### ###### ###### ###### ###### ###### ###### ###### ###### ######
+# 6. 计算TF-IDF的余弦夹角值
 
 target_sin = []
 
-for target_vector in target_word2vector_list:
+for target_vector in target_tfidf_list:
     flen = len(target_vector)
     target_sin.append([])
-    for doc_vector in doc2word2vector_list:
+    for doc_vector in tfidf_list:
         x = sum([target_vector[i]*doc_vector[i] for i in xrange(flen)])
-        y = math.sqrt(sum([target_vector[i] for i in xrange(flen)])) * math.sqrt(sum([doc_vector[i] for i in xrange(flen)]))
-        target_sin[-1].append(1.0 * x / y)
+        y = math.sqrt(sum([target_vector[i]*target_vector[i] for i in xrange(flen)])) * math.sqrt(sum([doc_vector[i]*doc_vector[i] for i in xrange(flen)]))
+        if y == 0:
+            target_sin[-1].append(0.0)
+        else:
+            target_sin[-1].append(1.0 * x / y)
 
 print "\r\ntarget_sin:"
 for item in target_sin:

@@ -16,6 +16,7 @@ doc_content = {
     ],
     "正忙": [
         "您好！您拨叫的用户正忙，请您稍后再拨。",
+        "您拨叫的用户正忙，请您稍后再拨。",
         "用户忙，请稍后再拨。",
         "您好！您拨叫的用户正在通话中，请稍后再拨。"
     ],
@@ -38,7 +39,7 @@ target_doc = [
     "大象大象大象大象大象大象大象用户忙大象",
     "大象大象大象大象大象大象大象用户忙大象稍后大象再拨",
     "文章中出现次数最多的词的出现次数",
-    "大象大象大象大象大象大象大象大象大象大象大象关机关机关机关机关机关机关机关机关机关机关机",
+    "大象大象大象大象大象大象大象大象大象大象大象关机",
     "大象大象大象大象大象大象大象大象大象大象大象提醒",
 ]
 
@@ -53,7 +54,7 @@ dic_main = {"拨打", "短信", "业务", "提醒", "稍后", "接听电话", "�
 # 1. 词袋模型 -> 提取分词,计算词频 + 记录所有的词
 doc2word_list = []
 doc2word_map = []
-all_word = set([])
+all_word = []
 
 for key in doc_content:
     doc_list = doc_content[key]
@@ -63,7 +64,8 @@ for key in doc_content:
         for word in dic_main:
             if word in doc:
                 doc2word_list[-1][word] = doc.count(word)
-                all_word.add(word)
+                if word not in all_word:
+                    all_word.append(word)
 
 print "\r\ndoc2word_list:"
 for item in doc2word_list:
@@ -102,13 +104,20 @@ print "\r\nmax_appear_list:\r\n", max_appear_list
 # 3. 计算 TF-IDF
 # TF = 某个词出现的次数 / 文章中出现次数最多的词的出现次数
 # IDF = log(文档总数 / 包含该词的文档数)
+#   - improve：此处【包含该词的文档数】摘除同类下的所有文章，即计算【关机】类时，不计算【关机】类下的其他文章的数量
+#   - 从而避免 类内距离 扩散到 类间距离
 tfidf_list = []
 for i, doc2word in enumerate(doc2word_list):
     maxc = max_appear_list[i]
     tfidf_list.append([])
     for word in all_word:
         tf = 1.0 * doc2word.get(word, 0) / maxc
-        idf = math.log(1.0 * len(doc2word_list) / (1 + len([True for x in doc2word_list if word in x])))
+        jlist = [j for j, x in enumerate(doc2word_list) if word in x]
+        jcount = len(jlist)
+        for j in jlist:
+            if i != j and doc2word_map[i] == doc2word_map[j]:
+                jcount -= 1
+        idf = math.log(1.0 * len(doc2word_list) / (jcount + 1))
         tfidf_list[-1].append(tf * idf)
 
 print "\r\ntfidf_list:"

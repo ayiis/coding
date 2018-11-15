@@ -6,13 +6,23 @@ import json
 import ubelt
 import datetime
 import traceback
-
+from ubelt.util_io import exists
 import requests
 
 reload(sys).setdefaultencoding("utf-8")
 
+userid_list = [
+    "46076462",
+    "108321686",
+    "77310820",
+    "73314035",
+    "8114171",
+    "46117255",
+    "96844286",
+    "89670056",
+    "52706472",
+]
 
-userid = "85488140"
 
 c_album_list_url = """https://www.ximalaya.com/revision/user/pub?page=%s&pageSize=10&keyWord=&uid=%s"""
 c_sound_list_url = """https://www.ximalaya.com/revision/play/album?albumId=%s&pageNum=%s&sort=1&pageSize=30"""
@@ -92,34 +102,40 @@ def get_albumId_list(userid, pagenum=1, result_list=None, max_try=2):
 
 
 def main():
-    albumId_list = get_albumId_list(userid)
-    if not albumId_list:
-        print "nothing is in %s" % userid
-        return
 
-    info = {
-        "anchorNickName": albumId_list[0]["anchorNickName"],
-        "anchorUid": albumId_list[0]["anchorUid"],
-    }
+    for userid in userid_list:
+        print "working on:%s" % userid
+        albumId_list = get_albumId_list(userid)
+        if not albumId_list:
+            print "nothing is in %s" % userid
+            return
 
-    print "album length is: %s" % len(albumId_list)
+        info = {
+            "anchorNickName": albumId_list[0]["anchorNickName"],
+            "anchorUid": albumId_list[0]["anchorUid"],
+        }
 
-    for item in albumId_list:
-        albumId = item["id"]
-        result_list = get_album(albumId)
+        print "album length is: %s" % len(albumId_list)
 
-        print "album %s length is: %s" % (item["title"], len(result_list))
+        for item in albumId_list:
+            albumId = item["id"]
+            result_list = get_album(albumId)
 
-        for item in result_list:
-            print "%s + %-36s %s" % (item["albumName"], item["trackName"], item["src"])
-            download_dir = "download/%s - %s/%s - %s" % (info["anchorUid"], info["anchorNickName"], albumId, item["albumName"])
-            ubelt.ensuredir(download_dir)
-            download_path = "%s/%s.%s" % (download_dir, item["trackName"], item["src"].split(".")[-1] or "m4a")
-            try:
-                download_sound(item["src"], download_path)
-            except Exception:
-                print traceback.format_exc()
-                raise
+            print "album %s length is: %s" % (item["title"], len(result_list))
+
+            for item in result_list:
+                print "%s + %-36s %s" % (item["albumName"], item["trackName"], item["src"])
+                download_dir = "download/%s - %s/%s - %s" % (info["anchorUid"], info["anchorNickName"], albumId, item["albumName"])
+                ubelt.ensuredir(download_dir)
+                download_path = "%s/%s.%s" % (download_dir, item["trackName"].replace("/", "_"), item["src"].split(".")[-1] or "m4a")
+                if exists(download_path):
+                    print "exists: %s" % download_path
+                    continue
+                try:
+                    download_sound(item["src"], download_path)
+                except Exception:
+                    print traceback.format_exc()
+                    raise
 
         #     break
         # break

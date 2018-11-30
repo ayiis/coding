@@ -84,6 +84,10 @@ def prepare_struct():
 
 def prepare_color():
 
+    from colormath.color_objects import sRGBColor, LabColor
+    from colormath.color_conversions import convert_color
+    from colormath.color_diff import delta_e_cie2000
+
     MAGIC_NUM = 2
     STEP_LENGTH = 8
 
@@ -98,9 +102,16 @@ def prepare_color():
         return (R-s)**2 + (G-s)**2 + (B-s)**2
 
     def dc(c1, c2):
-        return (c1[0]-c2[0])**2 + (c1[1]-c2[1])**2 + (c1[2]-c2[2])**2
+        color1_rgb = sRGBColor(c1[0] / 255.0, c1[1] / 255.0, c1[2] / 255.0)
+        color2_rgb = sRGBColor(c2[0] / 255.0, c2[1] / 255.0, c2[2] / 255.0)
+
+        color1_lab = convert_color(color1_rgb, LabColor)
+        color2_lab = convert_color(color2_rgb, LabColor)
+
+        return delta_e_cie2000(color1_lab, color2_lab)
 
     while 1:
+        print "n time."
         while 1:
             R, G, B = random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)
             if fc(R, G, B) > 64**2:
@@ -131,11 +142,11 @@ def prepare_color():
         dc_bad = [dc(i, background_color) for i in good_rgb]    # bigger is better
         evil_color = None
 
-        dc_good_sorted = sorted(dc_good)
+        dc_good_sorted = sorted(dc_good, reverse=True)
         dc_bad_sorted = sorted(dc_bad)
 
         for i in range(len(dc_good_sorted)):
-            if dc_good_sorted[i] == dc_bad_sorted[-i-1]:
+            if dc_good_sorted[i] != dc_bad_sorted[i]:
                 evil_color = good_rgb[dc_good.index(dc_good_sorted[i])]
                 break
 

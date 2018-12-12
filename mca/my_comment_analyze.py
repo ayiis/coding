@@ -5,7 +5,6 @@ from __future__ import absolute_import
 from __future__ import print_function
 import traceback
 import os
-import math
 import csv
 import re
 import random
@@ -78,8 +77,7 @@ def get_comment_data_html(file_path):
 
 
 def get_comment_data(file_path):
-    # return get_comment_data_html(file_path)
-    return get_comment_data_csv(file_path)
+    return get_comment_data_html(file_path)
 
 
 def chunk_stat(sent_list):
@@ -174,40 +172,26 @@ def analyze_input(user_ask):
     return result
 
 
-def do_answer(nlp_data):
+def do_answer(nlp_data, user_ask):
 
-    normal_answer_format_percent = [
+    normal_answer_format = [
         """%s%%的网友觉得%s %s""",
         """%s%%的网友给%s的评价是 %s""",
         """%s%%的网友给%s的印象是 %s""",
-        """%s%%的网友给%s的感觉是 %s""",
         """%s%%的网友认为%s %s""",
-        """%s%%的网友说%s %s""",
-    ]
-    prefix_format = ["少数", "有些", "一些", "一部分", "部分", "相当一部分", "很多", "大部分", "多数", "大多数", "非常多", "极多"]
-    normal_answer_format = [
-        """%s网友觉得%s %s""",
-        """%s网友给%s的评价是 %s""",
-        """%s网友给%s的印象是 %s""",
-        """%s网友给%s的感觉是 %s""",
-        """%s网友认为%s %s""",
-        """%s网友说%s %s""",
+        """%s%%的网友都说%s %s""",
     ]
     empty_answer_format = [
         """网友们没有对 %s 发表意见""",
-        """网友们对 %s 没有印象""",
         """网友们很少讨论 %s""",
     ]
     empty_answer = [
         """网友们似乎没有对这个话题发表意见。""",
-        """网友们似乎对这个话题没有印象。""",
         """网友们似乎很少讨论这个话题。""",
         """网友们似乎不关心这个话题。""",
-        """网友们似乎没聊过相关话题。""",
     ]
 
     try:
-        user_ask = input("What do you want to know?: ")
         user_ask_list = analyze_input(user_ask)
         # user_ask_list = "交通 环境 床".split(" ")
         # user_ask_list = "回升".split(" ")
@@ -245,11 +229,10 @@ def do_answer(nlp_data):
 
             # get all sentences that contains the `use_keyword`
             filt_seg = list(filter(lambda x: next((True for xx in x if use_keyword == xx[0]), False), nlp_data["trans_comment"]))
-            print("filt_seg:", filt_seg)
             # out: [[('酒店', 'n'), ('环境', 'n'), ('不错', 'a')], [('酒店', 'n'), ('环境', 'n'), ('不错', 'a')], [('环境', 'n'), ('不错', 'a')], ...
 
             # get the adjective word of it
-            filt_chunk = [y[0] for x in filt_seg for y in x if y[1] == "a"]   # ["a", "t"]
+            filt_chunk = [y[0] for x in filt_seg for y in x if y[1][0] in ["a"]]   # ["a", "t"]
             # out: ['不错', '不错', '不错', '好', '不错', '不错', '好', '好', '好', '不错', '不错', '不错', '奢华', '方便', '不错', ...
 
             # print("filt_chunk:", filt_chunk)
@@ -291,26 +274,15 @@ def do_answer(nlp_data):
 
             r_weights = [x[1] for x in hold_chunk[answer_keyword]]
 
-            answer_comment = random.sample(hold_chunk[answer_keyword], min(len(hold_chunk[answer_keyword]), 1))
+            answer_comment = random.sample(hold_chunk[answer_keyword], min(len(hold_chunk[answer_keyword]), 3))
             print("answer_comment:", answer_comment)
-            if not answer_comment:
-                return random.choice(empty_answer)
 
             answer_comment_text = ",".join([x[0] for x in answer_comment])
             answer_comment_weight = sum([x[1] for x in answer_comment])
             print("answer_comment_weight:", answer_comment_weight)
 
-            percent = 100 * answer_comment_weight / sum_each[answer_keyword]
             answer_format = random.choice(normal_answer_format)
-
-            percent_align = percent * len(prefix_format) / 30.0
-            p1, p2 = max(int(percent_align) - 2, 0), min(math.ceil(percent_align) + 2, len(prefix_format))
-            p1 = min(p1, p2 - 1)
-            print("p1: p2:", p1, p2)
-            print("prefix_format:", prefix_format[p1: p2])
-            prefix = random.choice(prefix_format[p1: p2])
-
-            return answer_format % (prefix, percent, answer_comment_text)
+            return answer_format % (int(100 * answer_comment_weight / sum_each[answer_keyword]), "", answer_comment_text)
             # return answer_format % (int(100 * answer_comment_weight / sum_each[answer_keyword]), answer_keyword, answer_comment_text)
 
         else:
@@ -353,23 +325,32 @@ def do_answer(nlp_data):
     return random.choice(empty_answer)
 
 
-def main():
+cache = {"nlp_data": None}
+
+
+def init():
     import my_json
 
-    # file_path = "/home/ayiis/comment_anals/w_hotel.csv"
-    # # file_path = "/home/ayiis/comment_anals/text_mamacn"
-    # nlp_data = prepare_nlp_data(file_path)
+    with open("spzp.data", "r") as rf:
+        cache["nlp_data"] = my_json.json_load(rf.read())
 
-    # with open("w.data", "w") as wf:
+
+def main():
+    import my_json
+    # file_path = "/home/ayiis/comment_anals/w_hotel_100.csv"
+    # file_path = "/home/ayiis/comment_anals/text_mamacn"
+    # nlp_data = prepare_nlp_data(file_path)
+    # with open("spzp.data", "w") as wf:
     #     wf.write(my_json.json_stringify(nlp_data))
 
-    with open("w.data", "r") as rf:
+    with open("spzp.data", "r") as rf:
         nlp_data = my_json.json_load(rf.read())
 
     print("File load complete.")
 
     while True:
-        ai_answer = do_answer(nlp_data)
+        user_ask = input("What do you want to know?: ")
+        ai_answer = do_answer(nlp_data, user_ask)
         print("ai:", ai_answer)
 
 

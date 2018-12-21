@@ -13,8 +13,8 @@ from langconv import Converter
 import jieba.posseg as pseg
 
 
-DATA_PATH = os.path.join(os.path.realpath(".."), "data")
-SCRIPT_PATH = os.path.join(os.path.realpath(".."), "src")
+# DATA_PATH = os.path.join(os.path.realpath(".."), "data")
+DATA_PATH = os.path.join(os.path.realpath("."), "data")
 
 
 class BaseNlp():
@@ -53,6 +53,11 @@ def get_comment_data_csv(file_path):
         return [tradition2simple(x[2].strip().replace("\n", ",").upper()) for i, x in enumerate(csv.reader(rf)) if i > 0]
 
 
+def get_comment_data_default(file_path):
+    with open(file_path, "r") as rf:
+        return re.split(r"\r|\n|\||\t", rf.read())
+
+
 def get_comment_data_html(file_path):
     from pathlib import Path
     all_contents = []
@@ -60,9 +65,11 @@ def get_comment_data_html(file_path):
         file_name = "%s" % path
         with open(file_name, "r") as rf:
             f_contents = []
-            contents = rf.read().split("============")
+            contents = re.split(r"\r|\n|\||\t", rf.read())
 
         for content in contents:
+            if not content:
+                continue
             content = tradition2simple(content.strip().replace("\n", ",").upper())
             if not content:
                 continue
@@ -78,8 +85,8 @@ def get_comment_data_html(file_path):
 
 
 def get_comment_data(file_path):
-    # return get_comment_data_html(file_path)
-    return get_comment_data_csv(file_path)
+    return get_comment_data_html(file_path)
+    # return get_comment_data_csv(file_path)
 
 
 def chunk_stat(sent_list):
@@ -99,15 +106,15 @@ def inner_p(str0, str1):
     return sum([float(x) * float(y) for x, y in zip(str0.split(","), str1.split(","))])
 
 
-def prepare_nlp_data(file_path):
+def prepare_nlp_data(comment_list):
 
     try:
         # build base nlp data
         base_nlp = BaseNlp()
-        comment_list = get_comment_data(file_path)
 
         # cut comment data into sentences
-        cut_list_pattern = "[%s]" % "".join(base_nlp._cut_list)
+        # cut_list_pattern =
+        cut_list_pattern = r"[%s]" % ("".join(base_nlp._cut_list).replace("", "\\")[:-1])
         cut_list = [cut_line for sent in comment_list for cut_line in re.split(cut_list_pattern, sent) if cut_line]
         # out: ['酒店不错', '很现代', '房间很时尚', '地理位置也不错', '不愧是W酒店', '夜店风格', '适合年轻人入住', '下次还会选择W酒店入住', '不错', ...
 
@@ -176,14 +183,6 @@ def analyze_input(user_ask):
 
 def do_answer(nlp_data, user_ask):
 
-    normal_answer_format_percent = [
-        """%s%%的网友觉得%s %s""",
-        """%s%%的网友给%s的评价是 %s""",
-        """%s%%的网友给%s的印象是 %s""",
-        """%s%%的网友给%s的感觉是 %s""",
-        """%s%%的网友认为%s %s""",
-        """%s%%的网友说%s %s""",
-    ]
     prefix_format = ["少数", "有些", "一些", "一部分", "部分", "相当一部分", "很多", "大部分", "多数", "大多数", "非常多", "极多"]
     normal_answer_format = [
         """%s网友觉得%s %s""",
@@ -207,7 +206,6 @@ def do_answer(nlp_data, user_ask):
     ]
 
     try:
-        # user_ask = input("What do you want to know?: ")
         user_ask_list = analyze_input(user_ask)
         # user_ask_list = "交通 环境 床".split(" ")
         # user_ask_list = "回升".split(" ")
@@ -354,33 +352,25 @@ def do_answer(nlp_data, user_ask):
     return random.choice(empty_answer)
 
 
-cache = {"nlp_data": None}
-
-
-def init():
-    import my_json
-
-    with open("spzp.data", "r") as rf:
-        cache["nlp_data"] = my_json.json_load(rf.read())
-
-
 def main():
-    import my_json
+    import pickle
 
     # file_path = "/home/ayiis/comment_anals/w_hotel.csv"
-    # # file_path = "/home/ayiis/comment_anals/text_mamacn"
-    # nlp_data = prepare_nlp_data(file_path)
+    file_path = "/home/ayiis/comment_anals/text_mamacn"
+    comment_list = get_comment_data(file_path)
+    nlp_data = prepare_nlp_data(comment_list)
 
-    # with open("w.data", "w") as wf:
-    #     wf.write(my_json.json_stringify(nlp_data))
+    with open("data/spzp.pkl", "wb") as wf:
+        pickle.dump(nlp_data, wf)
 
-    with open("w.data", "r") as rf:
-        nlp_data = my_json.json_load(rf.read())
+    with open("data/spzp.pkl", "rb") as rf:
+        nlp_data = pickle.load(rf)
 
     print("File load complete.")
 
     while True:
-        ai_answer = do_answer(nlp_data)
+        user_ask = input("What do you want to know?: ")
+        ai_answer = do_answer(nlp_data, user_ask)
         print("ai:", ai_answer)
 
 

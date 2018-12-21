@@ -1,0 +1,144 @@
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>方块猫智能客服</title>
+    <link rel="icon" href="/static/dist/images/mao.ico" type="image/x-icon" />
+    <link rel="shortcut icon" href="/static/dist/images/mao.ico" type="image/x-icon"/>
+    <style type="text/css">@import url(/static/css/chatroom.css);</style>
+</head>
+
+<body>
+    <div id="app" _v-6f58f7a2="">
+        <div class="sidebar" _v-6f58f7a2="">
+            <div class="card" _v-7021c5b7="" _v-6f58f7a2="">
+                <header _v-7021c5b7=""> <img class="avatar" width="40" height="40" _v-7021c5b7="" src="/static/dist/images/1.jpg">
+                    <p class="name" _v-7021c5b7="">coffce</p>
+                </header>
+                <footer _v-7021c5b7=""> <input class="search" type="text" placeholder="search user..." _v-7021c5b7=""> </footer>
+            </div>
+            <div class="list" _v-7e56f776="" _v-6f58f7a2="">
+                <ul _v-7e56f776="" id="itemlist" type_id=""></ul>
+            </div>
+        </div>
+        <div class="main" _v-6f58f7a2="">
+            <div class="message" _v-b412eea0="" _v-6f58f7a2="">
+                <ul _v-b412eea0="" id="wul"> </ul>
+            </div>
+            <div class="text" _v-34cd3954="" _v-6f58f7a2="">
+                <textarea placeholder="按 Enter 发送" id="msgbox"_v-34cd3954=""></textarea>
+            </div>
+            <button style="position: absolute;bottom: 10px;right: 10px;height: 27px;width: 56px;background-color: #eee;border: 1px solid #eee;border-radius: 4px;color: #666;" id="btn_send" onclick="send_message()">发送</button>
+        </div>
+    </div>
+    <div style="display:none;" id="ai_temp">
+        <li _v-b412eea0="">
+            <div class="main" _v-b412eea0=""> <img class="avatar" width="30" height="30" _v-b412eea0="" src="/static/dist/images/mao.png">
+                <div class="text" _v-b412eea0="">xxxxxx</div>
+            </div>
+        </li>
+    </div>
+    <div style="display:none;" id="user_temp">
+        <li _v-b412eea0="">
+            <div class="main self" _v-b412eea0=""> <img class="avatar" width="30" height="30" _v-b412eea0="" src="/static/dist/images/1.jpg">
+                <div class="text" _v-b412eea0="">yyyyyy</div>
+            </div>
+        </li>
+    </div>
+</body>
+<script type="text/javascript" src="/static/dist/jquery-3.3.1.min.js"></script>
+<script type="text/javascript">
+    $('#msgbox').on('keydown', function(event){
+        if (event.keyCode == 13)  {
+            send_message();
+        }
+    });
+    function send_message() {
+        var self = this;
+        var data = {
+            'type': 'spzp',
+            'text': $('#msgbox').val() || '',
+        }
+        if (!data.text){
+            return false;
+        }
+
+        $('#msgbox').val(null);
+
+        var $user_word = $($('#user_temp').html());
+        $user_word.find('.text').text(data.text);
+        $('#wul').append($user_word);
+        $('.message').scrollTop($('.message')[0].scrollHeight);
+
+        $.ajax({
+            type: 'POST',
+            url: '/staticapi/api/send_message',
+            data: JSON.stringify(data),
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+            success: function(json) {
+                if (json.code !== 200) {
+                    console.log(json.message);
+                } else {
+                    var $user_word = $($('#ai_temp').html());
+                    $user_word.find('.text').text(json.data[0]);
+                    $('#wul').append($user_word);
+                    $('.message').scrollTop($('.message')[0].scrollHeight);
+                }
+            },
+            error: function(error) {
+                return console.log(error);
+            },
+        });
+    }
+    function load_item_detail(type_id) {
+        type_id = type_id || 'spzp';
+        $.ajax({
+            type: 'POST',
+            url: '/staticapi/api/get_item_detail',
+            data: JSON.stringify({'type': type_id}),
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+            success: function(json) {
+                if (json.code !== 200) {
+                    console.log(json.message);
+                } else {
+                    $('#itemlist').attr('type_id', json.data.detail.id);
+                    var html = [];
+                    $.each(json.data.list, function(i, item) {
+                        html.push([
+                            '<li _v-7e56f776="">',
+                                '<img class="avatar" width="30" height="30" _v-7e56f776="" src="' + item.photo + '">',
+                                '<p class="name" _v-7e56f776="" type_id="' + item.id + '">' + item.name + '</p>',
+                            '</li>',
+                        ].join(''));
+                    });
+                    $('#itemlist').empty().append(html.join("\r\n"));
+                    $('#itemlist').find('>li').removeClass('active');
+                    $('#itemlist').find('>li p[type_id=' + json.data.detail.id + ']').closest('li').addClass('active');
+
+                    $('#wul').empty();
+                    $('#ai_temp').find('.main img').attr('src', json.data.detail.photo);
+                    $.each(json.data.detail.helloworld, function(i, word){
+                        var $user_word = $($('#ai_temp').html());
+                        $user_word.find('.text').text(word);
+                        $('#wul').append($user_word);
+                        $('.message').scrollTop($('.message')[0].scrollHeight);
+                    });
+                }
+            },
+            error: function(error) {
+                return console.log(error);
+            },
+        });
+    }
+    $('#itemlist').on('click', '>li', function() {
+        var item_id = $(this).find('p').attr('type_id');
+        $('#itemlist').attr('type_id', item_id)
+        load_item_detail(item_id);
+    });
+
+    load_item_detail();
+
+</script>
+</html>

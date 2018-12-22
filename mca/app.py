@@ -26,6 +26,7 @@ def init():
             "/": "static/go_chatroom.html",
             "/chat": "static/go_chatroom.html",
             "/chatroom.html": "static/go_chatroom.html",
+            "/comments.txt": "static/comments.txt",
         })
         router.add_post_url_handlers({
             "/staticapi/api/send_message": handler.send_message,
@@ -40,6 +41,7 @@ def init():
 
         tornado.web.Application([
             (r"/add_one", handler.AddOne),
+            (r"/save_new_item", handler.AddOne),
             (r"/.*", router.DefaultRouterHandler),  # 默认处理方法，其他处理方法需在此方法之前声明
             # (r".*", proxy.ProxyHandler),            # ProxyHandler
         ], **settings).listen(options.port)

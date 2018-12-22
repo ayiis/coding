@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -13,7 +14,7 @@
         <div class="sidebar" _v-6f58f7a2="">
             <div class="card" _v-7021c5b7="" _v-6f58f7a2="">
                 <header _v-7021c5b7=""> <img class="avatar" width="40" height="40" _v-7021c5b7="" src="/static/dist/images/1.jpg">
-                    <p class="name" _v-7021c5b7="">coffce</p>
+                    <p class="name" _v-7021c5b7="" id="setting" style="cursor: pointer;">点击设置</p>
                 </header>
                 <footer _v-7021c5b7=""> <input class="search" type="text" placeholder="search user..." _v-7021c5b7=""> </footer>
             </div>
@@ -21,7 +22,7 @@
                 <ul _v-7e56f776="" id="itemlist" type_id=""></ul>
             </div>
         </div>
-        <div class="main" _v-6f58f7a2="">
+        <div class="main" _v-6f58f7a2="" id="main_chat" style="display: block;">
             <div class="message" _v-b412eea0="" _v-6f58f7a2="">
                 <ul _v-b412eea0="" id="wul"> </ul>
             </div>
@@ -29,6 +30,28 @@
                 <textarea placeholder="按 Enter 发送" id="msgbox"_v-34cd3954=""></textarea>
             </div>
             <button style="position: absolute;bottom: 10px;right: 10px;height: 27px;width: 56px;background-color: #eee;border: 1px solid #eee;border-radius: 4px;color: #666;" id="btn_send" onclick="send_message()">发送</button>
+        </div>
+        <div class="main" _v-6f58f7a2="" id="main_setting" style="display: none;">
+            <div class="message" _v-b412eea0="" _v-6f58f7a2="" id="logbox" style="height: calc(100% - 240px);"> </div>
+            <div style="padding-left: 10px;">
+                <p>增加一个智能客服：上传原始评论数据，设置客服名字和问候语，点击保存</p>
+                <p>
+                    <span style="float:left;">评论数据</span>
+                    <input type="file" id="file"/>
+                    <span style="color:#999">格式请参考：
+                        <a href="/comments.txt" target="_blank">comments.txt</a>
+                    </span>
+                </p>
+                <p>
+                    <span style="float:left;">名　称　</span>
+                    <input type="text" name="name" id="text_name" style="padding: 3px 2px; width: 160px; height: 24px; border: 1px solid #a2a2a2; font-size: 16px; line-height: 24px;border-radius: 2px;" placeholder="方块猫客服">
+                </p>
+                <p>
+                    <span style="float:left;">问候语　</span>
+                    <textarea id="text_helloworld" style="padding: 3px 2px; width: 460px; height: 108px; border: 1px solid #a2a2a2; font-size: 16px; line-height: 21px; border-radius: 4px;"></textarea>
+                </p>
+            </div>
+            <button style="position: absolute;bottom: 10px;right: 10px;height: 27px;width: 56px;background-color: #007bee;border: 1px solid #007bee;border-radius: 4px;color: #fff;" id="btn_save" onclick="save_item()">保存</button>
         </div>
     </div>
     <div style="display:none;" id="ai_temp">
@@ -56,7 +79,7 @@
     function send_message() {
         var self = this;
         var data = {
-            'type': 'spzp',
+            'type': $('#itemlist').attr('type_id'),
             'text': $('#msgbox').val() || '',
         }
         if (!data.text){
@@ -68,7 +91,7 @@
         var $user_word = $($('#user_temp').html());
         $user_word.find('.text').text(data.text);
         $('#wul').append($user_word);
-        $('.message').scrollTop($('.message')[0].scrollHeight);
+        $('#main_chat').find('.message').scrollTop($('#main_chat').find('.message')[0].scrollHeight);
 
         $.ajax({
             type: 'POST',
@@ -83,7 +106,7 @@
                     var $user_word = $($('#ai_temp').html());
                     $user_word.find('.text').text(json.data[0]);
                     $('#wul').append($user_word);
-                    $('.message').scrollTop($('.message')[0].scrollHeight);
+                    $('#main_chat').find('.message').scrollTop($('#main_chat').find('.message')[0].scrollHeight);
                 }
             },
             error: function(error) {
@@ -133,12 +156,71 @@
         });
     }
     $('#itemlist').on('click', '>li', function() {
+        $('#main_chat').show();
+        $('#main_setting').hide();
         var item_id = $(this).find('p').attr('type_id');
-        $('#itemlist').attr('type_id', item_id)
+        $('#itemlist').attr('type_id', item_id);
         load_item_detail(item_id);
     });
 
     load_item_detail();
+
+</script>
+
+<script type="text/javascript">
+    var uploading = false;
+    $('#setting').on('click', function(){
+        $('#main_chat').hide();
+        $('#main_setting').show();
+    });
+
+    function save_item(){
+        if(uploading){
+            return false;
+        }
+        var form = new FormData();
+        var files = $("#file").get(0).files;
+        if ($("#files").val() != "" && $('#text_name').val() && $('#text_helloworld').val()) {
+
+            uploading = true;
+            $('#btn_save').css({'background-color': '#eee'}).text('稍等');
+            var interval = setInterval(function(){
+                $('#logbox').append('<div>请稍等，处理过程可能需要5～15秒，完成处理后将自动刷新页面。</div>');
+                $('#main_setting').find('.message').scrollTop($('#main_setting').find('.message')[0].scrollHeight);
+            }, 1000);
+            form.append('file', files[0]);
+            form.append('name', $('#text_name').val());
+            form.append('helloworld', $('#text_helloworld').val());
+
+            $.ajax({
+                url: '/save_new_item',
+                type: 'POST',
+                cache: false,
+                data: form,
+                processData: false,
+                contentType: false,
+                dataType:"json",
+                success: function(data) {
+                    uploading = false;
+                    clearInterval(interval);
+
+                    $('#btn_save').attr('disabled', null);
+                    $('#btn_save').css({'background-color': '#007bee'}).text('保存');
+                    $('#logbox').append('<div>处理成功，生成 ' + data.name + ' 成功，耗时 ' + data.duration.toFixed(2) + ' 秒。</div>');
+                    $('#main_setting').find('.message').scrollTop($('#main_setting').find('.message')[0].scrollHeight);
+                    setTimeout(function(){
+                        window.location.reload();
+                    }, 1600);
+                },
+                error: function(error){
+                    clearInterval(interval);
+                    alert('保存失败，请刷新后重试');
+                    $('#logbox').append(JSON.stringify(error));
+                }
+            });
+        }
+    }
+
 
 </script>
 </html>

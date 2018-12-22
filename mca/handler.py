@@ -8,6 +8,7 @@ import pickle
 import uuid
 import random
 import time
+import copy
 
 import tool
 import my_json
@@ -19,29 +20,30 @@ db = TinyDB("data/db.json")
 
 public_db_data = {}
 
-# db.insert({
-#     "id": "spzp",
-#     "name": "尚品宅配",
-#     "photo": "/static/dist/images/mao.png",
-#     "data_path": "data/spzp.pkl",
-#     "data": None,
-#     "helloworld": [
-#         "Hello，我是方块猫自动客服助手，我最近在网络上浏览了许多关于尚品宅配的帖子，了解了很多网友对尚品宅配的看法。",
-#         "如果您想知道网友们的评价，可以这样问我：尚品宅配怎么样？"
-#     ]
-# })
+if not db.all():
+    db.insert({
+        "id": "spzp",
+        "name": "尚品宅配",
+        "photo": "/static/dist/images/mao.png",
+        "data_path": "data/spzp.pkl",
+        "data": None,
+        "helloworld": [
+            "Hello，我是方块猫自动客服助手，我最近在网络上浏览了许多关于尚品宅配的帖子，了解了很多网友对尚品宅配的看法。",
+            "如果您想知道网友们的评价，可以这样问我：尚品宅配怎么样？"
+        ]
+    })
 
-# db.insert({
-#     "id": "w",
-#     "name": "W酒店",
-#     "photo": "/static/dist/images/3.jpg",
-#     "data_path": "data/w.pkl",
-#     "data": None,
-#     "helloworld": [
-#         "Hello，我是方块猫自动客服助手，我最近在网络上浏览了许多关于W酒店的帖子，了解了很多网友对W酒店的看法。",
-#         "如果您想知道网友们的评价，可以这样问我：W酒店怎么样？",
-#     ]
-# })
+    db.insert({
+        "id": "w",
+        "name": "W酒店",
+        "photo": "/static/dist/images/3.jpg",
+        "data_path": "data/w.pkl",
+        "data": None,
+        "helloworld": [
+            "Hello，我是方块猫自动客服助手，我最近在网络上浏览了许多关于W酒店的帖子，了解了很多网友对W酒店的看法。",
+            "如果您想知道网友们的评价，可以这样问我：W酒店怎么样？",
+        ]
+    })
 
 
 @tornado.gen.coroutine
@@ -90,10 +92,14 @@ class AddOne(tornado.web.RequestHandler):
 
     def post(self, *args, **kwargs):
 
+        assert self.get_body_argument("name", default=None, strip=True), "请填写名称"
+        assert self.get_body_argument("helloworld", default=None, strip=True), "请填写问候语"
+        assert self.request.files.get("file"), "请上传文件"
+
         upload_file_dir = "data"
         ubelt.ensuredir(upload_file_dir)
 
-        file_metas = self.request.files["csv"]
+        file_metas = self.request.files["file"]
         for meta in file_metas[:1]:
             # print("meta:", meta)
             fid = uuid.uuid4().hex
@@ -103,6 +109,7 @@ class AddOne(tornado.web.RequestHandler):
                 wf.write(meta["body"])
 
             comment_list = my_comment_analyze.get_comment_data_default(file_name)
+            print("comment_list:", comment_list)
             nlp_data = my_comment_analyze.prepare_nlp_data(comment_list)
 
             data_path = "data/%s.pkl" % fid
@@ -111,16 +118,21 @@ class AddOne(tornado.web.RequestHandler):
 
             one = {
                 "id": fid,
-                "name": self.request.get("name", fid),
+                "name": self.get_body_argument("name", default=None, strip=True) or fid,
                 "photo": "/static/avatars/avatar (%s).png" % random.randint(1, 73),
                 "data_path": data_path,
                 "data": None,
                 "date": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time())),
                 "duration": time.time() - ts,
-                "helloworld": [x.strip() for x in re.split(r"\r|\n", self.request.get("helloworld", "").split()) if x.strip()],
+                "helloworld": [x.strip() for x in re.split(r"\r|\n", self.get_body_argument("helloworld", default=None, strip=True)) if x.strip()],
             }
+
             db.insert(one)
             print("one:", one)
+
+            public_db_data[fid] = copy.deepcopy(one)
+            with open(public_db_data[fid]["data_path"], "rb") as rf:
+                public_db_data[fid]["data"] = pickle.load(rf)
 
         self.set_status(200)
         self.set_header("Content-Type", "application/json; charset=UTF-8")

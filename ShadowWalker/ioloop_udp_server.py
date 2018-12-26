@@ -5,7 +5,6 @@
 """
 import socket
 from tornado import ioloop
-from tornado.platform.auto import set_close_exec
 
 MAX_UDP_SIZE = 65507
 
@@ -23,7 +22,6 @@ class UDPServer(object):
 
     def bind_sockets(self, address, port):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-        set_close_exec(sock.fileno())
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         sock.setblocking(0)
         sock.bind((address, port))
@@ -41,26 +39,29 @@ class UDPServer(object):
     def api_callback(self, chunk, address):
         print address, chunk
 
+    def write(self, chunk, address):
+        return self.sock.sendto(chunk, address)
+
 
 #
 #   TEST
 #
-import time
+from datetime import datetime
 
 
 def do_with_chunk(chunk, address):
-    print "do_with_chunk: ", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time())), chunk, address
+    print "do_with_chunk: ", datetime.now().strftime("%Y-%m-%d %H:%M:%S"), chunk, address
 
 
-def do_print_time():
-    print time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time()))
+def do_echo(udp_server):
+    print "write len:", udp_server.write("~" * (datetime.now().second % 10), ("127.0.0.1", 8089))
 
 
 def main():
-    ioloop.PeriodicCallback(do_print_time, 1 * 1000).start()
     udp_server = UDPServer("0.0.0.0", 8089)
     udp_server.api_callback = do_with_chunk
     udp_server.start()
+    ioloop.PeriodicCallback(lambda: do_echo(udp_server), 1 * 1000).start()
 
 
 if __name__ == "__main__":

@@ -14,7 +14,7 @@ logging.getLogger("tornado.application")
 
 def make_app():
 
-    from handlers import TemplateHandler, main
+    from handlers import StaticHandler, TemplateHandler, ApiHandler, main
     from build import build
 
     build("templates_jade", "templates")
@@ -28,12 +28,14 @@ def make_app():
     app = tornado.web.Application([
         (r"/main", main.MainHandler),
 
-        # tornado use mimetypes.guess_type to obtain Content-Type so you should name them properly
-        (r"/css/(.*)", tornado.web.StaticFileHandler, {"path": "static/css"}),
-        (r"/js/(.*)", tornado.web.StaticFileHandler, {"path": "static/js"}),
-        (r"/img/(.*)", tornado.web.StaticFileHandler, {"path": "static/img"}),
-
         # (.*) will pass the request PATH into the handler's get/post function
+        # tornado use mimetypes.guess_type to obtain Content-Type so you should name them properly
+        (r"/css/(.*)", StaticHandler, {"path": "static/css"}),
+        (r"/js/(.*)", StaticHandler, {"path": "static/js"}),
+        (r"/img/(.*)", StaticHandler, {"path": "static/img"}),
+
+        (r"/api/", ApiHandler),
+
         # {"root": "templates"} will pass into the handler's initialize function
         (r"/(.*)", TemplateHandler, {"root": "templates", "default_filename": "index"}),
     ], **settings)

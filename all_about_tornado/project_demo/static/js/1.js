@@ -1,1 +1,1 @@
-1.js
+window.undefined = window.undefined;

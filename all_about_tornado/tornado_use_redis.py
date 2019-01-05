@@ -6,7 +6,7 @@
     但如果tornado里的redis的包被DROP了，会卡死整个ioloop（超过半小时）
 """
 import redis
-from rediscluster import StrictRedisCluster
+# from rediscluster import StrictRedisCluster
 
 key_prefix = "WORLD_START_PLATFORM_"
 rc = None
@@ -14,7 +14,7 @@ rc = None
 
 def init(HOST, PORT, PASSWD, DB):
     global rc
-    pool = redis.ConnectionPool(host=HOST, port=PORT, db=DB, password=PASSWD, socket_connect_timeout=0.1, socket_timeout=0.1, parser_class=redis.connection.HiredisParser)
+    pool = redis.ConnectionPool(host=HOST, port=PORT, db=DB, socket_connect_timeout=0.1, socket_timeout=0.1)
     rc = redis.Redis(connection_pool=pool)
 
 
@@ -185,7 +185,8 @@ def do():
 
 if __name__ == "__main__":
     try:
-        init("192.168.28.202", 6379, "worldstar001", 3)
+        # init("192.168.28.202", 6379, "worldstar001", 3)
+        init("127.0.0.1", 6379, None, 3)
         # init_cluster()
         main()
         main2()

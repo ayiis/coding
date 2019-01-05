@@ -46,6 +46,7 @@ class BaseHandler(tornado.web.RequestHandler):
         return absolute_path
 
 
+# class StaticHandler(tornado.web.StaticFileHandler):
 class StaticHandler(BaseHandler, tornado.web.StaticFileHandler):
     pass
 
@@ -56,11 +57,11 @@ class TemplateHandler(BaseHandler):
         self.root = root
         self.default_filename = default_filename
 
-    def get(self, path):
+    def get(self):
         """
             Render request to the file in self.root
         """
-        self.path = path
+        self.path = self.request.path
         self.absolute_path = self.validate_absolute_path(self.root, self.path)
         self.render(self.absolute_path, data=None, error=None)
 
@@ -89,10 +90,14 @@ class ApiHandler(BaseHandler):
         handler = self._url_handlers.get(self.request.path)
         if handler is None:
             raise tornado.web.HTTPError(404, reason=None)
-        elif re.match(r"^application/json[;]?(\s*charset=UTF-8)?$", self.request.headers.get("Content-Type"), re.I) is None:
+        elif re.match(r"^application/json[;]?(\s*charset=UTF-8)?$", self.request.headers.get("Content-Type", ""), re.I) is None:
             raise tornado.web.HTTPError(400, reason="`Content-Type` Must be `application/json; charset=UTF-8`")
         else:
-            request_data["body"] = json.loads(self.request.body)
+            try:
+                request_data["body"] = json.loads(self.request.body)
+            except Exception:
+                print(traceback.format_exc())
+                raise tornado.web.HTTPError(400, reason="request json format invalid")
 
         return request_data, handler
 

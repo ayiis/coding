@@ -5,10 +5,9 @@ site = "http://127.0.0.1:8888"
 
 def print_result(response):
 
-    print "url:", response.url
-    print "status_code:", response.status_code, "length:", len(response.text)
-    print "text:", response.text
-    print
+    print("[%s] %s\t%s" % (response.status_code, len(response.text), response.url))
+    print("text:", response.text)
+    print()
 
 
 def test_root():
@@ -89,6 +88,18 @@ def test_post_200_ok():
     print_result(response)
 
 
+def test_post_get_sequence_name():
+    import json
+    response = requests.post(
+        "%s/api/get_sequence_name" % site,
+        headers={
+            "Content-Type": "application/json; charset=UTF-8",
+        },
+        data=json.dumps({"greeting": "by test"})
+    )
+    print_result(response)
+
+
 def test_post_500_ok():
     import json
     response = requests.post(
@@ -118,4 +129,6 @@ if __name__ == "__main__":
     test_post_200_bad_heaeder()
     test_post_200_invalid_json()
     test_post_200_ok()
+    test_post_get_sequence_name()
+
     test_post_500_ok()

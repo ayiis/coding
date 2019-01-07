@@ -3,6 +3,7 @@
 
 import tornado.web
 import tornado.gen
+from common.mongodb import DBS
 
 
 class MainHandler(tornado.web.RequestHandler):
@@ -17,6 +18,12 @@ class MainHandler(tornado.web.RequestHandler):
 def do_return_ok(handler, req_data):
     req_data["answer"] = "by server"
     raise tornado.gen.Return({"receive": req_data, "ok": True})
+
+
+@tornado.gen.coroutine
+def do_return_sequence_name(handler, req_data):
+    sequence_name = yield DBS["db_test"].get_next_sequence("sequence_counters")
+    raise tornado.gen.Return({"sequence_name": sequence_name})
 
 
 @tornado.gen.coroutine

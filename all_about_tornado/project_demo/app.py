@@ -8,18 +8,25 @@
 """
 import tornado.ioloop
 import tornado.web
+import tornado.gen
 
 import logging
 logging.basicConfig(level=logging.DEBUG)
 logging.getLogger("tornado.application")
 
 
+@tornado.gen.coroutine
 def make_app():
 
     from handlers import StaticHandler, TemplateHandler, ApiHandler, main
     from build import build
 
     build("templates_jade", "templates")
+
+    from common import mongodb
+    from conf import config
+
+    yield mongodb.init(config.MONGODB)
 
     settings = {
         "template_path": "templates",
@@ -30,6 +37,7 @@ def make_app():
     ApiHandler.update_url_handlers({
         "/api/200": main.do_return_ok,
         "/api/500": main.do_return_error,
+        "/api/get_sequence_name": main.do_return_sequence_name,
     })
 
     app = tornado.web.Application([
@@ -47,8 +55,8 @@ def make_app():
         # {"root": "templates"} will pass into the handler's initialize function
         (r"/.*", TemplateHandler, {"root": "templates", "default_filename": "index"}),
     ], **settings)
-    app.listen(8888)
-    print("listening 8888")
+    app.listen(config.SYSTEM["listening_port"])
+    print("listening %s" % config.SYSTEM["listening_port"])
 
 
 if __name__ == "__main__":

@@ -1,2 +1,0 @@
-(utt.save (utt.synth (Utterance Text "n n n e e e e e e n n n e e e e e e e e n n n a a b b 1 1 1 1 1." )) "data/prompt-utt/arctic_1.utt")
-(utt.save (utt.synth (Utterance Text "n n n e e e e e e n n n e e e e e e e e n n n a a b b 2 2 2 2 2." )) "data/prompt-utt/arctic_2.utt")

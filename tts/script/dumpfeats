@@ -1,5 +1,4 @@
 #!/bin/sh
-"true" ; exec script/festival --script $0 $*
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;-*-mode:scheme-*-
 ;;                                                                       ;;
 ;;                Centre for Speech Technology Research                  ;;

@@ -1,16 +1,11 @@
 # coding: utf-8
 """Evaluation script for GAN-based text-to-speech synthesis.
 
-usage: evaluation_vc.py [options] <acoustic_checkpoint> <duration_checkpoint> \
-    <data_dir> <labels_dir> <outputs_dir>
-
 options:
     --fs=<fs>                   Sampling frequency [default: 16000].
     --disable-duraton-gen       Disable duration generation.
     --post-filter               Apply Merlin's post filter to spectral features.
-    -h, --help                  Show this help message and exit.
 """
-from docopt import docopt
 import numpy as np
 
 import torch
@@ -20,7 +15,6 @@ from scipy.io import wavfile
 import pyworld
 import pysptk
 
-import sys
 from os.path import join
 
 from nnmnkwii import preprocessing as P
@@ -64,12 +58,9 @@ def gen_parameters(y_predicted, Y_mean, Y_std, mge_training=True):
         bap = paramgen.mlpg(bap, np.ones(bap.shape[-1]), windows)
 
         # When we use MGE training, denormalization should be done after MLPG.
-        mgc = P.inv_scale(mgc, Y_mean[ty][:mgc_dim // len(windows)],
-                          Y_std[ty][:mgc_dim // len(windows)])
-        lf0 = P.inv_scale(lf0, Y_mean[ty][lf0_start_idx:lf0_start_idx + lf0_dim // len(windows)],
-                          Y_std[ty][lf0_start_idx:lf0_start_idx + lf0_dim // len(windows)])
-        bap = P.inv_scale(bap, Y_mean[ty][bap_start_idx:bap_start_idx + bap_dim // len(windows)],
-                          Y_std[ty][bap_start_idx:bap_start_idx + bap_dim // len(windows)])
+        mgc = P.inv_scale(mgc, Y_mean[ty][:mgc_dim // len(windows)], Y_std[ty][:mgc_dim // len(windows)])
+        lf0 = P.inv_scale(lf0, Y_mean[ty][lf0_start_idx:lf0_start_idx + lf0_dim // len(windows)], Y_std[ty][lf0_start_idx:lf0_start_idx + lf0_dim // len(windows)])
+        bap = P.inv_scale(bap, Y_mean[ty][bap_start_idx:bap_start_idx + bap_dim // len(windows)], Y_std[ty][bap_start_idx:bap_start_idx + bap_dim // len(windows)])
         vuv = P.inv_scale(vuv, Y_mean[ty][vuv_start_idx], Y_std[ty][vuv_start_idx])
     else:
         # Denormalization first
@@ -108,13 +99,14 @@ def gen_waveform(y_predicted, Y_mean, Y_std, post_filter=False, coef=1.4,
     f0[vuv < 0.5] = 0
     f0[np.nonzero(f0)] = np.exp(f0[np.nonzero(f0)])
 
-    generated_waveform = pyworld.synthesize(f0.flatten().astype(np.float64),
-                                            spectrogram.astype(np.float64),
-                                            aperiodicity.astype(np.float64),
-                                            fs, frame_period)
+    generated_waveform = pyworld.synthesize(
+        f0.flatten().astype(np.float64),
+        spectrogram.astype(np.float64),
+        aperiodicity.astype(np.float64),
+        fs, frame_period
+    )
     # Convert range to int16
-    generated_waveform = generated_waveform / \
-        np.max(np.abs(generated_waveform)) * 32767
+    generated_waveform = generated_waveform / np.max(np.abs(generated_waveform)) * 32767
 
     # return features as well to compare natural/genearted later
     return generated_waveform, mgc, lf0, vuv, bap
@@ -137,13 +129,17 @@ def gen_duration(label_path, duration_model, X_min, X_max, Y_mean, Y_std):
         hts_labels,
         binary_dict, continuous_dict,
         add_frame_features=hp_duration.add_frame_features,
-        subphone_features=hp_duration.subphone_features).astype(np.float32)
+        subphone_features=hp_duration.subphone_features
+    ).astype(np.float32)
 
     # Apply normali--post-filterzation
     ty = "duration"
     duration_linguistic_features = P.minmax_scale(
         duration_linguistic_features,
-        X_min[ty], X_max[ty], feature_range=(0.01, 0.99))
+        X_min[ty],
+        X_max[ty],
+        feature_range=(0.01, 0.99)
+    )
 
     # Apply models
     duration_model.eval()
@@ -189,9 +185,11 @@ def tts_from_label(models, label_path, X_min, X_max, Y_mean, Y_std,
     # Linguistic features
     linguistic_features = fe.linguistic_features(
         duration_modified_hts_labels,
-        binary_dict, continuous_dict,
+        binary_dict,
+        continuous_dict,
         add_frame_features=hp_acoustic.add_frame_features,
-        subphone_features=hp_acoustic.subphone_features)
+        subphone_features=hp_acoustic.subphone_features
+    )
     # Trim silences
     indices = duration_modified_hts_labels.silence_frame_indices()
     linguistic_features = np.delete(linguistic_features, indices, axis=0)
@@ -199,7 +197,11 @@ def tts_from_label(models, label_path, X_min, X_max, Y_mean, Y_std,
     # Apply normalization
     ty = "acoustic"
     linguistic_features = P.minmax_scale(
-        linguistic_features, X_min[ty], X_max[ty], feature_range=(0.01, 0.99))
+        linguistic_features,
+        X_min[ty],
+        X_max[ty],
+        feature_range=(0.01, 0.99)
+    )
 
     # Predict acoustic features
     acoustic_model.eval()
@@ -211,8 +213,7 @@ def tts_from_label(models, label_path, X_min, X_max, Y_mean, Y_std,
     acoustic_predicted = acoustic_model(x, [xl]).data.cpu().numpy()
     acoustic_predicted = acoustic_predicted.reshape(-1, acoustic_predicted.shape[-1])
     # q.d()
-    return gen_waveform(acoustic_predicted, Y_mean, Y_std, post_filter,
-                        coef=coef, fs=fs, mge_training=mge_training)
+    return gen_waveform(acoustic_predicted, Y_mean, Y_std, post_filter, coef=coef, fs=fs, mge_training=mge_training)
 
 
 def load_checkpoint(model, optimizer, checkpoint_path):
@@ -223,10 +224,7 @@ def load_checkpoint(model, optimizer, checkpoint_path):
         optimizer.load_state_dict(checkpoint["optimizer"])
 
 
-def init():
-    acoustic_checkpoint = "./model/checkpoint_epoch50_Generator.pth"
-    duration_checkpoint = "./model/checkpoint_epoch100_Generator.pth"
-    data_dir = "./cmu_arctic_tts_order59"
+def init(acoustic_checkpoint, duration_checkpoint, data_dir):
     post_filter = False
     disable_duration_gen = False
     fs = 16000
@@ -266,7 +264,8 @@ def init():
         waveform, mgc, lf0, vuv, bap = tts_from_label(
             models, label_path, X_min, X_max, Y_mean, Y_std,
             apply_duration_model=not disable_duration_gen,
-            post_filter=post_filter, fs=fs)
+            post_filter=post_filter, fs=fs
+        )
         wavfile.write(dst_path, fs, waveform.astype(np.int16))
 
     return do_tts

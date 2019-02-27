@@ -57,11 +57,11 @@ class TemplateHandler(BaseHandler):
         self.root = root
         self.default_filename = default_filename
 
-    def get(self):
+    def get(self, path):
         """
             Render request to the file in self.root
         """
-        self.path = self.request.path
+        self.path = path
         self.absolute_path = self.validate_absolute_path(self.root, self.path)
         self.render(self.absolute_path, data=None, error=None)
 

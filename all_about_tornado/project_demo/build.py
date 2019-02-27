@@ -5,6 +5,7 @@
     https://github.com/pugjs/pug
     https://github.com/syrusakbary/pyjade
 """
+import os
 import codecs
 from pyjade.utils import process
 from pathlib import Path
@@ -19,6 +20,11 @@ def convert_file(input_file, output_file):
 
 
 def build(source_path="templates_jade", target_path="templates", recursive=True):
+
+    if not Path(target_path).exists():
+        os.makedirs(target_path)
+    elif not Path(target_path).is_dir():
+        raise Exception("%s is not a dir!" % target_path)
 
     for path in Path(source_path).glob("*"):
         path_string = "%s" % path

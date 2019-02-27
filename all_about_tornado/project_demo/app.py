@@ -53,7 +53,7 @@ def make_app():
         (r"/api/.*", ApiHandler),
 
         # {"root": "templates"} will pass into the handler's initialize function
-        (r"/.*", TemplateHandler, {"root": "templates", "default_filename": "index"}),
+        (r"/(.*)", TemplateHandler, {"root": "templates", "default_filename": "index"}),
     ], **settings)
     app.listen(config.SYSTEM["listening_port"])
     print("listening %s" % config.SYSTEM["listening_port"])

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>文字处理工具演示</title>
+</head>
+<body>
+    <div>
+        请输入页面网址：
+        <input type="text" name="url" id="url" value="https://tech.sina.com.cn/i/2019-04-29/doc-ihvhiqax5802337.shtml" style="width:500px">
+        <input type="button" name="btn_start" id="btn_start" value="解析">
+    </div>
+    <div>
+        <p>
+            <span>文章标题：</span>
+            <span id="raw_title"></span>
+        </p>
+        <div>
+            <pre id="raw_text" style="height:400px;width:500px;background-color: #eee;display: inline-block;word-break: break-all;word-wrap: break-word;white-space: pre-wrap;overflow: auto;">为提高演示效率，只解析前500字
+            </pre>
+            <pre id="text_recognize" style="height:400px;width:500px;background-color: #eee;display: inline-block;word-break: break-all;word-wrap: break-word;white-space: pre-wrap;overflow: auto;">此处展示实体识别结果
+            </pre>
+        </div>
+        <div>
+            <pre id="text_cut" style="height:400px;width:1000px;background-color: #eee;display: inline-block;word-break: break-all;word-wrap: break-word;white-space: pre-wrap;overflow: auto;">此处展示分词结果
+            </pre>
+        </div>
+    </div>
+    <script src="/static/jquery-3.4.0.js" type="text/javascript"></script>
+    <script src="/static/md5.min.js" type="text/javascript"></script>
+    <script src="/static/mine.js" type="text/javascript"></script>
+</body>
+</html>

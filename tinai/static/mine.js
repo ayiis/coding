@@ -72,7 +72,7 @@
                             syntax_list[sep[2]] = syntax_list[sep[2]] || self.hashStringToColor(sep[2]);
                             temp_text += '<span style="color:' + syntax_list[sep[2]] + '">' + sep[3] + '</span>';
                         }
-                        temp_text += text.substring(last_point);
+                        temp_text += text.substring(last_point - 1);
                         temp_text += '<br><br><br>使用词典：《通用词典》<br>染色：';
                         for(var key in syntax_list) {
                             temp_text += ' <span style="color:' + syntax_list[key] + '">' + key + '</span> ';

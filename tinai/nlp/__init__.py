@@ -1,6 +1,9 @@
 """
     https://github.com/hankcs/pyhanlp/tree/master/tests/demos
     https://github.com/rockyzhengwu/FoolNLTK
+    pip install foolnltk
+    pip install pyhanlp
+
 """
 import q
 import fool

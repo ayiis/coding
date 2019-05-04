@@ -3,6 +3,8 @@
 # - author: ayiis@2019/05/01
 """
 Thanks for the great job of newspaper and readability.
+readability: pip install readability-lxml
+newspaper: pip3 install newspaper3k
 """
 # import q
 from readability import Document

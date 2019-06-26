@@ -61,7 +61,7 @@ class TemplateHandler(BaseHandler):
         """
             Render request to the file in self.root
         """
-        self.path = path
+        self.path = path or self.default_filename
         self.absolute_path = self.validate_absolute_path(self.root, self.path)
         self.render(self.absolute_path, data=None, error=None)
 

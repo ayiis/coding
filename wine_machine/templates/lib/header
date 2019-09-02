@@ -1,0 +1,33 @@
+<header class="navbar navbar-gitlab navbar-gitlab-new"><a href="#content-body" tabindex="1" class="sr-only gl-accessibility">Skip to content</a>
+  <div class="container-fluid">
+    <div class="header-content">
+      <div class="title-container">
+        <h1 class="title"><a id="logo" title="Dashboard" href="/">
+            <svg width="24" height="24" class="tanuki-logo">
+              <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="/css/icons.svg#tanuki-logo"></use>
+            </svg><span class="logo-text hidden-xs">
+              <svg>
+                <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="/css/icons.svg#gitlab-logo"></use>
+              </svg></span></a>
+        </h1>
+      </div>
+      <div class="navbar-collapse collapse">
+        <ul class="nav navbar-nav">
+          <li class="user-counter"><a id="signout" href="##" class="shortcuts-todos">
+              <svg class="s16">
+                <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="/css/icons.svg#todo-done"></use>
+              </svg>SIGN OUT</a>
+          </li>
+        </ul>
+      </div>
+      <button type="button" class="navbar-toggle hidden-sm hidden-md hidden-lg"><span class="sr-only">Toggle navigation</span>
+        <svg class="s12 more-icon js-navbar-toggle-right">
+          <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="/css/icons.svg#more"></use>
+        </svg>
+        <svg class="s12 close-icon js-navbar-toggle-left">
+          <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="/css/icons.svg#close"></use>
+        </svg>
+      </button>
+    </div>
+  </div>
+</header>

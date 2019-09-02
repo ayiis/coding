@@ -1,0 +1,81 @@
+doctype html
+html
+    head
+        meta(charset='UTF-8')
+        style(type='text/css').
+            @import url("/css/gitlab.css");
+        title 任务详情
+    body.ui_blue(data-group='', data-page='profiles:accounts:show', data-project='')
+        | {% include './lib/header'%}
+        .page-with-new-sidebar.page-with-sidebar
+            | {% include './lib/nav-sidebar'%}
+            .content-wrapper.page-with-new-nav
+                .mobile-overlay
+                .alert-wrapper
+                    nav.breadcrumbs.container-fluid.container-limited(role='navigation')
+                        .breadcrumbs-container
+                            button.toggle-mobile-nav(name='button', type='button')
+                                span.sr-only Open sidebar
+                                i.fa.fa-bars(aria-hidden='true', data-hidden='true')
+                            .breadcrumbs-links.js-title-container
+                                ul.list-unstyled.breadcrumbs-list.js-breadcrumbs-list
+                                    li
+                                        a(href='/account') Index
+                                        svg.s8.breadcrumbs-list-angle
+                                            use(xmlns:xlink='http://www.w3.org/1999/xlink', xlink:href='/css/icons.svg#angle-right')
+                                    li
+                                        h2.breadcrumbs-sub-title aytest
+                    .flash-container.flash-container-page
+                .container-fluid.container-limited.limit-container-width
+                    #content-body.content
+                        form.prepend-top-default.js-quick-submit(role='form', enctype='multipart/form-data', action='##', accept-charset='UTF-8', method='post')
+                            .row
+                              .col-lg-4.profile-settings-sidebar
+                                .checkbox-icon-inline-wrapper
+                                  #exectype.checkbox
+                                    label
+                                      input(type='radio', name='exectype', value='shell', checked)
+                                      | Shell
+                                    label
+                                      input(type='radio', name='exectype', value='python')
+                                      | Python
+                                    label
+                                      input(type='radio', name='exectype', value='mongodb')
+                                      | MongoDB
+                                    br
+                              .col-lg-8
+                                input#code.form-control(type='text', value='pwd', name='code')
+                            .row
+                                .col-lg-12
+                                    pre#res_content.col-xs-12(style='height:600px')
+        | {% include './lib/bottom_script'%}
+        script.
+          $('#code').on('keydown', function(event){
+              if (event.keyCode == 13) {
+                  aysubmit();
+                  return event.preventDefault();
+              }
+          });
+          function aysubmit() {
+            var req_data = {
+                'exectype': $('#exectype').find(':checked').val(),
+                'code': $('#code').val(),
+            };
+            $.ajax({
+                type: 'POST',
+                contentType: 'application/json; charset=utf-8',
+                url: '/api/aytest',
+                data: JSON.stringify(req_data),
+                dataType: 'json',
+                success: function(res_data) {
+                    if (res_data.code == 200) {
+                        $('#res_content').empty().text(res_data.data);
+                    } else {
+                      $('#res_content').empty().text(res_data.desc);
+                    }
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            });
+          }

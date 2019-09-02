@@ -1,0 +1,29 @@
+doctype html
+html
+    head
+        meta(charset='UTF-8')
+        style(type='text/css').
+            @import url("/css/gitlab.css");
+        title 日志
+    body.ui_blue(data-group='', data-page='profiles:accounts:show', data-project='')
+        | {% include './lib/header'%}
+        .page-with-new-sidebar.page-with-sidebar
+            | {% include './lib/nav-sidebar'%}
+            .content-wrapper.page-with-new-nav
+                .mobile-overlay
+                .alert-wrapper
+                    nav.breadcrumbs.container-fluid.container-limited(role='navigation')
+                        .breadcrumbs-container
+                            button.toggle-mobile-nav(name='button', type='button')
+                                span.sr-only Open sidebar
+                                i.fa.fa-bars(aria-hidden='true', data-hidden='true')
+                            .breadcrumbs-links.js-title-container
+                                ul.list-unstyled.breadcrumbs-list.js-breadcrumbs-list
+                                    li
+                                        a(href='/account') Index
+                                        svg.s8.breadcrumbs-list-angle
+                                            use(xmlns:xlink='http://www.w3.org/1999/xlink', xlink:href='/css/icons.svg#angle-right')
+                                    li
+                                        h2.breadcrumbs-sub-title 日志
+                    .flash-container.flash-container-page
+        | {% include './lib/bottom_script'%}

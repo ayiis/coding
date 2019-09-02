@@ -1,0 +1,57 @@
+doctype html
+html
+    head
+        meta(charset='UTF-8')
+        style(type='text/css').
+            @import url("/css/gitlab.css");
+        title 任务创建
+    body.ui_blue(data-group='', data-page='profiles:accounts:show', data-project='')
+        | {% include './lib/header'%}
+        .page-with-new-sidebar.page-with-sidebar
+            | {% include './lib/nav-sidebar'%}
+            .content-wrapper.page-with-new-nav
+                .mobile-overlay
+                .alert-wrapper
+                    nav.breadcrumbs.container-fluid.container-limited(role='navigation')
+                        .breadcrumbs-container
+                            button.toggle-mobile-nav(name='button', type='button')
+                                span.sr-only Open sidebar
+                                i.fa.fa-bars(aria-hidden='true', data-hidden='true')
+                            .breadcrumbs-links.js-title-container
+                                ul.list-unstyled.breadcrumbs-list.js-breadcrumbs-list
+                                    li
+                                        a(href='/account') Index
+                                        svg.s8.breadcrumbs-list-angle
+                                            use(xmlns:xlink='http://www.w3.org/1999/xlink', xlink:href='/css/icons.svg#angle-right')
+                                    li
+                                        h2.breadcrumbs-sub-title 任务创建
+                    .flash-container.flash-container-page
+                .container-fluid.container-limited.limit-container-width
+                  #content-body.content
+                    form#edit_user_18.edit-user.prepend-top-default.js-quick-submit(role='form', enctype='multipart/form-data', action='/api/task_create', accept-charset='UTF-8', method='post')
+                      .row
+                        .col-lg-4.profile-settings-sidebar
+                          h4.prepend-top-0 京东商品ID
+                          p 例如 https://item.jd.com/331329.html，只需要填 331329。多个ID用英文逗号隔开
+                        .col-lg-8
+                          .form-group
+                            label.label-bold 输入ID
+                            input#itemid_list.form-control(required='required', type='text', value='', name='itemid_list')
+                          .prepend-top-default.append-bottom-default
+                      hr
+                      .row
+                        .col-lg-2.profile-settings-sidebar
+                          span 是否自动更新状态（默认6分钟刷新一次）
+                        .col-lg-2
+                          label#status.switch
+                            input(type="checkbox")
+                            span.slider
+                        .col-lg-8
+                          input#btn_submit.btn.btn-success.append-right-10(type='submit', name='commit', value='创建任务')
+                          span#span_message.warning-title
+        | {% include './lib/bottom_script'%}
+        link(href='/css/select2.min.css', rel='stylesheet')
+        script(src='/js/select2.min.js')
+        script(src='/js/lib/task_create_new.js?ts={{handler.system_start_ts}}')
+        script.
+          window.task_create_new.init();

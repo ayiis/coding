@@ -1,0 +1,9 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Hello from flask</title>
+  </head>
+  <body>
+    <h1>Hello World!</h1>{% include "./page_demo3"%}
+  </body>
+</html>

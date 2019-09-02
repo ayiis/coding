@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <style type="text/css">@import url("/css/gitlab.css");
+    </style>
+    <title>任务创建</title>
+  </head>
+  <body data-group="" data-page="profiles:accounts:show" data-project="" class="ui_blue">{% include './lib/header'%}
+    <div class="page-with-new-sidebar page-with-sidebar">{% include './lib/nav-sidebar'%}
+      <div class="content-wrapper page-with-new-nav">
+        <div class="mobile-overlay"></div>
+        <div class="alert-wrapper">
+          <nav role="navigation" class="breadcrumbs container-fluid container-limited">
+            <div class="breadcrumbs-container">
+              <button name="button" type="button" class="toggle-mobile-nav"><span class="sr-only">Open sidebar</span><i aria-hidden="true" data-hidden="true" class="fa fa-bars"></i>
+              </button>
+              <div class="breadcrumbs-links js-title-container">
+                <ul class="list-unstyled breadcrumbs-list js-breadcrumbs-list">
+                  <li><a href="/account">Index</a>
+                    <svg class="s8 breadcrumbs-list-angle">
+                      <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="/css/icons.svg#angle-right"></use>
+                    </svg>
+                  </li>
+                  <li>
+                    <h2 class="breadcrumbs-sub-title">任务创建</h2>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </nav>
+          <div class="flash-container flash-container-page"></div>
+        </div>
+        <div class="container-fluid container-limited limit-container-width">
+          <div id="content-body" class="content">
+            <form id="edit_user_18" role="form" enctype="multipart/form-data" action="/api/task_create" accept-charset="UTF-8" method="post" class="edit-user prepend-top-default js-quick-submit">
+              <div class="row">
+                <div class="col-lg-4 profile-settings-sidebar">
+                  <h4 class="prepend-top-0">京东商品ID</h4>
+                  <p>例如 https://item.jd.com/331329.html，只需要填 331329。多个ID用英文逗号隔开</p>
+                </div>
+                <div class="col-lg-8">
+                  <div class="form-group">
+                    <label class="label-bold">输入ID</label>
+                    <input id="itemid_list" required="required" type="text" value="" name="itemid_list" class="form-control">
+                  </div>
+                  <div class="prepend-top-default append-bottom-default"></div>
+                </div>
+              </div>
+              <hr>
+              <div class="row">
+                <div class="col-lg-2 profile-settings-sidebar"><span>是否自动更新状态（默认6分钟刷新一次）</span>
+                </div>
+                <div class="col-lg-2">
+                  <label id="status" class="switch">
+                    <input type="checkbox"><span class="slider"></span>
+                  </label>
+                </div>
+                <div class="col-lg-8">
+                  <input id="btn_submit" type="submit" name="commit" value="创建任务" class="btn btn-success append-right-10"><span id="span_message" class="warning-title"></span>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>{% include './lib/bottom_script'%}
+    <link href="/css/select2.min.css" rel="stylesheet">
+    <script src="/js/select2.min.js"></script>
+    <script src="/js/lib/task_create_new.js?ts={{handler.system_start_ts}}"></script>
+    <script>window.task_create_new.init();
+    </script>
+  </body>
+</html>

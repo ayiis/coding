@@ -1,0 +1,87 @@
+doctype html
+html
+    head
+        meta(charset='UTF-8')
+        style(type='text/css').
+            @import url('/css/gitlab.css');
+        title 任务设置
+    body.ui_blue(data-group='', data-page='profiles:accounts:show', data-project='')
+        | {% include './lib/header'%}
+        .page-with-new-sidebar.page-with-sidebar
+            | {% include './lib/nav-sidebar'%}
+            .content-wrapper.page-with-new-nav
+                .mobile-overlay
+                .alert-wrapper
+                    nav.breadcrumbs.container-fluid.container-limited(role='navigation')
+                        .breadcrumbs-container
+                            button.toggle-mobile-nav(name='button', type='button')
+                                span.sr-only Open sidebar
+                                i.fa.fa-bars(aria-hidden='true', data-hidden='true')
+                            .breadcrumbs-links.js-title-container
+                                ul.list-unstyled.breadcrumbs-list.js-breadcrumbs-list
+                                    li
+                                        a(href='/account') Index
+                                        svg.s8.breadcrumbs-list-angle
+                                            use(xmlns:xlink='http://www.w3.org/1999/xlink', xlink:href='/css/icons.svg#angle-right')
+                                    li
+                                        h2.breadcrumbs-sub-title 任务设置
+                    .flash-container.flash-container-page
+                #content.container-fluid.container-limited
+                    .top-area.scrolling-tabs-container.inner-page-scroll-tabs
+                        .fade-left
+                            i.fa.fa-angle-left(aria-hidden='true', data-hidden='true')
+                        .fade-right
+                            i.fa.fa-angle-right(aria-hidden='true', data-hidden='true')
+                        ul.nav-links.scrolling-tabs.is-initialized
+                            li.active
+                                a.shortcuts-activity(title='Home', data-placement='right', href='/task') 任务设置
+                        .nav-controls
+                            form.project-filter-form(action='javascript:void(0);')
+                                input#name.project-filter-form-field.form-control.input-short.js-projects-list-filter(type='search', name='name', placeholder='按名称搜索...', spellcheck='false', tabindex='2', value='')
+                            .dropdown
+                                button.dropdown-menu-toggle(type='button', data-toggle='dropdown', aria-expanded='false')
+                                    span#status.dropdown-toggle-text(val='1') 自动更新
+                                    i.fa.fa-chevron-down(aria-hidden='true', data-hidden='true')
+                                ul.dropdown-menu.dropdown-menu-align-right.dropdown-menu-selectable
+                                    li.dropdown-header    状态
+                                    li
+                                        a(href='##', val='0') 全部
+                                    li
+                                        a(href='##', val='1') 自动更新
+                                    li
+                                        a(href='##', val='2') 手动更新
+                            a#btn_search.btn.btn-info(href='') 搜索
+                            a.btn.btn-success(href='/task_create_new') 添加商品
+                    .js-projects-list-holder
+                        ul#projects_list.projects-list
+                    .table-holder
+                      table#tree-slider.qa-file-tree.table.tree-table
+                        thead
+                          tr
+                            th(title='任务名相同的任务，每个用户只会分发一次') 自动分发
+                            th 商品名
+                            th 价格
+                            th 库存
+                            th 商家
+                            th 更新时间
+                        tbody#tbody_task
+        script#templete_task(type='templete')
+          tr.tree-item
+            td.cgray
+              label.update_status.switch
+                input(type="checkbox")
+                span.slider
+            td.cgray
+              span
+            td.cgray
+              a
+            td.cgray
+              span
+            td.cgray
+              span
+            td.cgray
+              span
+        | {% include './lib/bottom_script'%}
+        script(src='/js/lib/task.js?ts={{handler.system_start_ts}}')
+        script.
+          window.task.init()

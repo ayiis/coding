@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<body>
+<!--
+娱乐
+是游戏
+...娱乐...
+...游戏...
+...游戏式...
+...是游戏...
+...游戏...非娱乐...
+
+非游戏
+不是游戏
+...非游戏...
+...非娱乐...
+...不游戏...
+...无娱乐...
+...不是游戏...
+...非娱乐...非游戏...
+......
+
+.*(?<!(非|不是|不|无))(游戏|娱乐).*
+
+.*([^非是不无]|^)(游戏|娱乐).*
+
+ -->
+<pre style="font-size:14px;">
+提示：
+    非|不是|不|无
+    游戏|娱乐
+</pre>
+
+<input type="text" id="reg" style="width:600px;height:30px;font-size:20px;">
+
+<div style="padding-top: 20px;">
+    <div style="float:left;">
+        匹配
+        <div style="padding-top: 20px" id="text_match">
+            <div>娱乐</div>
+            <div>是游戏</div>
+            <div>...娱乐...</div>
+            <div>...游戏...</div>
+            <div>...游戏式...</div>
+            <div>...是游戏...</div>
+            <div>...游戏...非娱乐...</div>
+        </div>
+    </div>
+    <div style="float:left;padding-left: 220px;">
+        不匹配
+        <div style="padding-top: 20px" id="text_unmatch">
+            <div>非游戏</div>
+            <div>不是游戏</div>
+            <div>...非游戏...</div>
+            <div>...非娱乐...</div>
+            <div>...不游戏...</div>
+            <div>...无娱乐...</div>
+            <div>...不是游戏...</div>
+            <div>...非娱乐...非游戏...</div>
+            <div>......</div>
+        </div>
+    </div>
+</div>
+<script src="jq.js"></script>
+<script type="text/javascript">
+    $('#reg').on('keyup', function() {
+        console.log(1);
+        var self = this;
+        setTimeout(function() {
+            do_reg();
+        }, 1);
+    });
+    // ^.*(?<!(非|不是|不|无))(游戏|娱乐).*$
+    function do_reg() {
+        var reg_string = $('#reg').val();
+        var reg = new RegExp(reg_string, "");
+        $('#text_match, #text_unmatch').find("div").each(function() {
+            var text = $(this).text();
+            try {
+                var good = text.match(reg)[0] == text;
+            } catch {
+                good = false;
+            }
+            if(good) {
+                $(this).css({
+                    "background-color": "green"
+                });
+            } else {
+                $(this).css({
+                    "background-color": "red"
+                });
+            }
+        });
+    }
+    // "1fff".match(/fff$/)[0]
+    // var reg = new RegExp("fff", ""); var bbb = reg.exec("afff");
+</script>
+</body>
+</html>

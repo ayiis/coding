@@ -1,0 +1,58 @@
+doctype html
+html
+    head
+        meta(charset='UTF-8')
+        style(type='text/css').
+            @import url("/css/gitlab.css");
+        title 任务详情
+    body.ui_blue(data-group='', data-page='profiles:accounts:show', data-project='')
+        | {% include './lib/header'%}
+        .page-with-new-sidebar.page-with-sidebar
+            | {% include './lib/nav-sidebar'%}
+            .content-wrapper.page-with-new-nav
+                .mobile-overlay
+                .alert-wrapper
+                    nav.breadcrumbs.container-fluid.container-limited(role='navigation')
+                        .breadcrumbs-container
+                            button.toggle-mobile-nav(name='button', type='button')
+                                span.sr-only Open sidebar
+                                i.fa.fa-bars(aria-hidden='true', data-hidden='true')
+                            .breadcrumbs-links.js-title-container
+                                ul.list-unstyled.breadcrumbs-list.js-breadcrumbs-list
+                                    li
+                                        a(href='/account') Index
+                                        svg.s8.breadcrumbs-list-angle
+                                            use(xmlns:xlink='http://www.w3.org/1999/xlink', xlink:href='/css/icons.svg#angle-right')
+                                    li
+                                        h2.breadcrumbs-sub-title 任务详情
+                    .flash-container.flash-container-page
+                .container-fluid.container-limited.limit-container-width
+                    #content-body.content
+                        form.prepend-top-default.js-quick-submit(role='form', enctype='multipart/form-data', action='##', accept-charset='UTF-8', method='post')
+                            .row
+                                .col-lg-5.profile-settings-sidebar
+                                    h5.prepend-top-0    任务名
+                                    p#task_name
+                                .col-lg-5.profile-settings-sidebar
+                                    h5.prepend-top-0    创建日期
+                                    p#datetime
+                                .col-lg-2.profile-settings-sidebar
+                                    h5.prepend-top-0    截止日期
+                                    p#task_deadline
+                            .row
+                                .col-lg-5.profile-settings-sidebar
+                                    h5.prepend-top-0    文件名
+                                    p#file_name
+                                .col-lg-5.profile-settings-sidebar
+                                    h5.prepend-top-0    文件地址
+                                    a#file_path(href='##', target='_blank')
+                                .col-lg-2
+                                    .prepend-top-default.append-bottom-default
+                                        input#btn_return.btn.btn-default.append-right-10(type='button', name='commit', value='返回')
+                            .row
+                                .col-lg-12
+                                    textarea#file_content.col-xs-12(style='height:600px', disabled="disabled")
+        | {% include './lib/bottom_script'%}
+        script(src='/js/lib/task_detail.js?ts={{handler.system_start_ts}}')
+        script.
+            window.task_detail.init();

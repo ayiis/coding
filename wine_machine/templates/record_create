@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <style type="text/css">@import url("/css/gitlab.css");
+    </style>
+    <title>配音</title>
+  </head>
+  <body data-group="" data-page="profiles:accounts:show" data-project="" class="ui_blue">{% include './lib/header'%}
+    <div class="page-with-new-sidebar page-with-sidebar">{% include './lib/nav-sidebar'%}
+      <div class="content-wrapper page-with-new-nav">
+        <div class="mobile-overlay"></div>
+        <div class="alert-wrapper">
+          <nav role="navigation" class="breadcrumbs container-fluid container-limited">
+            <div class="breadcrumbs-container">
+              <button name="button" type="button" class="toggle-mobile-nav"><span class="sr-only">Open sidebar</span><i aria-hidden="true" data-hidden="true" class="fa fa-bars"></i>
+              </button>
+              <div class="breadcrumbs-links js-title-container">
+                <ul class="list-unstyled breadcrumbs-list js-breadcrumbs-list">
+                  <li><a href="/account">Index</a>
+                    <svg class="s8 breadcrumbs-list-angle">
+                      <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="/css/icons.svg#angle-right"></use>
+                    </svg>
+                  </li>
+                  <li>
+                    <h2 class="breadcrumbs-sub-title">配音</h2>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </nav>
+          <div class="flash-container flash-container-page"></div>
+        </div>
+        <div class="container-fluid container-limited limit-container-width">
+          <div id="content-body" class="content">
+            <form role="form" enctype="multipart/form-data" action="##" accept-charset="UTF-8" method="post" class="prepend-top-default js-quick-submit">
+              <div class="row">
+                <div class="col-lg-4 profile-settings-sidebar">
+                  <h4 class="prepend-top-0">配音</h4><span>请试听录音或重新对下面的句子配音</span><span><a id="download_wav" href="" target="_blank">
+                      <svg class="s16 icon">
+                        <use xlink:href="/css/icons.svg#check-circle"></use>
+                      </svg>已配音</a></span>
+                </div>
+                <div class="col-lg-12">
+                  <div class="form-group">
+                    <h3 id="record_text" class="label-light"></h3>
+                  </div>
+                </div>
+                <div class="col-lg-12">
+                  <div class="form-group">
+                    <p></p>
+                  </div>
+                  <div class="form-group">
+                    <p></p>
+                  </div>
+                  <div class="prepend-top-default append-bottom-default"><a id="btn_start" href="##" class="btn btn-info append-right-10"><span style="padding-left: 5px;padding-right: 5px;">开始录音</span></a><a id="btn_stop" href="##" disabled="disabled" class="btn btn-remove append-right-10"><span>停止录音</span></a><a id="btn_play" href="##" class="btn btn-default append-right-10"><span>播放录音</span></a><a id="btn_submit" href="##" disabled="disabled" class="btn btn-create append-right-10"><span>提交保存</span></a><a id="btn_prev" href="##" class="btn append-right-10 prepend-left-20">
+                      <svg>
+                        <use xlink:href="/css/icons.svg#angle-double-left"></use>
+                      </svg><span>上一句</span></a><a id="btn_next" href="##" class="btn append-right-10"><span>下一句</span>
+                      <svg>
+                        <use xlink:href="/css/icons.svg#angle-double-right"></use>
+                      </svg></a><span id="span_message" class="text-warning"></span>
+                  </div>
+                </div>
+                <div class="col-lg-12">
+                  <audio id="audio" control="" src=""></audio>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>{% include './lib/bottom_script'%}
+    <script src="/js/recorder/core.js"></script>
+    <script src="/js/recorder/wav.js"></script>
+    <script src="/js/lib/record_create.js?ts={{handler.system_start_ts}}"></script>
+    <script>window.record_create.init();
+    </script>
+  </body>
+</html>

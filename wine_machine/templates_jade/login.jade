@@ -1,0 +1,45 @@
+doctype html
+html
+    head
+        meta(charset='UTF-8')
+        style(type='text/css').
+            @import url("/css/gitlab.css");
+        title Sign in
+    body.ui_charcoal.login-page.application.navless
+        .page-wrap
+            header.navbar.navbar-fixed-top.navbar-empty
+                .container
+                    .center-logo
+                        svg.tanuki-logo(width='24', height='24')
+                            use(xmlns:xlink='http://www.w3.org/1999/xlink', xlink:href='/css/icons.svg#tanuki-logo')
+            .container.navless-container
+                .content
+                    .flash-container.flash-container-page
+                    .row
+                        .col-sm-5.pull-right.new-session-forms-container
+                            ul.nav-links.new-session-tabs.nav-tabs(role='tablist')
+                                li.active(role='presentation')
+                                    a(data-toggle='tab', href='#login-pane', role='tab') Sign in
+                            .tab-content
+                                #login-pane.login-box.tab-pane.active(role='tabpanel')
+                                    .login-body
+                                        form#login_form.new_user.gl-show-field-errors(aria-live='assertive')
+                                            .form-group
+                                                label(for='username') Username or email
+                                                input#username.form-control.top(autofocus='autofocus', autocapitalize='off', autocorrect='off', type='text')
+                                            .form-group
+                                                label(for='password') Password
+                                                input#password.form-control.bottom(type='password')
+                                            .submit-container.move-submit-down
+                                                input#btn_submit.btn.btn-save(type='submit', value='Sign in')
+                        .col-sm-7.brand-holder.pull-left
+                            h1 在线录音系统
+                            h3 欢迎
+                            span#error_message.text-danger
+            hr.footer-fixed
+            .container.footer-container
+                .footer-links
+                    a(href='https://gitlab.com/', target='_blank') Gitlab
+        | {% include './lib/bottom_script'%}
+        script(src='/js/md5.min.js')
+        script(src='/js/lib/login.js?ts={{handler.system_start_ts}}')

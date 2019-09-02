@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <style type="text/css">@import url("/css/gitlab.css");
+    </style>
+    <title>账号管理</title>
+  </head>
+  <body data-group="" data-page="profiles:accounts:show" data-project="" class="ui_blue">{% include './lib/header'%}
+    <div class="page-with-new-sidebar page-with-sidebar">{% include './lib/nav-sidebar'%}
+      <div class="content-wrapper page-with-new-nav">
+        <div class="mobile-overlay"></div>
+        <div class="alert-wrapper">
+          <nav role="navigation" class="breadcrumbs container-fluid container-limited">
+            <div class="breadcrumbs-container">
+              <button name="button" type="button" class="toggle-mobile-nav"><span class="sr-only">Open sidebar</span><i aria-hidden="true" data-hidden="true" class="fa fa-bars"></i>
+              </button>
+              <div class="breadcrumbs-links js-title-container">
+                <ul class="list-unstyled breadcrumbs-list js-breadcrumbs-list">
+                  <li><a href="/account">Index</a>
+                    <svg class="s8 breadcrumbs-list-angle">
+                      <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="/css/icons.svg#angle-right"></use>
+                    </svg>
+                  </li>
+                  <li>
+                    <h2 class="breadcrumbs-sub-title">账号列表</h2>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </nav>
+          <div class="flash-container flash-container-page"></div>
+        </div>
+        <div class="container-fluid container-limited">
+          <div class="top-area scrolling-tabs-container inner-page-scroll-tabs">
+            <div class="fade-left"><i aria-hidden="true" data-hidden="true" class="fa fa-angle-left"></i>
+            </div>
+            <div class="fade-right"><i aria-hidden="true" data-hidden="true" class="fa fa-angle-right"></i>
+            </div>
+            <ul class="nav-links scrolling-tabs is-initialized">
+              <li class="active"><a title="Home" data-placement="right" href="/user_control" class="shortcuts-activity">任务进度</a>
+              </li>
+            </ul>
+            <div class="nav-controls">
+              <form action="##" accept-charset="UTF-8" method="get" class="project-filter-form">
+                <input id="username" type="search" name="name" placeholder="按名称搜索..." spellcheck="false" tabindex="2" value="" class="project-filter-form-field form-control input-short js-projects-list-filter">
+              </form>
+              <div class="dropdown">
+                <button type="button" data-toggle="dropdown" aria-expanded="false" class="dropdown-menu-toggle"><span id="user_role" val="0" class="dropdown-toggle-text">全部</span><i aria-hidden="true" data-hidden="true" class="fa fa-chevron-down"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-align-right dropdown-menu-selectable">
+                  <li class="dropdown-header">用户组</li>
+                  <li><a href="##" val="0">全部</a>
+                  </li>
+                  <li><a href="##" val="1">管理员</a>
+                  </li>
+                  <li><a href="##" val="2">用户</a>
+                  </li>
+                  <li><a href="##" val="2">审核人员</a>
+                  </li>
+                  <li></li>
+                </ul>
+              </div><a id="btn_search" href="##" class="btn btn-info">搜索</a><a href="/user_create" class="btn btn-success">创建</a>
+            </div>
+          </div>
+          <div class="js-projects-list-holder">
+            <ul id="projects_list" class="projects-list"></ul>
+          </div>
+          <div class="table-holder">
+            <table id="tree-slider" class="qa-file-tree table tree-table">
+              <thead>
+                <tr>
+                  <th>是否启用</th>
+                  <th>用户组</th>
+                  <th>用户名</th>
+                  <th>所有任务</th>
+                  <th>完成任务</th>
+                  <th>进度</th>
+                  <th>更新时间</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="tbody_user_list"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script id="templete_user_list" type="templete">
+      <tr class="tree-item">
+        <td class="cgray">
+          <label class="update_user_status switch">
+            <input type="checkbox"><span class="slider"></span>
+          </label>
+        </td>
+        <td class="cgray"><span></span>
+        </td>
+        <td class="cgray"><span></span>
+        </td>
+        <td class="cgray"><span></span>
+        </td>
+        <td class="cgray"><span></span>
+        </td>
+        <td class="cgray"><span></span>
+        </td>
+        <td class="cgray"><span></span>
+        </td>
+        <td class="cgray"><a href="##" class="user_set"><span class="badge badge-success col-xs-offset-1">设置</span></a>
+        </td>
+      </tr>
+    </script>{% include './lib/bottom_script'%}
+    <script src="/js/lib/user_control.js?ts={{handler.system_start_ts}}"></script>
+    <script>window.user_control.init()
+    </script>
+  </body>
+</html>

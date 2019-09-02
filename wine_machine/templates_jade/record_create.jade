@@ -1,0 +1,77 @@
+doctype html
+html
+    head
+        meta(charset='UTF-8')
+        style(type='text/css').
+            @import url("/css/gitlab.css");
+        title 配音
+    body.ui_blue(data-group='', data-page='profiles:accounts:show', data-project='')
+        | {% include './lib/header'%}
+        .page-with-new-sidebar.page-with-sidebar
+            | {% include './lib/nav-sidebar'%}
+            .content-wrapper.page-with-new-nav
+                .mobile-overlay
+                .alert-wrapper
+                    nav.breadcrumbs.container-fluid.container-limited(role='navigation')
+                        .breadcrumbs-container
+                            button.toggle-mobile-nav(name='button', type='button')
+                                span.sr-only Open sidebar
+                                i.fa.fa-bars(aria-hidden='true', data-hidden='true')
+                            .breadcrumbs-links.js-title-container
+                                ul.list-unstyled.breadcrumbs-list.js-breadcrumbs-list
+                                    li
+                                        a(href='/account') Index
+                                        svg.s8.breadcrumbs-list-angle
+                                            use(xmlns:xlink='http://www.w3.org/1999/xlink', xlink:href='/css/icons.svg#angle-right')
+                                    li
+                                        h2.breadcrumbs-sub-title 配音
+                    .flash-container.flash-container-page
+                .container-fluid.container-limited.limit-container-width
+                    #content-body.content
+                        form.prepend-top-default.js-quick-submit(role='form', enctype='multipart/form-data', action='##', accept-charset='UTF-8', method='post')
+                            .row
+                                .col-lg-4.profile-settings-sidebar
+                                    h4.prepend-top-0    配音
+                                    span
+                                        | 请试听录音或重新对下面的句子配音
+                                    span
+                                      a#download_wav(href='', target='_blank')
+                                        svg.s16.icon
+                                          use(xlink:href='/css/icons.svg#check-circle')
+                                        | 已配音
+                                .col-lg-12
+                                    .form-group
+                                        h3#record_text.label-light
+                                .col-lg-12
+                                    .form-group
+                                        p
+                                    .form-group
+                                        p
+                                    .prepend-top-default.append-bottom-default
+                                        a#btn_start.btn.btn-info.append-right-10(href='##')
+                                          span(style='padding-left: 5px;padding-right: 5px;') 开始录音
+                                        a#btn_stop.btn.btn-remove.append-right-10(href='##', disabled='disabled')
+                                          span 停止录音
+                                        a#btn_play.btn.btn-default.append-right-10(href='##')
+                                          span 播放录音
+                                        a#btn_submit.btn.btn-create.append-right-10(href='##', disabled='disabled')
+                                          span 提交保存
+                                        //- a#btn_return.btn.btn-default.append-right-10(href='##')
+                                        //-   span 返回列表
+                                        a#btn_prev.btn.append-right-10.prepend-left-20(href='##')
+                                            svg
+                                              use(xlink:href='/css/icons.svg#angle-double-left')
+                                            span 上一句
+                                        a#btn_next.btn.append-right-10(href='##')
+                                            span 下一句
+                                            svg
+                                              use(xlink:href='/css/icons.svg#angle-double-right')
+                                        span#span_message.text-warning
+                                .col-lg-12
+                                  audio#audio(control="", src="")
+        | {% include './lib/bottom_script'%}
+        script(src='/js/recorder/core.js')
+        script(src='/js/recorder/wav.js')
+        script(src='/js/lib/record_create.js?ts={{handler.system_start_ts}}')
+        script.
+            window.record_create.init();

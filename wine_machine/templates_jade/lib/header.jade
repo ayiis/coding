@@ -1,0 +1,25 @@
+header.navbar.navbar-gitlab.navbar-gitlab-new
+    a.sr-only.gl-accessibility(href='#content-body', tabindex='1') Skip to content
+    .container-fluid
+        .header-content
+            .title-container
+                h1.title
+                    a#logo(title='Dashboard', href='/')
+                        svg.tanuki-logo(width='24', height='24')
+                            use(xmlns:xlink='http://www.w3.org/1999/xlink', xlink:href='/css/icons.svg#tanuki-logo')
+                        span.logo-text.hidden-xs
+                            svg
+                                use(xmlns:xlink='http://www.w3.org/1999/xlink', xlink:href='/css/icons.svg#gitlab-logo')
+            .navbar-collapse.collapse
+                ul.nav.navbar-nav
+                    li.user-counter
+                        a#signout.shortcuts-todos(href='##')
+                            svg.s16
+                                use(xmlns:xlink='http://www.w3.org/1999/xlink', xlink:href='/css/icons.svg#todo-done')
+                            | SIGN OUT
+            button.navbar-toggle.hidden-sm.hidden-md.hidden-lg(type='button')
+                span.sr-only Toggle navigation
+                svg.s12.more-icon.js-navbar-toggle-right
+                    use(xmlns:xlink='http://www.w3.org/1999/xlink', xlink:href='/css/icons.svg#more')
+                svg.s12.close-icon.js-navbar-toggle-left
+                    use(xmlns:xlink='http://www.w3.org/1999/xlink', xlink:href='/css/icons.svg#close')

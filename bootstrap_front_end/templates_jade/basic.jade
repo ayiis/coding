@@ -1,0 +1,45 @@
+doctype html
+html(lang='zh-CN')
+  head
+    meta(charset='utf-8')
+    meta(http-equiv='X-UA-Compatible', content='IE=edge')
+    meta(name='viewport', content='width=device-width, initial-scale=1, shrink-to-fit=no')
+    link(href='/css/bootstrap.min.css', rel='stylesheet')
+    link(href='/css/bootstrap.makeup.css', rel='stylesheet')
+    script(src='/js/jquery.min.js')
+    script(src='/js/popper.min.js')
+    script(src='/js/bootstrap.min.js')
+
+    title Starter Template · Bootstrap
+
+  body.mu-pt-5r
+    nav.navbar.navbar-expand-md.navbar-dark.bg-dark.fixed-top
+      a.navbar-brand(href='#') Navbar
+      button.navbar-toggler(type='button', data-toggle='collapse', data-target='#navbarsExampleDefault', aria-controls='navbarsExampleDefault', aria-expanded='false', aria-label='Toggle navigation')
+        span.navbar-toggler-icon
+      #navbarsExampleDefault.collapse.navbar-collapse
+        ul.navbar-nav.mr-auto
+          li.nav-item.active
+            a.nav-link(href='#')
+              | Home
+              span.sr-only (current)
+          li.nav-item
+            a.nav-link(href='#') Link
+          li.nav-item
+            a.nav-link.disabled(href='#', tabindex='-1', aria-disabled='true') Disabled
+          li.nav-item.dropdown
+            a#dropdown01.nav-link.dropdown-toggle(href='#', data-toggle='dropdown', aria-haspopup='true', aria-expanded='false') Dropdown
+            .dropdown-menu(aria-labelledby='dropdown01')
+              a.dropdown-item(href='#') Action
+              a.dropdown-item(href='#') Another action
+              a.dropdown-item(href='#') Something else here
+        form.form-inline.my-2.my-lg-0
+          input.form-control.mr-sm-2(type='text', placeholder='Search', aria-label='Search')
+          button.btn.btn-secondary.my-2.my-sm-0(type='submit') Search
+    main.container(role='main')
+      .mu-pd-3r-1d5r.mu-ta-center
+        h1 Bootstrap starter template
+        p.lead
+          | Use this document as a way to quickly start any new project.
+          br
+          | All you get is this text and a mostly barebones HTML document.

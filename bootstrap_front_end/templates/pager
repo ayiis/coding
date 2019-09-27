@@ -1,0 +1,23 @@
+{% include './lib/nav'%}<span>page1</span>
+<div id="pagination1"></div><span>page2</span>
+<div id="pagination2"></div>
+<script>!(function(){
+    var list_pager1 = pager.init_pagination({
+        "ele": $('#pagination1'),
+        "callback": function(page_index) {
+            console.log("goto page:", page_index);
+            list_pager1.touch_pagination(100, page_index, 10);
+        },
+    });
+    list_pager1.touch_pagination(100, 1, 10);
+
+    var list_pager2 = pager.init_pagination({
+        "ele": $('#pagination2'),
+        "callback": function(page_index) {
+            console.log("goto page:", page_index);
+            list_pager2.touch_pagination(1234, page_index, 10);
+        },
+    });
+    list_pager2.touch_pagination(1234, 1, 10);
+})();
+</script>

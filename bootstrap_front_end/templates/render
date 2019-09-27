@@ -1,0 +1,7 @@
+<html>
+  <head>{% include './lib/head'%}
+    <title>Project Black hope</title>
+  </head>
+  <body>{% module Template(**argv) %}
+  </body>
+</html>

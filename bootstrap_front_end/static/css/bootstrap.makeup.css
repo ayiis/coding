@@ -1,6 +1,22 @@
 
+body {
+  font-family: fantasque sans mono, monaco, consolas;
+}
+
+form {
+  margin: 0px;
+}
+
 .mu-mb-5 {
   margin-bottom: 5px;
+}
+
+.mu-mr-5 {
+  margin-right: 5px;
+}
+
+.mu-ml-5 {
+  margin-left: 5px;
 }
 
 .mu-pd-10 {
@@ -23,6 +39,10 @@
   display: inline-block;
 }
 
+.mu-dp-f {
+  display: flex;
+}
+
 .mu-mw-content {
   max-width: 960px;
 }
@@ -40,10 +60,32 @@
 
 .mu-signin-span {
   border: none;
-  border-bottom: 2px solid #1f78d1;
-  width: 100%;
+  box-shadow: 0 0 0 1px #e5e5e5;
+  border-top-right-radius: 4px;
+  border-top-left-radius: 4px;
+  width: 50%;
   font-size: 18px;
   text-align: center;
+  cursor: pointer;
+}
+
+.mu-signin-box .mu-signin-span:first-of-type {
+  border-top-left-radius: 4px;
+  border-top-right-radius: 0px;
+}
+
+.mu-signin-box .mu-signin-span:last-of-type {
+  border-top-right-radius: 4px;
+  border-top-left-radius: 0px;
+}
+
+.mu-signin-span.active {
+  box-shadow: none;
+  border-bottom: 2px solid #1f78d1;
+}
+
+.mu-signin-span:not(.active) {
+  background-color: #f4f4f4;
 }
 
 .mu-fwn {
@@ -57,3 +99,10 @@
 .mu-fs-21 {
   font-size: 21px;
 }
+
+.mu-bbr2 {
+  border-bottom-right-radius: 2px;
+  border-bottom-left-radius: 2px;
+}
+
+

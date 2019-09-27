@@ -1,0 +1,52 @@
+
+nav.modal-header
+    .container.text-center.mu-fs-21
+        span.glyphicon.glyphicon-leaf
+.container.mu-mw-content
+    .mu-pdt-15
+        .col-sm-5.pull-right.mu-fwn
+            #signin-box.mu-signin-box
+                span.mu-dp-ib.mu-signin-span.mu-pd-10.active Sign in
+                span.mu-dp-ib.mu-signin-span.mu-pd-10 Sign up
+            #signin-form.mu-pd-15.mu-bs1.mu-bbr2
+                form.active
+                    .form-group
+                        span.mu-mb-5.mu-dp-ib Username or email
+                        input#username.form-control(type='text', autofocus='')
+                    .form-group
+                        span.mu-mb-5.mu-dp-ib Password
+                        input#password.form-control(type='password')
+                    .checkbox
+                        label
+                            input#remember_me(type='checkbox')
+                            span Remember me
+                        .pull-right
+                            a#signup(href='#') Forgot Password
+                    a#btn_signin.btn.btn-success.btn-block Sign in
+                form.hide
+                    | Please contact the admin.
+        .col-sm-7
+            h1.mu-fwn Project Black Hope
+            h3.mu-fwn Welcome
+            span#error_message.text-danger Question: To be, or not to be?
+
+hr
+.container.mu-mw-content
+    a.mu-pdr-15(href='https://ayiis.me') ayiis.me
+    a.mu-pdr-15(href='https://github.com/ayiis') Github
+    a.mu-pdr-15(href='https://wodove.com/') Wodove
+
+script.
+    !(function() {
+        $('#signin-box').on('click', '>span', function() {
+            // follow by the order
+            var $this = $(this);
+            $('#signin-box').find('>span').removeClass('active');
+            $this.addClass('active');
+            $('#signin-form>form').addClass('hide');
+            $('#signin-form>form').eq($this.index()).removeClass('hide');
+        });
+        $('#btn_signin').on('click', function(){
+            window.location = '/main';
+        });
+    })();

@@ -1,0 +1,52 @@
+<nav class="modal-header">
+  <div class="container text-center mu-fs-21"><span class="glyphicon glyphicon-leaf"></span>
+  </div>
+</nav>
+<div class="container mu-mw-content">
+  <div class="mu-pdt-15">
+    <div class="col-sm-5 pull-right mu-fwn">
+      <div id="signin-box" class="mu-signin-box"><span class="mu-dp-ib mu-signin-span mu-pd-10 active">Sign in</span><span class="mu-dp-ib mu-signin-span mu-pd-10">Sign up</span>
+      </div>
+      <div id="signin-form" class="mu-pd-15 mu-bs1 mu-bbr2">
+        <form class="active">
+          <div class="form-group"><span class="mu-mb-5 mu-dp-ib">Username or email</span>
+            <input id="username" type="text" autofocus="" class="form-control"/>
+          </div>
+          <div class="form-group"><span class="mu-mb-5 mu-dp-ib">Password</span>
+            <input id="password" type="password" class="form-control"/>
+          </div>
+          <div class="checkbox">
+            <label>
+              <input id="remember_me" type="checkbox"/><span>Remember me</span>
+            </label>
+            <div class="pull-right"><a id="signup" href="#">Forgot Password</a>
+            </div>
+          </div><a id="btn_signin" class="btn btn-success btn-block">Sign in</a>
+        </form>
+        <form class="hide">Please contact the admin.
+        </form>
+      </div>
+    </div>
+    <div class="col-sm-7">
+      <h1 class="mu-fwn">Project Black Hope</h1>
+      <h3 class="mu-fwn">Welcome</h3><span id="error_message" class="text-danger">Question: To be, or not to be?</span>
+    </div>
+  </div>
+</div>
+<hr/>
+<div class="container mu-mw-content"><a href="https://ayiis.me" class="mu-pdr-15">ayiis.me</a><a href="https://github.com/ayiis" class="mu-pdr-15">Github</a><a href="https://wodove.com/" class="mu-pdr-15">Wodove</a>
+</div>
+<script>!(function() {
+    $('#signin-box').on('click', '>span', function() {
+        // follow by the order
+        var $this = $(this);
+        $('#signin-box').find('>span').removeClass('active');
+        $this.addClass('active');
+        $('#signin-form>form').addClass('hide');
+        $('#signin-form>form').eq($this.index()).removeClass('hide');
+    });
+    $('#btn_signin').on('click', function(){
+        window.location = '/main';
+    });
+})();
+</script>

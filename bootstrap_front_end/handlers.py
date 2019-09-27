@@ -66,4 +66,12 @@ class TemplateHandler(BaseHandler):
         """
         self.path = path or self.default_filename
         self.absolute_path = self.validate_absolute_path(self.root, self.path)
-        self.render(self.absolute_path, data=None, error=None)
+        # self.render(self.absolute_path, data=None, error=None)
+
+        print("absolute_path:", self.absolute_path)
+        argv = {
+            "path": self.absolute_path,
+            "data": None,
+            "error": None
+        }
+        self.render("render", argv=argv)

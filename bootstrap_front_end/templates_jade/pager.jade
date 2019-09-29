@@ -1,32 +1,147 @@
 | {% include './lib/nav'%}
 
-span page1
+br
+
+h1 独立的分页控件
 
 #pagination1
 
-span page2
+br
+
+h1 用户管理
+
+table.table.table-hover
+    thead
+        th 激活
+        th 组
+        th 用户名
+        th 所有任务
+        th 已完成任务
+        th 进度
+        th 更新时间
+        th 操作
+    tbody#tbody_2
 
 #pagination2
+
+#my_modal.modal.fade(tabindex='-1', role='dialog')
+  .modal-dialog(role='document')
+    .modal-content
+      .modal-header
+        button.close(type='button', data-dismiss='modal', aria-label='Close')
+          span(aria-hidden='true') ×
+        h4.modal-title Modal title
+      .modal-body
+        p One fine body…
+      .modal-footer
+        button.btn.btn-default(type='button', data-dismiss='modal') Close
+        button.btn.btn-primary(type='button') Save changes
 
 
 script.
 
     !(function(){
+        var data_list2 = [{
+            "status": 1,
+            "name": "admin1",
+            "group": "管理员",
+            "all_task": ["第一次测试任务", "3月500条第一版", "测试2", "task1", "task6", "task4"],
+            "task": ["第一次测试任务", "task6", "task4"],
+            "datetime": "2019-03-26 15:49:34",
+        }, {
+            "status": 1,
+            "name": "user1",
+            "group": "用户1",
+            "all_task": ["第一次测试任务", "3月500条第一版", "测试2"],
+            "task": ["第一次测试任务", ],
+            "datetime": "2019-03-26 15:49:34",
+        }, {
+            "status": 0,
+            "name": "user2",
+            "group": "用户2",
+            "all_task": ["task1", "task6", "task4"],
+            "task": [],
+            "datetime": "2019-03-26 15:49:34",
+        }, {
+            "status": 1,
+            "name": "user3",
+            "group": "用户3",
+            "all_task": ["task1", "task6", "task4"],
+            "task": [],
+            "datetime": "2019-03-26 15:49:34",
+        }, {
+            "status": 1,
+            "name": "user4",
+            "group": "用户4",
+            "all_task": ["task1", "task6", "task4"],
+            "task": [],
+            "datetime": "2019-03-26 15:49:34",
+        }, {
+            "status": 1,
+            "name": "user5",
+            "group": "用户5",
+            "all_task": ["task1", "task6", "task4"],
+            "task": [],
+            "datetime": "2019-03-26 15:49:34",
+        }];
         var list_pager1 = pager.init_pagination({
+            "page_size": 10,
             "ele": $('#pagination1'),
             "callback": function(page_index) {
                 console.log("goto page:", page_index);
-                list_pager1.touch_pagination(100, page_index, 10);
+                list_pager1.touch_pagination(100, page_index);
             },
         });
-        list_pager1.touch_pagination(100, 1, 10);
+        list_pager1.touch_pagination(100, 1);
 
         var list_pager2 = pager.init_pagination({
+            "page_size": 5,
             "ele": $('#pagination2'),
             "callback": function(page_index) {
                 console.log("goto page:", page_index);
-                list_pager2.touch_pagination(1234, page_index, 10);
+                load_data(page_index);
             },
         });
-        list_pager2.touch_pagination(1234, 1, 10);
+
+        var options = {
+            "backdrop": true,
+            "keyboard": true,
+            "show": true,
+        }
+        $('#tbody_2').on('click', '.set', function() {
+            var tr = $(this).closest('tr');
+            $('#my_modal').find('.modal-body>p').text(tr.find('td:eq(3)').text());
+            $('#my_modal').modal(options);
+        });
+
+
+        var load_data = function(page_index) {
+            page_index = page_index || 1;
+            var html = [];
+            var took_data = [];
+            for(var i = (page_index - 1) * list_pager2.page_size ; i < data_list2.length && i < page_index * list_pager2.page_size ; i++ ) {
+                took_data.push(data_list2[i]);
+            }
+            for(var i = 0 ; i < took_data.length ; i++ ) {
+                html.push('<tr>');
+                html.push(
+                    '<td><label class="mu-switch">' +
+                    '<input type="checkbox" ' + (took_data[i]['status'] == 1 ? 'checked="checked"' : '') + '/>' +
+                    '<span class="slider"></span></label></td>'
+                );
+                html.push('<td>' + took_data[i]['name'] + '</td>');
+                html.push('<td>' + took_data[i]['group'] + '</td>');
+                html.push('<td>' + took_data[i]['all_task'].join("<br>") + '</td>');
+                html.push('<td>' + took_data[i]['task'].join("<br>") + '</td>');
+                html.push('<td>' + took_data[i]['task'].length + '/' + took_data[i]['all_task'].length + '</td>');
+                html.push('<td>' + took_data[i]['datetime'] + '</td>');
+                html.push('<td>' + '<a href="#" class="set"> 设置 </a>' + '</td>');
+                html.push('</tr>');
+            }
+            $('#tbody_2').empty().append(html.join(""));
+            list_pager2.touch_pagination(data_list2.length, page_index);
+        }
+
+        load_data();
+
     })();

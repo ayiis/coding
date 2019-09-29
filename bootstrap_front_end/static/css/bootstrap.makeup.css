@@ -105,4 +105,47 @@ form {
   border-bottom-left-radius: 2px;
 }
 
+.mu-switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 21px;
+}
 
+.mu-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.mu-switch input:checked + .slider {
+  background-color: #2196F3;
+}
+
+.mu-switch input:checked + .slider:before {
+  transform: translateX(26px);
+}
+
+.mu-switch .slider {
+  position: absolute;
+  border-radius: 4px;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: 0.4s;
+}
+
+.mu-switch .slider:before {
+  position: absolute;
+  border-radius: 4px;
+  content: "";
+  height: 14px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: 0.4s;
+}

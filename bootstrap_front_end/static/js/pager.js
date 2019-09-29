@@ -11,8 +11,8 @@ window.pager = {
             // 默认值
             "total_count": 0,   // 如果没有返回，默认 0 条结果
             "page_index": 1,    // 默认第 1 页
-            "page_size": 25,    // 默认 25 条
-            "total_show": 7,    // 默认显示 7 个翻页按钮
+            "page_size": args.page_size || 25,    // 默认 25 条
+            "total_show": args.total_show || 7,    // 默认显示 7 个翻页按钮
         };
         for(var e in self) {
             this_pager[e] = self[e];
@@ -55,17 +55,13 @@ window.pager = {
             }
         });
     },
-    touch_pagination: function(total_count, page_index, page_size, total_show) {
+    touch_pagination: function(total_count, page_index) {
         var self = this;
         self.total_count = total_count || self.total_count;
         self.page_index  = page_index  || self.page_index;
-        self.page_size   = page_size   || self.page_size;
-        self.total_show  = total_show  || self.total_show;
         var pagination_setting = self.cal_pagination_page(
             self.total_count,
-            self.page_index,
-            self.page_size,
-            self.total_show
+            self.page_index
         );
         var html_list = [];
         for( var i = 0 ; i < pagination_setting.length ; i++ ) {
@@ -91,13 +87,14 @@ window.pager = {
         ]);
         self.window_scroll_top();
     },
-    cal_pagination_page: function(total_count, page_index, page_size, total_show) {
+    cal_pagination_page: function(total_count, page_index) {
+        var self = this;
         var first_page = 1;
-        var last_page = Math.ceil(total_count / page_size);
+        var last_page = Math.ceil(total_count / self.page_size);
         page_index = Math.min(page_index, last_page);
         page_index = Math.max(page_index, first_page);
-        var start_page = page_index - parseInt(total_show / 2);
-        var end_page = page_index + Math.round(total_show / 2);
+        var start_page = page_index - parseInt(self.total_show / 2);
+        var end_page = page_index + Math.round(self.total_show / 2);
 
         var page_content = [first_page];
         for( var i = start_page; i <= page_index; i++ ) {

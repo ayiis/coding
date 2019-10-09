@@ -74,7 +74,7 @@ window.pager = {
             } else if (i == pagination_setting.length - 1) {
                 li_string = '<li><a href="#" val="' + val + '"> » ' + val + ' </a></li>';
             } else if (pagination_setting[i] == self.page_index) {
-                li_string = '<li class="active"><a href="#" val="' + val + '"> ' + val + ' </a></li>';
+                li_string = '<li class="active"><a href="#" style="cursor:pointer;" val="' + val + '"> ' + val + ' </a></li>';
             } else {
                 li_string = '<li><a href="#" val="' + val + '"> ' + val + ' </a></li>';
             }

@@ -1,0 +1,36 @@
+.col-lg-2.mu-sidebar.mu-bar-top.mu-mt-42
+    ul.nav.nav-sidebar
+        li
+            a(href="/index")
+                span.glyphicon.glyphicon-home
+                |  首页
+        li
+            a(href="#")
+                span.glyphicon.glyphicon-th-list
+                |  任务列表
+        li
+            a(href="#")
+                span.mu-dp-ib.mu-w1e
+                |  任务管理
+        li
+            a(href="#")
+                span.mu-dp-ib.mu-w1e
+                |  任务设置
+        li.active
+            a(href="#")
+                span.glyphicon.glyphicon-user
+                |  账号信息
+        li
+            a(href="#")
+                span.mu-dp-ib.mu-w1e
+                |  账号管理
+        li
+            a(href="#")
+                span.glyphicon.glyphicon-list-alt
+                |  系统日志
+
+script.
+    $('.mu-sidebar').on('click', 'a', function() {
+        $(this).closest('ul').find('li').removeClass('active');
+        $(this).closest('li').addClass('active');
+    });

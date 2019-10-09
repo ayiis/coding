@@ -1,4 +1,12 @@
-| {% include './lib/nav'%}
+div.mu-pd-10-0.modal-header
+    a(href="/index") 
+        span.glyphicon.glyphicon-home 
+        |  首页
+    span.mu-ml-5.mu-mr-5 &gt;
+    a(href="#") 账号管理
+    span.mu-ml-5.mu-mr-5 &gt;
+    a(href="#") 账号列表
+
 
 br
 
@@ -9,6 +17,52 @@ h1 独立的分页控件
 br
 
 h1 用户管理
+
+br
+
+.btn-group
+  button.btn.btn-info(type='button') 所有状态
+  button.btn.btn-info.dropdown-toggle(type='button', data-toggle='dropdown', aria-haspopup='true', aria-expanded='false')
+    span.caret
+  ul.dropdown-menu
+    li
+      a(href='#') 激活
+    li
+      a(href='#') 非激活
+    li.divider(role='separator')
+    li
+      a(href='#') 所有状态
+.btn-group
+  button.btn.btn-info(type='button') 所有用户
+  button.btn.btn-info.dropdown-toggle(type='button', data-toggle='dropdown', aria-haspopup='true', aria-expanded='false')
+    span.caret
+  ul.dropdown-menu
+    li
+      a(href='#') 管理员
+    li
+      a(href='#') 普通用户
+    li.divider(role='separator')
+    li
+      a(href='#') 所有用户
+.btn-group
+  button.btn.btn-info(type='button') 默认排序
+  button.btn.btn-info.dropdown-toggle(type='button', data-toggle='dropdown', aria-haspopup='true', aria-expanded='false')
+    span.caret
+  ul.dropdown-menu
+    li
+      a(href='#') 用户名排序
+    li
+      a(href='#') 时间排序
+    li.divider(role='separator')
+    li
+      a(href='#') 默认排序
+.btn-group.mu-w50
+    .input-group
+        input.form-control(type='text', placeholder='Search for...')
+        span.input-group-btn
+            button.btn.btn-primary(type='button') Search
+
+
 
 table.table.table-hover
     thead
@@ -114,6 +168,11 @@ script.
             $('#my_modal').modal(options);
         });
 
+        $(document).on('click', '.dropdown-menu a', function() {
+            $(this).closest('.btn-group').find('.btn:eq(0)').text($(this).text());
+            $(this).closest('.btn-group').removeClass('open');
+            return false;
+        });
 
         var load_data = function(page_index) {
             page_index = page_index || 1;
@@ -129,8 +188,12 @@ script.
                     '<input type="checkbox" ' + (took_data[i]['status'] == 1 ? 'checked="checked"' : '') + '/>' +
                     '<span class="slider"></span></label></td>'
                 );
+                if (took_data[i]['group'] == "管理员") {
+                    html.push('<td class="bg-warning">' + took_data[i]['group'] + '</td>');
+                } else {
+                    html.push('<td >' + took_data[i]['group'] + '</td>');
+                }
                 html.push('<td>' + took_data[i]['name'] + '</td>');
-                html.push('<td>' + took_data[i]['group'] + '</td>');
                 html.push('<td>' + took_data[i]['all_task'].join("<br>") + '</td>');
                 html.push('<td>' + took_data[i]['task'].join("<br>") + '</td>');
                 html.push('<td>' + took_data[i]['task'].length + '/' + took_data[i]['all_task'].length + '</td>');

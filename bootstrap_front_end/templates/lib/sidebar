@@ -1,0 +1,23 @@
+<div class="col-lg-2 mu-sidebar mu-bar-top mu-mt-42">
+  <ul class="nav nav-sidebar">
+    <li><a href="/index"><span class="glyphicon glyphicon-home"></span> 首页</a>
+    </li>
+    <li><a href="#"><span class="glyphicon glyphicon-th-list"></span> 任务列表</a>
+    </li>
+    <li><a href="#"><span class="mu-dp-ib mu-w1e"></span> 任务管理</a>
+    </li>
+    <li><a href="#"><span class="mu-dp-ib mu-w1e"></span> 任务设置</a>
+    </li>
+    <li class="active"><a href="#"><span class="glyphicon glyphicon-user"></span> 账号信息</a>
+    </li>
+    <li><a href="#"><span class="mu-dp-ib mu-w1e"></span> 账号管理</a>
+    </li>
+    <li><a href="#"><span class="glyphicon glyphicon-list-alt"></span> 系统日志</a>
+    </li>
+  </ul>
+</div>
+<script>$('.mu-sidebar').on('click', 'a', function() {
+    $(this).closest('ul').find('li').removeClass('active');
+    $(this).closest('li').addClass('active');
+});
+</script>

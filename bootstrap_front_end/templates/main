@@ -1,1 +1,4 @@
-{% include './lib/nav'%}<span>Hello!</span>
+{% include './lib/nav'%}
+{% include './lib/sidebar'%}
+<div class="col-lg-10 col-lg-offset-2 mu-mt-42">{% include './pager'%}
+</div>

@@ -1,7 +1,56 @@
-{% include './lib/nav'%}<br/>
+<div class="mu-pd-10-0 modal-header"><a href="/index"><span class="glyphicon glyphicon-home"></span> 首页</a><span class="mu-ml-5 mu-mr-5">&gt;</span><a href="#">账号管理</a><span class="mu-ml-5 mu-mr-5">&gt;</span><a href="#">账号列表</a>
+</div><br/>
 <h1>独立的分页控件</h1>
 <div id="pagination1"></div><br/>
-<h1>用户管理</h1>
+<h1>用户管理</h1><br/>
+<div class="btn-group">
+  <button type="button" class="btn btn-info">所有状态</button>
+  <button type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-info dropdown-toggle"><span class="caret"></span>
+  </button>
+  <ul class="dropdown-menu">
+    <li><a href="#">激活</a>
+    </li>
+    <li><a href="#">非激活</a>
+    </li>
+    <li role="separator" class="divider"></li>
+    <li><a href="#">所有状态</a>
+    </li>
+  </ul>
+</div>
+<div class="btn-group">
+  <button type="button" class="btn btn-info">所有用户</button>
+  <button type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-info dropdown-toggle"><span class="caret"></span>
+  </button>
+  <ul class="dropdown-menu">
+    <li><a href="#">管理员</a>
+    </li>
+    <li><a href="#">普通用户</a>
+    </li>
+    <li role="separator" class="divider"></li>
+    <li><a href="#">所有用户</a>
+    </li>
+  </ul>
+</div>
+<div class="btn-group">
+  <button type="button" class="btn btn-info">默认排序</button>
+  <button type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-info dropdown-toggle"><span class="caret"></span>
+  </button>
+  <ul class="dropdown-menu">
+    <li><a href="#">用户名排序</a>
+    </li>
+    <li><a href="#">时间排序</a>
+    </li>
+    <li role="separator" class="divider"></li>
+    <li><a href="#">默认排序</a>
+    </li>
+  </ul>
+</div>
+<div class="btn-group mu-w50">
+  <div class="input-group">
+    <input type="text" placeholder="Search for..." class="form-control"/><span class="input-group-btn">
+      <button type="button" class="btn btn-primary">Search</button></span>
+  </div>
+</div>
 <table class="table table-hover">
   <thead>
     <th>激活</th>
@@ -108,6 +157,11 @@
         $('#my_modal').modal(options);
     });
 
+    $(document).on('click', '.dropdown-menu a', function() {
+        $(this).closest('.btn-group').find('.btn:eq(0)').text($(this).text());
+        $(this).closest('.btn-group').removeClass('open');
+        return false;
+    });
 
     var load_data = function(page_index) {
         page_index = page_index || 1;
@@ -123,8 +177,12 @@
                 '<input type="checkbox" ' + (took_data[i]['status'] == 1 ? 'checked="checked"' : '') + '/>' +
                 '<span class="slider"></span></label></td>'
             );
+            if (took_data[i]['group'] == "管理员") {
+                html.push('<td class="bg-warning">' + took_data[i]['group'] + '</td>');
+            } else {
+                html.push('<td >' + took_data[i]['group'] + '</td>');
+            }
             html.push('<td>' + took_data[i]['name'] + '</td>');
-            html.push('<td>' + took_data[i]['group'] + '</td>');
             html.push('<td>' + took_data[i]['all_task'].join("<br>") + '</td>');
             html.push('<td>' + took_data[i]['task'].join("<br>") + '</td>');
             html.push('<td>' + took_data[i]['task'].length + '/' + took_data[i]['all_task'].length + '</td>');

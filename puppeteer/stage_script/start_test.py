@@ -1,5 +1,6 @@
 import q
 import os
+import re
 import subprocess
 import time
 
@@ -21,13 +22,22 @@ def get_strftime_minus(lt):
     return time.strftime("%Y%m%d%H%M%S", time.localtime(time.time() + lt))
 
 
+def assert_time_in_string(data_string, fixed=0):
+    for x in range(6):
+        now_ts = get_strftime_minus(-1 * 60 * 60 * fixed - x + 1)
+        if now_ts in data_string:
+            return None
+    else:
+        raise Exception("Date not valid.")
+
+
 def wrap_test(func):
     def do(script_name):
         try:
             ts = time.time()
-            re = exec_command("node %s" % script_name)
+            result = exec_command("node %s" % script_name)
 
-            func(re)
+            func(result)
         except Exception as e:
             print("[FAILED] %ss %s: %s" % (round(time.time() - ts, 2), script_name, e))
         else:
@@ -39,8 +49,8 @@ def wrap_test(func):
 def basic_test():
 
     @wrap_test
-    def test_hello_world(re):
-        assert not re, "FAILED: %s" % re
+    def test_hello_world(result):
+        assert not result, "FAILED: %s" % result
         with open("helloworld.png", "rb") as rf:
             data = rf.read(8)
             data = data.decode("ISO-8859-1")
@@ -50,20 +60,65 @@ def basic_test():
     test_hello_world("test_hello_world.js")
 
     @wrap_test
-    def test_save_as_pdf(re):
-        assert not re, "FAILED: %s" % re
+    def test_save_as_pdf(result):
+        assert not result, "FAILED: %s" % result
         with open("test_save_as_pdf.pdf", "rb") as rf:
             data = rf.read(300)
             data = data.decode("ISO-8859-1")
-            assert any([True for x in range(5) if get_strftime_minus(-60 * 60 * 8 - x) in data]), "Date not valid."
+            assert_time_in_string(data, fixed=+8)
 
         os.remove("test_save_as_pdf.pdf")
 
     test_save_as_pdf("test_save_as_pdf.js")
 
+    @wrap_test
+    def test_get_dimensions(result):
+        assert "{ width: 800, height: 600, deviceScaleFactor: 1 }" in result, "FAILED: %s" % result
+
+    test_get_dimensions("test_get_dimensions.js")
+
+    @wrap_test
+    def test_search(result):
+        # print("result:", result)
+        assert_time_in_string(result)
+
+    test_search("test_search.js")
+
+    @wrap_test
+    def test_right_click(result):
+        """
+            YOU CAN DO NOTHING FOR NOW
+        """
+        print("result:", result)
+
+    @wrap_test
+    def test_two_page(result):
+        # print("result:", result)
+        assert_time_in_string(result)
+
+    test_two_page("test_two_page.js")
+
+    @wrap_test
+    def test_grep_link(result):
+        assert "10" == result, "Link count not right"
+
+    test_grep_link("test_grep_link.js")
+
+    @wrap_test
+    def test_block_something(result):
+        assert re.match(r"^net::ERR_FAILED", result), "Site block failed"
+
+    test_block_something("test_block_something.js")
+
 
 def main():
-    basic_test()
+    # basic_test()
+
+    @wrap_test
+    def test_block_something(result):
+        assert re.match(r"^net::ERR_FAILED", result), "Site block failed"
+
+    test_block_something("test_block_something.js")
 
 
 if __name__ == "__main__":

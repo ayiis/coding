@@ -110,15 +110,59 @@ def basic_test():
 
     test_block_something("test_block_something.js")
 
+    @wrap_test
+    def test_download_file(result):
+        assert re.match(r"/tmp/[a-z0-9\-]*/inst.exe$", result), "File download failed"
+        os.remove(result)
+
+    test_download_file("test_download_file.js")
+
+    @wrap_test
+    def test_execute_before_load(result):
+        assert result == "Sniffed: true", "execute failed"
+
+    test_execute_before_load("test_execute_before_load.js")
+
+    @wrap_test
+    def test_use_chrome(result):
+        # print("result:", result)
+        assert_time_in_string(result)
+
+    test_use_chrome("test_use_chrome.js")
+
+    @wrap_test
+    def test_use_proxy(result):
+        # print("result:", result)
+        assert result == "https://github.com/GoogleChrome/puppeteer", "proxy result is bad"
+
+    test_use_proxy("test_use_proxy.js")
+
+    @wrap_test
+    def test_take_screenshot(result):
+        assert not result, "FAILED: %s" % result
+        with open("full.png", "rb") as rf:
+            data = rf.read(8)
+            data = data.decode("ISO-8859-1")
+            assert "PNG" in data, "Not a PNG file."
+        os.remove("full.png")
+
+    test_take_screenshot("test_take_screenshot.js")
+
 
 def main():
+
     # basic_test()
 
     @wrap_test
-    def test_block_something(result):
-        assert re.match(r"^net::ERR_FAILED", result), "Site block failed"
+    def test_take_screen_shot(result):
+        assert not result, "FAILED: %s" % result
+        with open("full.png", "rb") as rf:
+            data = rf.read(8)
+            data = data.decode("ISO-8859-1")
+            assert "PNG" in data, "Not a PNG file."
+        os.remove("full.png")
 
-    test_block_something("test_block_something.js")
+    test_take_screen_shot("test_take_screenshot.js")
 
 
 if __name__ == "__main__":

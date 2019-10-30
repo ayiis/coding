@@ -1,11 +1,15 @@
 const puppeteer = require('puppeteer');
 const pAll = require("p-all");
+// cannot use useragent or platform to judge if you are using chromium or chrome
 
 (async () => {
     const actions = [];
     const browser = await puppeteer.launch({
         executablePath: '/mine/soft/Google Chrome.app/Contents/MacOS/Google Chrome',
         headless: true,
+        devtools: false,
+        // headless: false,
+        // devtools: true,
         slowMo: 10,
         defaultViewport: null
     });

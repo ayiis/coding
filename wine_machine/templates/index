@@ -1,1 +1,20 @@
-<div id="main">hello world!</div>
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <style type="text/css">@import url("/css/gitlab.css");
+    </style>
+    <title>添加商品</title>
+  </head>
+  <body data-group="" data-page="profiles:accounts:show" data-project="" class="ui_blue">{% include './lib/header'%}
+    <div class="page-with-new-sidebar page-with-sidebar">
+      <div class="content-wrapper page-with-new-nav">
+        <div class="mobile-overlay">
+          <div class="flash-container flash-container-page"></div>
+        </div>
+        <p></p>
+        <p>hello world!</p>
+      </div>
+    </div>
+  </body>
+</html>

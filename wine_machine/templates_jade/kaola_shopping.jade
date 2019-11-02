@@ -1,0 +1,76 @@
+doctype html
+html
+    head
+        meta(charset='UTF-8')
+        style(type='text/css').
+            @import url('/css/gitlab.css');
+        title 网易考拉
+    body.ui_blue(data-group='', data-page='profiles:accounts:show', data-project='')
+        | {% include './lib/header'%}
+        .page-with-sidebar
+            .content-wrapper.page-with-new-nav
+                .mobile-overlay
+                    .flash-container.flash-container-page
+                #content.container-fluid
+                    .top-area.scrolling-tabs-container.inner-page-scroll-tabs
+                        .fade-left
+                            i.fa.fa-angle-left(aria-hidden='true', data-hidden='true')
+                        .fade-right
+                            i.fa.fa-angle-right(aria-hidden='true', data-hidden='true')
+                        ul.nav-links.scrolling-tabs.is-initialized
+                            li.active
+                                a.shortcuts-activity(title='Home', data-placement='right', href='/kaola_shopping') 网易考拉
+                        .nav-controls
+                            form.project-filter-form(action='javascript:void(0);')
+                                input#name.project-filter-form-field.form-control.input-short.js-projects-list-filter(type='search', name='name', placeholder='按名称搜索...', spellcheck='false', tabindex='2', value='')
+                            .dropdown
+                                button.dropdown-menu-toggle(type='button', data-toggle='dropdown', aria-expanded='false')
+                                    span#status.dropdown-toggle-text(val='1') 自动更新
+                                    i.fa.fa-chevron-down(aria-hidden='true', data-hidden='true')
+                                ul.dropdown-menu.dropdown-menu-align-right.dropdown-menu-selectable
+                                    li.dropdown-header    状态
+                                    li
+                                        a(href='##', val='0') 全部
+                                    li
+                                        a(href='##', val='1') 自动更新
+                                    li
+                                        a(href='##', val='2') 手动更新
+                            a#btn_search.btn.btn-info(href='') 搜索
+                            a.btn.btn-success(href='/kaola_new_item') 添加商品
+                    .js-projects-list-holder
+                        ul#projects_list.projects-list
+                    .table-holder
+                      table#tree-slider.qa-file-tree.table.tree-table
+                        thead
+                          tr
+                            th 自动更新
+                            th 商品名
+                            th 价格
+                            th 好价
+                            th(style='min-width: 61px;') 库存
+                            th 商家
+                            th 更新时间
+                        tbody#tbody_task
+        script#templete_task(type='templete')
+          tr.tree-item
+            td.cgray
+              label.update_status.switch
+                input(type="checkbox")
+                span.slider
+            td.cgray
+              span
+            td.cgray
+              a(target="_blank")
+            td.cgray
+              input.good_price(type="text",style="width:4em;height:32px;border:1px solid #ddd;")
+            td.cgray
+              span
+            td.cgray
+              span
+            td.cgray
+              span
+        | {% include './lib/bottom_script'%}
+        script(src='/js/lib/kaola_shopping.js?ts={{handler.system_start_ts}}')
+        script(src='/js/common.js?ts={{handler.system_start_ts}}')
+        script.
+          window.kaola_shopping.init()

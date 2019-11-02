@@ -1,5 +1,4 @@
 header.navbar.navbar-gitlab.navbar-gitlab-new
-    a.sr-only.gl-accessibility(href='#content-body', tabindex='1') Skip to content
     .container-fluid
         .header-content
             .title-container
@@ -10,13 +9,22 @@ header.navbar.navbar-gitlab.navbar-gitlab-new
                         span.logo-text.hidden-xs
                             svg
                                 use(xmlns:xlink='http://www.w3.org/1999/xlink', xlink:href='/css/icons.svg#gitlab-logo')
+                ul.nav.navbar-nav
+                    li.user-counter
+                        a(href='/jingdong_shopping') 京东购物
+                    li.user-counter
+                        a(href='/kaola_shopping') 网易考拉
+                    li.user-counter
+                        a(href='/yanxuan_shopping') 网易严选
+                    li.user-counter
+                        a(href='/douban_rent') 豆瓣租房
             .navbar-collapse.collapse
                 ul.nav.navbar-nav
                     li.user-counter
                         a#signout.shortcuts-todos(href='##')
                             svg.s16
                                 use(xmlns:xlink='http://www.w3.org/1999/xlink', xlink:href='/css/icons.svg#todo-done')
-                            | SIGN OUT
+                            | Good Luck
             button.navbar-toggle.hidden-sm.hidden-md.hidden-lg(type='button')
                 span.sr-only Toggle navigation
                 svg.s12.more-icon.js-navbar-toggle-right

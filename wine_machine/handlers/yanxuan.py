@@ -9,24 +9,31 @@ from common.tool import aprint as ap
 import q
 from operator import itemgetter, attrgetter
 
-table_jingdong_itemid = DBS["wm"]["jingdong_itemid"]
-table_jingdong_price = DBS["wm"]["jingdong_price"]
+table_yanxuan_itemid = DBS["wm"]["yanxuan_itemid"]
+table_yanxuan_price = DBS["wm"]["yanxuan_price"]
 
 
 @tornado.gen.coroutine
 def task_add(handler, req_data):
     ap(req_data)
 
+    itemid_map = {x.split("-")[0]: x.split("-")[1] for x in req_data["itemid_list"]}
+    itemid_list = [x for x in itemid_map]
+
     result = None
-    exists_items = yield table_jingdong_itemid.find({
+    exists_items = yield table_yanxuan_itemid.find({
         "itemid": {
-            "$in": req_data["itemid_list"]
+            "$in": itemid_list
         }
     }).to_list(length=None)
 
     exists_items = set([x["itemid"] for x in exists_items])
-    items = [{"itemid": x, "status": req_data["status"]} for x in (set(req_data["itemid_list"]) - exists_items)]
-    result = yield table_jingdong_itemid.insert_many(items)
+    items = [{
+        "itemid": x,
+        "index": int(itemid_map[x]) - 1,
+        "status": req_data["status"],
+    } for x in (set(itemid_list) - exists_items)]
+    result = yield table_yanxuan_itemid.insert_many(items)
     result = result.inserted_ids
 
     raise tornado.gen.Return((result, 1))
@@ -46,8 +53,8 @@ def task_list(handler, req_data):
         db_query["status"] = req_data["status"]
 
     print("db_query:", db_query)
-    result = yield table_jingdong_itemid.find(db_query).to_list(length=None)
-    result_detail = yield table_jingdong_price.find({
+    result = yield table_yanxuan_itemid.find(db_query).to_list(length=None)
+    result_detail = yield table_yanxuan_price.find({
         "_id": {
             "$in": [x["_id"] for x in result]
         }
@@ -56,13 +63,11 @@ def task_list(handler, req_data):
     for item in result:
         item_detail = next((x for x in result_detail if x["_id"] == item["_id"]), {})
         item["price"] = item_detail.get("price", 0)
-        item["vender"] = item_detail.get("vender", "待更新")
-        item["stock"] = item_detail.get("stock", "")
+        item["vender"] = "自营"
+        item["stock"] = item_detail.get("store", 0)
         item["datetime"] = item_detail.get("datetime", "")
         item["quan"] = item_detail.get("quan", "")
         item["promote"] = item_detail.get("promote", "")
-        item["ads"] = item_detail.get("ads", "")
-        item["presale_info"] = item_detail.get("presale_info", "")
 
     result = sorted(result, key=lambda x: x.get("datetime"), reverse=True)
 
@@ -73,7 +78,7 @@ def task_list(handler, req_data):
 def task_update_status(handler, req_data):
     ap(req_data)
 
-    result = yield table_jingdong_itemid.update_one({
+    result = yield table_yanxuan_itemid.update_one({
         "_id": ObjectId(req_data["_id"]),
     }, {
         "$set": {
@@ -88,7 +93,7 @@ def task_update_status(handler, req_data):
 def update_good_price(handler, req_data):
     ap(req_data)
 
-    result = yield table_jingdong_itemid.update_one({
+    result = yield table_yanxuan_itemid.update_one({
         "_id": ObjectId(req_data["_id"]),
     }, {
         "$set": {

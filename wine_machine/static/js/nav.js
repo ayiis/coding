@@ -5,6 +5,10 @@
         return $(this).find('>a[href="' + location.pathname + '"]').length > 0;
     }).addClass('active');
 
+    $('.header-content .navbar-nav').find('li').filter(function(){
+        return $(this).find('>a[href="' + location.pathname + '"]').length > 0;
+    }).addClass('chose');
+
     $('#signout').click(function(event){
         event.preventDefault();
         var req_data = {}
@@ -23,7 +27,7 @@
         });
     });
 
-    $('.dropdown-menu-toggle').click(function(){
+    $('.dropdown-menu-toggle').click(function() {
         if($(this).attr('aria-expanded') == 'false') {
             $(this).attr('aria-expanded', 'true');
             $(this).closest('div').addClass('open');

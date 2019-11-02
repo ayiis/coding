@@ -1,1 +1,15 @@
-#main hello world!
+doctype html
+html
+    head
+        meta(charset='UTF-8')
+        style(type='text/css').
+            @import url("/css/gitlab.css");
+        title 添加商品
+    body.ui_blue(data-group='', data-page='profiles:accounts:show', data-project='')
+        | {% include './lib/header'%}
+        .page-with-new-sidebar.page-with-sidebar
+            .content-wrapper.page-with-new-nav
+                .mobile-overlay
+                    .flash-container.flash-container-page
+                p
+                p hello world!

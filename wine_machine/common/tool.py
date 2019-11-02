@@ -132,3 +132,25 @@ def get_date(date_type, strftime="%Y-%m-%d"):
         target_date = datetime.datetime(now.year + 1, 1, 1) - timedelta(days=1)
 
     return target_date.strftime(strftime)
+
+
+def try_decode_html_content(content, encoding_list=["utf8", "gb2312", "gbk", "gb18030", "big5", "big5hkscs"]):
+    """
+        京东：
+            gbk => gb18030 ==> UnicodeDecodeError: 'gbk' codec can't decode byte 0x81 in position
+    """
+    if content is None or isinstance(content, str):
+        return content
+
+    for encoding in encoding_list:
+        try:
+            return content.decode(encoding)
+        except Exception:
+            pass
+
+    return content
+
+
+def get_datetime_from_stamp(stamp):
+    return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(int(stamp)))
+

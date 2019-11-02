@@ -48692,6 +48692,14 @@ ul.wiki-pages-list.content-list ul li {
     color: #ea6f5a;
 }
 
+.info_presale {
+    background-color: yellow;
+    border: 1px solid #ea6f5a;
+    border-radius: 3px;
+    padding: 1px;
+    color: #1b69b6;
+}
+
 .info_quan {
     padding: 0 10px;
     color: #df3033;
@@ -48711,4 +48719,26 @@ ul.wiki-pages-list.content-list ul li {
 
 a.visit:visited {
     color: #769;
+}
+
+.title-container>a {
+    color: #c8d7e6;
+    margin: 4px 2px;
+    padding: 6px 8px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    border-radius: 4px;
+    height: 32px;
+    font-weight: 600;
+}
+
+.user-counter.chose {
+    border-bottom: 2px solid #ffffff;
+}
+
+.user-counter.chose a {
+    color: #ffffff;
 }

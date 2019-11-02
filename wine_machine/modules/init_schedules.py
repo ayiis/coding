@@ -4,6 +4,8 @@ import tornado.gen
 from modules import (
     ws_jingdong,
     ws_douban,
+    ws_kaola,
+    ws_yanxuan,
 )
 
 
@@ -21,15 +23,21 @@ def do_return_sequence_name(handler, req_data):
 @tornado.gen.coroutine
 def init():
 
-    yield ws_douban.execute()
+    # yield ws_douban.execute()
     # yield ws_jingdong.execute()
+    # yield ws_kaola.execute()
+    yield ws_yanxuan.execute()
 
-    raise tornado.gen.Return(True)
+    # exit(1)
+    # raise tornado.gen.Return(True)
 
     if config.WATCH_DOGS["jingdong"]["enable"]:
         tornado_timmer.set_interval(config.WATCH_DOGS["jingdong"]["period"], ws_jingdong.execute)
 
-    if config.WATCH_DOGS["douban"]["enable"]:
-        tornado_timmer.set_interval(config.WATCH_DOGS["douban"]["period"], ws_douban.execute)
+    if config.WATCH_DOGS["kaola"]["enable"]:
+        tornado_timmer.set_interval(config.WATCH_DOGS["kaola"]["period"], ws_kaola.execute)
+
+    # if config.WATCH_DOGS["douban"]["enable"]:
+    #     tornado_timmer.set_interval(config.WATCH_DOGS["douban"]["period"], ws_douban.execute)
 
 

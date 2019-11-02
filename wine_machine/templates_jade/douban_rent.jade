@@ -1,0 +1,57 @@
+doctype html
+html
+    head
+        meta(charset='UTF-8')
+        style(type='text/css').
+            @import url('/css/gitlab.css');
+            @import url('/css/pagination.css');
+        title 豆瓣租房
+    body.ui_blue(data-group='', data-page='profiles:accounts:show', data-project='')
+        | {% include './lib/header'%}
+        .page-with-sidebar
+            .content-wrapper.page-with-new-nav
+                .mobile-overlay
+                    .flash-container.flash-container-page
+                #content.container-fluid
+                    .top-area.scrolling-tabs-container.inner-page-scroll-tabs
+                        ul.nav-links.scrolling-tabs.is-initialized
+                            li.active
+                                a.shortcuts-activity(title='Home', data-placement='right', href='/douban_rent') 豆瓣租房
+                        .nav-controls
+                            form.project-filter-form(action='javascript:void(0);')
+                                input#group.project-filter-form-field.form-control.input-short.js-projects-list-filter(type='search', name='group', placeholder='按小组搜索...', spellcheck='false', tabindex='1', value='')
+                                input#title.project-filter-form-field.form-control.input-short.js-projects-list-filter(type='search', name='title', placeholder='按标题搜索...', spellcheck='false', tabindex='1', value='')
+                                input#author.project-filter-form-field.form-control.input-short.js-projects-list-filter(type='search', name='author', placeholder='按作者搜索...', spellcheck='false', tabindex='2', value='')
+                            a#btn_search.btn.btn-info(href='') 搜索
+                            a.btn.btn-success(href='/filter_chage') 修改过滤规则
+                    .js-projects-list-holder
+                        ul#projects_list.projects-list
+                    .table-holder
+                      table#tree-slider.qa-file-tree.table.tree-table
+                        thead
+                          tr
+                            th 小组
+                            th 标题
+                            th 作者
+                            th 回应
+                            th 最后回应
+                        tbody#tbody_task
+
+                    #pagination
+        script#templete_task(type='templete')
+          tr.tree-item
+            td.cgray
+              a(target="_blank")
+            td.cgray
+              a.visit(target="_blank")
+            td.cgray
+              a(target="_blank")
+            td.cgray
+              span
+            td.cgray
+              span
+        | {% include './lib/bottom_script'%}
+        script(src='/js/lib/douban_rent.js?ts={{handler.system_start_ts}}')
+        script(src='/js/common.js?ts={{handler.system_start_ts}}')
+        script.
+          window.douban_rent.init()

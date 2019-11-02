@@ -1,4 +1,4 @@
-<header class="navbar navbar-gitlab navbar-gitlab-new"><a href="#content-body" tabindex="1" class="sr-only gl-accessibility">Skip to content</a>
+<header class="navbar navbar-gitlab navbar-gitlab-new">
   <div class="container-fluid">
     <div class="header-content">
       <div class="title-container">
@@ -10,13 +10,23 @@
                 <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="/css/icons.svg#gitlab-logo"></use>
               </svg></span></a>
         </h1>
+        <ul class="nav navbar-nav">
+          <li class="user-counter"><a href="/jingdong_shopping">京东购物</a>
+          </li>
+          <li class="user-counter"><a href="/kaola_shopping">网易考拉</a>
+          </li>
+          <li class="user-counter"><a href="/yanxuan_shopping">网易严选</a>
+          </li>
+          <li class="user-counter"><a href="/douban_rent">豆瓣租房</a>
+          </li>
+        </ul>
       </div>
       <div class="navbar-collapse collapse">
         <ul class="nav navbar-nav">
           <li class="user-counter"><a id="signout" href="##" class="shortcuts-todos">
               <svg class="s16">
                 <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="/css/icons.svg#todo-done"></use>
-              </svg>SIGN OUT</a>
+              </svg>Good Luck</a>
           </li>
         </ul>
       </div>

@@ -33,13 +33,13 @@ def make_app():
 
     settings = {
         "template_path": "templates",
-        # "autoreload": False,
-        "autoreload": True,
+        "autoreload": False,
+        # "autoreload": True,
         "debug": False,
     }
 
     from handlers import main, watchdog
-    from handlers import rent_douban, jingdong
+    from handlers import rent_douban, jingdong, kaola, yanxuan
 
     ApiHandler.update_url_handlers({
         "/api/200": main.do_return_ok,
@@ -50,6 +50,17 @@ def make_app():
         "/api/jingdong/task_add": jingdong.task_add,
         "/api/jingdong/task_list": jingdong.task_list,
         "/api/jingdong/task_update_status": jingdong.task_update_status,
+        "/api/jingdong/update_good_price": jingdong.update_good_price,
+
+        "/api/kaola/task_add": kaola.task_add,
+        "/api/kaola/task_list": kaola.task_list,
+        "/api/kaola/task_update_status": kaola.task_update_status,
+        "/api/kaola/update_good_price": kaola.update_good_price,
+
+        "/api/yanxuan/task_add": yanxuan.task_add,
+        "/api/yanxuan/task_list": yanxuan.task_list,
+        "/api/yanxuan/task_update_status": yanxuan.task_update_status,
+        "/api/yanxuan/update_good_price": yanxuan.update_good_price,
 
         "/api/rent/task_list": rent_douban.task_list,
         "/api/rent/query_filter": rent_douban.query_filter,
@@ -76,7 +87,9 @@ def make_app():
 
 
 if __name__ == "__main__":
-    make_app()
     # from modules import watchdog_amobbs
     # watchdog_amobbs.main()
+    # from modules.fine import kaola
+    # kaola.test()
+    make_app()
     tornado.ioloop.IOLoop.current().start()

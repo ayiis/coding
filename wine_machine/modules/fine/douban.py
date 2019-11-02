@@ -112,4 +112,5 @@ class DoubanGroup(object):
             result_list[-1]["price"] = self.get_price_from_item(result_list[-1])
 
         tool.aprint("result:", len(result_list))
-        return result_list
+        # return result_list
+        raise tornado.gen.Return(result_list)

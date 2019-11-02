@@ -54,7 +54,7 @@ def execute():
     """
     douban_tmp_name = "douban_tmp"
 
-    douban_config = yield table_rent_a_life["douban_config"].find({}).to_list(length=None)
+    douban_config = yield table_rent_a_life["douban_config"].find({"enable": 1}).to_list(length=None)
     date_list = {x["id"]: x["date"] for x in douban_config}
     name_list = {x["id"]: x["group_name"] for x in douban_config}
 
@@ -84,7 +84,7 @@ def execute():
                 print("Reached end_condition:", result[-1])
                 break
 
-            yield tornado.gen.sleep(1)
+            yield tornado.gen.sleep(3)
 
         if got_first_date:
             yield table_rent_a_life["douban_config"].update_one({
@@ -100,7 +100,7 @@ def execute():
         # 清空 douban_tmp 数据
         yield table_rent_a_life[douban_tmp_name].delete_many({})
 
-        yield tornado.gen.sleep(2)
+        yield tornado.gen.sleep(4)
 
 
 if __name__ == "__main__":

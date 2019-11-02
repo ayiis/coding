@@ -14,26 +14,39 @@ import tornado.gen
 table_jingdong_itemid = DBS["wm"]["jingdong_itemid"]
 table_jingdong_price = DBS["wm"]["jingdong_price"]
 table_jingdong_price_old = DBS["wm"]["jingdong_price_old"]
-base_name = ("name", "cat", "venderId", "shopId")
+
+BASE_NAME = ("name", "cat", "venderId", "shopId")
+COMPARE_KEYS = ("price", "stock", "promote", "quan", "presale_info")    # gift ads vender good_price feedback
+PROMOTE_FILTER = "换购|换购"
 
 
+@tornado.gen.coroutine
 def get_base_info(item):
 
-    # 如果已经所有基本信息都有了，跳过这个步骤
-    if not any(1 for x in base_name if x not in item):
-        return False
+    # 每天更新一次 基本信息
+    if "datetime" in item and item["datetime"][:10] >= tool.get_date("today"):
 
-    return fine_jingdong.get_base_info(item["itemid"])
+        # 如果已经所有基本信息都有了，跳过这个步骤
+        if not any(1 for x in BASE_NAME if x not in item):
+            return False
+
+    result = yield fine_jingdong.get_base_info(item)
+    result["datetime"] = tool.get_datetime_string()
+    return result
 
 
+@tornado.gen.coroutine
 def get_store_info(item):
 
-    return fine_jingdong.get_store_info(item)
+    result = yield fine_jingdong.get_store_info(item)
+    return result
 
 
+@tornado.gen.coroutine
 def get_promote_info(item):
 
-    return fine_jingdong.get_promote_info(item)
+    result = yield fine_jingdong.get_promote_info(item)
+    return result
 
 
 def get_wx_content(item):
@@ -47,6 +60,7 @@ def get_wx_content(item):
         "quan": item["quan"],
         "feedback": item["feedback"],
         "ads": item["ads"],
+        "presale_info": item.get("presale_info"),
     }, indent=2, sort_keys=False)
 
 
@@ -56,11 +70,17 @@ def execute():
     # 查 item 的： 商品id & 店铺id 之类的基本信息 状态为 1 的商品
     jingdong_itemid_list = yield table_jingdong_itemid.find(
         {"status": 1}, {"status": False}
+        # {"itemid": "4794417"}, {"status": False}
     ).to_list(length=None)
 
     for item in jingdong_itemid_list:
+
         try:
-            base_info = get_base_info(item)
+
+            if not item.get("url"):
+                item["url"] = fine_jingdong.get_item_url_by_id(item["itemid"])
+
+            base_info = yield get_base_info(item)
             if not base_info:
                 continue
 
@@ -74,40 +94,62 @@ def execute():
             )
         except Exception:
             ap(traceback.format_exc())
+        finally:
+            yield tornado.gen.sleep(0.1)
 
     last_wx = None
     # 为没有值的 item 填充默认值
     for item in jingdong_itemid_list:
 
-        # 如果之前没有查询到 base_name 的值，填充一个默认值
-        item["cat"] = item.get("cat", "1,2,3")
-        item["name"] = item.get("name", "")
-        item["venderId"] = item.get("venderId", "0")
-        item["shopId"] = item.get("shopId", "0")
+        ap("Doing:", item["itemid"], item["name"])
+
+        # 如果之前没有查询到 BASE_NAME 的值，填充一个默认值
+        item["cat"] = item.get("cat") or "1,2,3"
+        item["name"] = item.get("name") or ""
+        item["venderId"] = item.get("venderId") or "0"
+        item["shopId"] = item.get("shopId") or "0"
 
         # 查 item 的： 库存 & 价格 & 店铺名称
         try:
-            store_info = get_store_info(item)
+            store_info = yield get_store_info(item)
             if not store_info:
                 continue
 
-            ap(store_info)
+            # ap(store_info)
             item.update(store_info)
         except Exception:
             ap(traceback.format_exc())
             continue
+        finally:
+            yield tornado.gen.sleep(0.2)
 
         # 查 item 的：促销 & 赠品 & 返券 & 活动广告
         try:
-            promote_info = get_promote_info(item)
+            promote_info = yield get_promote_info(item)
             if not promote_info:
                 continue
 
-            ap(promote_info)
+            # ap(promote_info)
             item.update(promote_info)
         except Exception:
             ap(traceback.format_exc())
             continue
+        finally:
+            yield tornado.gen.sleep(0.2)
+
+        if item.get("presale"):
+            # 查 预售 价格
+            try:
+                presale_info = yield fine_jingdong.get_presale_info(item)
+                if presale_info:
+                    item["presale_info"] = presale_info
+                else:
+                    item["presale_info"] = None
+                # price
+            except Exception:
+                ap(traceback.format_exc())
+            finally:
+                yield tornado.gen.sleep(0.2)
 
         # 对比之前的数据，如果有不同，则插入一条信新的记录，并发送信息到微信上
         try:
@@ -121,8 +163,10 @@ def execute():
                 yield table_jingdong_price.insert_one(item)
 
             else:
-                # datetime 不做比较，先赋予一样的值 跳过
+                # datetime / good_price 不做比较，先赋予一样的值 跳过
                 item["datetime"] = old_item["datetime"]
+                if "good_price" in item:
+                    old_item["good_price"] = item["good_price"]
 
                 # 如果完全一样
                 if old_item == item:
@@ -132,7 +176,7 @@ def execute():
                 # 与原来的价格信息不一样
                 else:
 
-                    diff_keys = [x for x in item if item[x] != old_item[x]]
+                    diff_keys = [x for x in COMPARE_KEYS if item.get(x) and item[x] != old_item.get(x)]
 
                     item["datetime"] = tool.get_datetime_string()
                     yield table_jingdong_price.update_one({
@@ -142,11 +186,55 @@ def execute():
                     })
                     del old_item["_id"]
                     yield table_jingdong_price_old.insert_one(old_item)
+
+                    """
+                        不提醒：
+
+                            - 涨价
+
+                            - 没了：
+                                promote
+                                gift 没了
+                                quan 没了
+                                ads 没了
+
+                                feedback 没了（字符串）
+
+                            stock 变成无货
+
+                            - 无视 vender
+                    """
+                    if "price" in diff_keys:
+                        if 0 < float(old_item["price"]) < float(item["price"]) or float(item["price"]) == -1:
+                            diff_keys.remove("price")
+
+                    # 如果新的比旧的少，无视
+                    # ads 有时候会是 [] 或 [""] 无视
+                    for key in ("promote", "gift", "quan", "ads", "feedback"):
+                        for line in item[key]:
+                            if line and line not in old_item[key]:
+                                # 促销如果是 换购 就无视
+                                if not (key == "promote" and re.search(PROMOTE_FILTER, line[0])):
+                                    break
+                        else:
+                            if key in diff_keys:
+                                diff_keys.remove(key)
+                            continue
+
+                    if "stock" in diff_keys:
+                        if old_item["stock"] == "无货" and item["stock"] != "无货":
+                            pass
+                        else:
+                            diff_keys.remove("stock")
+
+                    if not diff_keys:
+                        continue
+
                     content = "\r\n".join([
                         "",
                         ",".join(diff_keys),
                         "",
-                        "# 新数据",
+                        "[商品链接](%s) 好价:%s" % (item.get("url"), old_item.get("good_price") or 0),
                         "",
                         "```json",
                         "%s",
@@ -159,7 +247,7 @@ def execute():
                         "```",
                         "",
                     ]) % (get_wx_content(item), get_wx_content(old_item))
-                    last_wx = tool.send_to_my_wx(item["name"], content)
+                    last_wx = tool.send_to_my_wx("京东" + item["name"], content)
 
                     # q.d()
                     # yield last_wx
@@ -169,8 +257,8 @@ def execute():
         except Exception:
             ap(traceback.format_exc())
             yield tornado.gen.sleep(2)
-
-        yield tornado.gen.sleep(0.1)
+        finally:
+            yield tornado.gen.sleep(0.5)
 
     if last_wx:
         try:

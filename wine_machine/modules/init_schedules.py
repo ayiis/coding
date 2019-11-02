@@ -24,9 +24,10 @@ def do_return_sequence_name(handler, req_data):
 def init():
 
     # yield ws_douban.execute()
+
     # yield ws_jingdong.execute()
     # yield ws_kaola.execute()
-    yield ws_yanxuan.execute()
+    # yield ws_yanxuan.execute()
 
     # exit(1)
     # raise tornado.gen.Return(True)

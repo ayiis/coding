@@ -9,7 +9,6 @@ window.jingdong_shopping = {
     bind_event: function() {
         var self = this;
         $('#btn_search').click(function(event) {
-            event.preventDefault();
             self.do_search();
             return false;
         });
@@ -17,6 +16,14 @@ window.jingdong_shopping = {
             var task_id = $(this).closest('tr').find('td:eq(1)').find('span').attr('val');
             var task_send_type = $(this).find('input').is(':checked');
             self.update_status(task_id, task_send_type == true ? 1 : 2);
+        });
+        $('#tbody_task').on('click', '.btn-delete', function(event) {
+            var tr = $(this).closest('tr')
+            var task_id = tr.find('td:eq(1)').find('span').attr('val');
+            self.remove_item(task_id, function(){
+                tr.remove();
+            });
+            return false;
         });
         $('#tbody_task').on('keydown', '.good_price', function(event) {
             if(event.keyCode == 13) {
@@ -98,6 +105,10 @@ window.jingdong_shopping = {
                         ele_list.push(templete_task);
                     }
                     $('#tbody_task').empty().append(ele_list);
+
+                    if (req_data.status == 2) {
+                        $('#tbody_task .btn-delete').removeClass('hide');
+                    }
                 } else {
 
                 }
@@ -144,6 +155,31 @@ window.jingdong_shopping = {
             success: function(res_data) {
                 if (res_data.code == 200) {
                     $.notify("好价已更新到" + good_price, "success");
+                } else {
+                    $.notify(res_data.desc, "warn");
+                }
+            },
+            error: function(error) {
+                $.notify(error, "error");
+            }
+        });
+    },
+    remove_item: function(_id, cb) {
+        var req_data = {
+            '_id': _id,
+        }
+        $.ajax({
+            type: 'POST',
+            contentType: 'application/json; charset=utf-8',
+            url: '/api/jingdong/remove_item',
+            data: JSON.stringify(req_data),
+            dataType: 'json',
+            success: function(res_data) {
+                if (res_data.code == 200) {
+                    $.notify("商品已删除", "info");
+                    if (cb) {
+                        cb();
+                    }
                 } else {
                     $.notify(res_data.desc, "warn");
                 }

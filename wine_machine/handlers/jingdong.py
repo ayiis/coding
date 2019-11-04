@@ -98,3 +98,13 @@ def update_good_price(handler, req_data):
 
     raise tornado.gen.Return((result.raw_result, 1))
 
+
+@tornado.gen.coroutine
+def remove_item(handler, req_data):
+    ap(req_data)
+
+    result = yield table_jingdong_itemid.delete_one({
+        "_id": ObjectId(req_data["_id"]),
+    })
+
+    raise tornado.gen.Return((result.raw_result, 1))

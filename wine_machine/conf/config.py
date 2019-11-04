@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 SYSTEM = {
-    "listening_port": 60002,
+    "listening_port": 60003,
 }
 
 MONGODB = {
@@ -28,6 +28,10 @@ WATCH_DOGS = {
         "period": 60 * 6,  # every 6 minutes
     },
     "kaola": {
+        "enable": True,
+        "period": 60 * 6,  # every 6 minutes
+    },
+    "yanxuan": {
         "enable": True,
         "period": 60 * 6,  # every 6 minutes
     },

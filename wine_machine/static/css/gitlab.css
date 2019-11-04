@@ -48742,3 +48742,11 @@ a.visit:visited {
 .user-counter.chose a {
     color: #ffffff;
 }
+
+a.btn-delete {
+    color: red;
+    padding: 1px;
+    border: 1px solid red;
+    border-radius: 2px;
+    font-size: 12px;
+}

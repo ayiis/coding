@@ -30,13 +30,16 @@ def init():
     # yield ws_yanxuan.execute()
 
     # exit(1)
-    # raise tornado.gen.Return(True)
+    raise tornado.gen.Return(True)
 
     if config.WATCH_DOGS["jingdong"]["enable"]:
         tornado_timmer.set_interval(config.WATCH_DOGS["jingdong"]["period"], ws_jingdong.execute)
 
     if config.WATCH_DOGS["kaola"]["enable"]:
         tornado_timmer.set_interval(config.WATCH_DOGS["kaola"]["period"], ws_kaola.execute)
+
+    if config.WATCH_DOGS["yanxuan"]["enable"]:
+        tornado_timmer.set_interval(config.WATCH_DOGS["yanxuan"]["period"], ws_yanxuan.execute)
 
     # if config.WATCH_DOGS["douban"]["enable"]:
     #     tornado_timmer.set_interval(config.WATCH_DOGS["douban"]["period"], ws_douban.execute)

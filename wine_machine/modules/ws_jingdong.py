@@ -8,6 +8,7 @@ from common.tool import aprint as ap
 from conf import config
 import traceback
 from modules.fine import jingdong as fine_jingdong
+from modules import calc_discount
 
 import tornado.gen
 
@@ -60,6 +61,8 @@ def get_wx_content(item):
         "quan": item["quan"],
         "feedback": item["feedback"],
         "ads": item["ads"],
+        "calc_price": item.get("calc_price"),
+        "calc_advice": item.get("calc_advice"),
         "presale_info": item.get("presale_info"),
     }, indent=2, sort_keys=False)
 
@@ -70,7 +73,7 @@ def execute():
     # 查 item 的： 商品id & 店铺id 之类的基本信息 状态为 1 的商品
     jingdong_itemid_list = yield table_jingdong_itemid.find(
         {"status": 1}, {"status": False}
-        # {"itemid": "4794417"}, {"status": False}
+        # {"itemid": "100003378175"}, {"status": False}
     ).to_list(length=None)
 
     for item in jingdong_itemid_list:
@@ -230,12 +233,23 @@ def execute():
                     if not diff_keys:
                         continue
 
+                    calc_price_text = ""
+                    for key in ("promote", "quan", "price"):
+                        if key in diff_keys:
+                            try:
+                                calc_discount.JDDiscount.calc(item)
+                                if item["calc_price"] < old_item.get("good_price", 0):
+                                    calc_price_text = "\r\n预估价：%s，%s\r\n" % (item["calc_price"], item["calc_advice"])
+                                    break
+                            except Exception as e:
+                                print(e)
+
                     content = "\r\n".join([
                         "",
                         ",".join(diff_keys),
                         "",
                         "[商品链接](%s) 好价:%s" % (item.get("url"), old_item.get("good_price") or 0),
-                        "",
+                        "%s" % (calc_price_text),   # 新增 预估价
                         "```json",
                         "%s",
                         "```",
@@ -247,7 +261,10 @@ def execute():
                         "```",
                         "",
                     ]) % (get_wx_content(item), get_wx_content(old_item))
-                    last_wx = tool.send_to_my_wx("京东" + item["name"], content)
+                    last_wx = tool.send_to_my_wx(
+                        (calc_price_text and "__" or "") + "京东" + item["name"],
+                        content,
+                    )
 
                     # q.d()
                     # yield last_wx

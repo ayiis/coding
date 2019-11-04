@@ -29,17 +29,28 @@ def init():
     # yield ws_kaola.execute()
     # yield ws_yanxuan.execute()
 
+    # def aaa():
+    #     import time
+    #     print("this is:", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time())))
+
+    # tornado_timmer.MinuteTimmer(aaa)
+
     # exit(1)
-    raise tornado.gen.Return(True)
+
+    # exit(1)
+    # raise tornado.gen.Return(True)
 
     if config.WATCH_DOGS["jingdong"]["enable"]:
-        tornado_timmer.set_interval(config.WATCH_DOGS["jingdong"]["period"], ws_jingdong.execute)
+        # tornado_timmer.set_interval(config.WATCH_DOGS["jingdong"]["period"], ws_jingdong.execute)
+        tornado_timmer.MinuteTimmer(ws_jingdong.execute, config.WATCH_DOGS["jingdong"]["minute_list"])
 
     if config.WATCH_DOGS["kaola"]["enable"]:
-        tornado_timmer.set_interval(config.WATCH_DOGS["kaola"]["period"], ws_kaola.execute)
+        # tornado_timmer.set_interval(config.WATCH_DOGS["kaola"]["period"], ws_kaola.execute)
+        tornado_timmer.MinuteTimmer(ws_kaola.execute, config.WATCH_DOGS["kaola"]["minute_list"])
 
     if config.WATCH_DOGS["yanxuan"]["enable"]:
-        tornado_timmer.set_interval(config.WATCH_DOGS["yanxuan"]["period"], ws_yanxuan.execute)
+        # tornado_timmer.set_interval(config.WATCH_DOGS["yanxuan"]["period"], ws_yanxuan.execute)
+        tornado_timmer.MinuteTimmer(ws_yanxuan.execute, config.WATCH_DOGS["yanxuan"]["minute_list"])
 
     # if config.WATCH_DOGS["douban"]["enable"]:
     #     tornado_timmer.set_interval(config.WATCH_DOGS["douban"]["period"], ws_douban.execute)

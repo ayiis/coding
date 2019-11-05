@@ -63,6 +63,8 @@ def task_list(handler, req_data):
         item["promote"] = item_detail.get("promote", "")
         item["ads"] = item_detail.get("ads", "")
         item["presale_info"] = item_detail.get("presale_info", "")
+        item["calc_price"] = item_detail.get("calc_price", "")
+        item["calc_advice"] = item_detail.get("calc_advice", "")
 
     result = sorted(result, key=lambda x: x.get("datetime"), reverse=True)
 

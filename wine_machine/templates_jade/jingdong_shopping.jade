@@ -46,6 +46,7 @@ html
                             th 自动更新
                             th 商品名
                             th 价格
+                            th 估算价
                             th 好价
                             th(style='min-width: 61px;') 库存
                             th 商家
@@ -53,23 +54,25 @@ html
                         tbody#tbody_task
         script#templete_task(type='templete')
           tr.tree-item
-            td.cgray
+            td.cgray.dt_status
               label.update_status.switch
                 input(type="checkbox")
                 span.slider
               div
                 a.btn-delete.hide(href="#") 删除
-            td.cgray
+            td.cgray.dt_name
               span
-            td.cgray
+            td.cgray.dt_price
               a(target="_blank")
-            td.cgray
+            td.cgray.dt_calc_price
+              span
+            td.cgray.dt_good_price
               input.good_price(type="text",style="width:4em;height:32px;border:1px solid #ddd;")
-            td.cgray
+            td.cgray.dt_store
               span
-            td.cgray
+            td.cgray.dt_shop
               span
-            td.cgray
+            td.cgray.dt_datetime
               span
         | {% include './lib/bottom_script'%}
         script(src='/js/lib/jingdong_shopping.js?ts={{handler.system_start_ts}}')

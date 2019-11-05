@@ -25,19 +25,22 @@ MONGODB = {
 WATCH_DOGS = {
     "jingdong": {
         "enable": True,
-        "period": 60 * 6,  # every 6 minutes
+        # "period": 60 * 6,  # every x minutes
+        "minute_list": [x * 5 + 1 for x in range(60 // 5)],  # run at x minute of every hours
     },
     "kaola": {
         "enable": True,
-        "period": 60 * 6,  # every 6 minutes
+        # "period": 60 * 7,  # every x minutes
+        "minute_list": [x * 7 + 1 for x in range(60 // 7)],  # run at x minute of every hours
     },
     "yanxuan": {
         "enable": True,
-        "period": 60 * 6,  # every 6 minutes
+        # "period": 60 * 7,  # every x minutes
+        "minute_list": [x * 7 + 1 for x in range(60 // 7)],  # run at x minute of every hours
     },
     "douban": {
         "enable": True,
-        "period": 60 * 15,  # every 10 minutes
+        "period": 60 * 23,  # every x minutes
     },
 }
 

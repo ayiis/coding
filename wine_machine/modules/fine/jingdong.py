@@ -158,10 +158,8 @@ def get_store_info(info):
     else:
         price = "-1.00"
 
-    # q.d()
-
     return {
-        "price": price,
+        "price": float(price),
         "vender": vender_string,
         "stock": store_api_content_json["stock"]["StockStateName"],
     }

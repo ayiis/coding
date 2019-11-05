@@ -85,23 +85,28 @@ window.jingdong_shopping = {
                         }
 
                         templete_task.attr('val', item._id);
-                        templete_task.find('td:eq(0)').find('span').attr('val', item.status || 0);
-                        templete_task.find('td:eq(1)').find('span').attr('val', item._id).html(name_html.join(""));
-                        templete_task.find('td:eq(2)').find('a').attr('val', item.price).text(item.price).attr("href", "https://item.jd.com/" + item.itemid + ".html");
-                        templete_task.find('td:eq(3)').find('input').val(parseInt(Number(item.good_price || 0)));
-                        templete_task.find('td:eq(4)').find('span').attr('val', item.stock).text(item.stock);
-                        templete_task.find('td:eq(5)').find('span').attr('val', item.vender).text(item.vender);
-                        templete_task.find('td:eq(6)').find('span').attr('val', item.datetime).text(item.datetime);
+                        templete_task.find('td.dt_status').find('span').attr('val', item.status || 0);
+                        templete_task.find('td.dt_name').find('span').attr('val', item._id).html(name_html.join(""));
+                        templete_task.find('td.dt_price').find('a').attr('val', item.price).text(item.price).attr("href", "https://item.jd.com/" + item.itemid + ".html");
+                        templete_task.find('td.dt_calc_price').find('span').attr('val', item.calc_price).attr('title', item.calc_advice).text(item.calc_price);
+                        templete_task.find('td.dt_good_price').find('input').val(parseInt(Number(item.good_price || 0)));
+                        templete_task.find('td.dt_store').find('span').attr('val', item.stock).text(item.stock);
+                        templete_task.find('td.dt_shop').find('span').attr('val', item.vender).text(item.vender);
+                        templete_task.find('td.dt_datetime').find('span').attr('val', item.datetime).text(item.datetime);
                         templete_task.find('.view_user_task').attr('val', item.username);
 
-                        if(templete_task.find('td:eq(4)').find('span').attr('val') == "无货" || templete_task.find('td:eq(2)').find('a').attr('val') == "-1.00") {
-                            templete_task.find('td:eq(4)').addClass("no_stock");
+                        if(templete_task.find('td.dt_store').find('span').attr('val') == "无货" || templete_task.find('td.dt_price').find('a').attr('val') == "-1.00") {
+                            templete_task.find('td.dt_store').addClass("no_stock");
                         }
                         if(item.status == 1) {
-                            templete_task.find('td:eq(0)').find('input').attr('checked', 'checked');
+                            templete_task.find('td.dt_status').find('input').attr('checked', 'checked');
                         } else {
-                            templete_task.find('td:eq(0)').find('input').attr('checked', null);
+                            templete_task.find('td.dt_status').find('input').attr('checked', null);
                         }
+                        if(item.calc_price > 0 && item.calc_price <= item.good_price) {
+                            templete_task.find('td.dt_calc_price').addClass('ay_good_price');
+                        }
+
                         ele_list.push(templete_task);
                     }
                     $('#tbody_task').empty().append(ele_list);

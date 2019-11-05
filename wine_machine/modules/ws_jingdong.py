@@ -159,6 +159,16 @@ def execute():
 
             old_item = yield table_jingdong_price.find_one({"_id": item["_id"]})
 
+            calc_price_text = ""
+            is_good_price = False
+            try:
+                calc_discount.JDDiscount.calc(item)
+                if 0 < item["calc_price"] < item["good_price"]:
+                    is_good_price = True
+                calc_price_text = "\r\n预估价：%s，%s\r\n" % (item["calc_price"], item["calc_advice"])
+            except Exception:
+                ap(traceback.format_exc())
+
             # 一开始没有价格信息
             if not old_item:
                 # dont yield
@@ -233,17 +243,6 @@ def execute():
                     if not diff_keys:
                         continue
 
-                    calc_price_text = ""
-                    for key in ("promote", "quan", "price"):
-                        if key in diff_keys:
-                            try:
-                                calc_discount.JDDiscount.calc(item)
-                                if item["calc_price"] < old_item.get("good_price", 0):
-                                    calc_price_text = "\r\n预估价：%s，%s\r\n" % (item["calc_price"], item["calc_advice"])
-                                    break
-                            except Exception as e:
-                                print(e)
-
                     content = "\r\n".join([
                         "",
                         ",".join(diff_keys),
@@ -262,7 +261,7 @@ def execute():
                         "",
                     ]) % (get_wx_content(item), get_wx_content(old_item))
                     last_wx = tool.send_to_my_wx(
-                        (calc_price_text and "__" or "") + "京东" + item["name"],
+                        (is_good_price and "__" or "") + "京东" + item["name"],
                         content,
                     )
 

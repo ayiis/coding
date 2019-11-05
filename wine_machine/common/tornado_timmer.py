@@ -6,6 +6,24 @@ import datetime
 import time
 
 
+class MinuteTimmer(object):
+    """
+        run at x minute at every hours
+    """
+    def __init__(self, callback, minute_list=None):
+        super(MinuteTimmer, self).__init__()
+        self.minute_list = minute_list or [x * 5 + 1 for x in range(60 // 5)]
+        self.callback = callback
+        self.last_callback_minute = None
+        set_interval(2, self.run)
+
+    def run(self):
+        tmin = time.localtime(time.time()).tm_min
+        if tmin != self.last_callback_minute and tmin in self.minute_list:
+            self.last_callback_minute = tmin
+            self.callback()
+
+
 def sleep(timeout_seconds):
     return tornado.gen.sleep(timeout_seconds)
 
@@ -20,8 +38,10 @@ def set_interval(timeout_seconds, outter_func):
     return interval_job
 
 
-# run function at the same time of day
 def set_clock(clock, outter_func):
+    """
+        run function at the same time of day
+    """
     next_ts = datetime.datetime.strptime(
         str(datetime.date.today()) + " " + clock, "%Y-%m-%d %H:%M:%S")
     next_ts = time.mktime(next_ts.timetuple())

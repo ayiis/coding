@@ -48750,3 +48750,9 @@ a.btn-delete {
     border-radius: 2px;
     font-size: 12px;
 }
+
+.ay_good_price {
+    background-color: #f50;
+    color: #ff0;
+    font-weight: bold;
+}

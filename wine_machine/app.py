@@ -52,6 +52,7 @@ def make_app():
         "/api/jingdong/task_update_status": jingdong.task_update_status,
         "/api/jingdong/update_good_price": jingdong.update_good_price,
         "/api/jingdong/remove_item": jingdong.remove_item,
+        "/api/jingdong/price_walk": jingdong.price_walk,
 
         "/api/kaola/task_add": kaola.task_add,
         "/api/kaola/task_list": kaola.task_list,

@@ -13,18 +13,23 @@ window.jingdong_shopping = {
             return false;
         });
         $('#tbody_task').on('change', '.update_status', function(event) {
-            var task_id = $(this).closest('tr').find('td:eq(1)').find('span').attr('val');
+            var task_id = $(this).closest('tr').attr('val');
             var task_send_type = $(this).find('input').is(':checked');
             self.update_status(task_id, task_send_type == true ? 1 : 2);
         });
         $('#tbody_task').on('click', '.btn-delete', function(event) {
-            var tr = $(this).closest('tr');
-            var task_id = tr.find('td:eq(1)').find('span').attr('val');
+            var task_id = $(this).closest('tr').attr('val');
             self.remove_item(task_id, function() {
                 tr.remove();
             });
             return false;
         });
+        $('#tbody_task').on('click', '.dt_calc_price', function(event) {
+            var itemid = $(this).closest('tr').attr('itemid');
+            self.show_price_walk(itemid);
+            return false;
+        });
+
         $('#tbody_task').on('keydown', '.good_price', function(event) {
             if(event.keyCode == 13) {
                 var _id = $(this).closest('tr').attr('val');
@@ -84,18 +89,18 @@ window.jingdong_shopping = {
                             name_html.push('<br/><span class="info_presale" title="' + presale_info["presaleStartTime"] + " ~ " + presale_info["presaleEndTime"] + '"> 预售: ' + presale_info["currentPrice"] + " | " + presale_info["presaleStartTime"] + " ~ " + presale_info["presaleEndTime"] + '</span>');
                         }
 
-                        templete_task.attr('val', item._id);
+                        templete_task.attr('val', item._id).attr('itemid', item.itemid);
                         templete_task.find('td.dt_status').find('span').attr('val', item.status || 0);
-                        templete_task.find('td.dt_name').find('span').attr('val', item._id).html(name_html.join(""));
+                        templete_task.find('td.dt_name').find('span').html(name_html.join(""));
                         templete_task.find('td.dt_price').find('a').attr('val', item.price).text(item.price).attr("href", "https://item.jd.com/" + item.itemid + ".html");
-                        templete_task.find('td.dt_calc_price').find('span').attr('val', item.calc_price).attr('title', item.calc_advice).text(item.calc_price);
+                        templete_task.find('td.dt_calc_price').find('a').attr('val', item.calc_price).attr('title', item.calc_advice).text(item.calc_price);
                         templete_task.find('td.dt_good_price').find('input').val(parseInt(Number(item.good_price || 0)));
                         templete_task.find('td.dt_store').find('span').attr('val', item.stock).text(item.stock);
                         templete_task.find('td.dt_shop').find('span').attr('val', item.vender).text(item.vender);
                         templete_task.find('td.dt_datetime').find('span').attr('val', item.datetime).text(item.datetime);
                         templete_task.find('.view_user_task').attr('val', item.username);
 
-                        if(templete_task.find('td.dt_store').find('span').attr('val') == "无货" || templete_task.find('td.dt_price').find('a').attr('val') == "-1.00") {
+                        if(templete_task.find('td.dt_store').find('span').attr('val') == "无货" || templete_task.find('td.dt_price').find('a').attr('val') == "-1") {
                             templete_task.find('td.dt_store').addClass("no_stock");
                         }
                         if(item.status == 1) {
@@ -194,7 +199,38 @@ window.jingdong_shopping = {
             }
         });
     },
-    show_price_walk: function() {
-        common.bs_modal_message(temp_text, "本地预览");
+    show_price_walk: function(itemid) {
+        var req_data = {
+            'itemid': itemid,
+        }
+        $.ajax({
+            type: 'POST',
+            contentType: 'application/json; charset=utf-8',
+            url: '/api/jingdong/price_walk',
+            data: JSON.stringify(req_data),
+            dataType: 'json',
+            success: function(res_data) {
+                if (res_data.code == 200) {
+                    var settings = {
+                        "ele": $('#price_walk')[0],
+                        "x_start": Math.min(res_data.data.good_price, res_data.data.lowest_price),
+                        "tips": res_data.data.calc_advice_list,
+                        "prices": res_data.data.price_list,
+                        // x轴
+                        "x": res_data.data.datetime_list,
+                        // y轴
+                        "y": res_data.data.calc_price_list,
+                        "good": res_data.data.good_price,
+                    }
+                    window.build_good_chart(settings);
+                    $('#my_modal').modal('show');
+                } else {
+                    $.notify(res_data.desc, "warn");
+                }
+            },
+            error: function(error) {
+                $.notify(error, "error");
+            }
+        });
     },
 }

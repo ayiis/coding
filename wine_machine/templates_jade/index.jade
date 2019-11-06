@@ -4,6 +4,9 @@ html
         meta(charset='UTF-8')
         style(type='text/css').
             @import url("/css/gitlab.css");
+        link(href='/css/bootstrap.min.css', rel='stylesheet')
+        link(href='/css/bootstrap-theme.min.css', rel='stylesheet')
+        link(href='/css/bootstrap.makeup.css', rel='stylesheet')
         title test
     body.ui_blue(data-group='', data-page='profiles:accounts:show', data-project='')
         | {% include './lib/header' %}
@@ -13,15 +16,22 @@ html
                     .flash-container.flash-container-page
                 p
                 p hello world!
+                button.btn.btn-primary.btn-lg(type='button') Launch demo modal
 
-                button#btn_show.btn.btn-primary.btn-lg(type='button', data-toggle='modal', data-target='#myModal') Launch demo modal
-
-        .hide#my_modal.ay_modal
-            div
-                div
-                    div(style='width: 200px; height: 100px;display:inline-block;') 123456
-                    //- #ffff(style='width: 800px; height: 400px;display:inline-block;')
+        #my_modal.modal.fade(tabindex='-1', role='dialog')
+          .modal-dialog(role='document', style='margin:30px auto;width:800px;')
+            .modal-content
+              .modal-body
+                #ffff(style='width:800px;height:400px;display:inline-block;')
 
         | {% include './lib/bottom_script' %}
         script(src='/js/echarts.js')
+        script(src='/js/common.js')
         script(src='/js/build_chart.js')
+        script(src='/js/bootstrap.min.js')
+        script.
+            $(window).on('load', function(){
+                $('.btn').on('click', function(){
+                    $('#my_modal').modal('show');
+                });
+            });

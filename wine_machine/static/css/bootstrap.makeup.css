@@ -1,0 +1,243 @@
+
+body {
+  font-family: fantasque sans mono, monaco, consolas;
+}
+
+form {
+  margin: 0px;
+}
+
+.mu-mb-5 {
+  margin-bottom: 5px;
+}
+
+.mu-mr-5 {
+  margin-right: 5px;
+}
+
+.mu-ml-5 {
+  margin-left: 5px;
+}
+
+.mu-pd-10 {
+  padding: 10px;
+}
+
+.mu-pd-15 {
+  padding: 15px;
+}
+
+.mu-pdr-15 {
+  padding-right: 15px;
+}
+
+.mu-pdb-10 {
+  padding-bottom: 10px;
+}
+
+.mu-pd-10-0 {
+  padding: 10px 0px;
+}
+
+.mu-pd-10-15
+{
+  padding: 10px 15px;
+}
+
+.mu-pdt-10 {
+  padding-top: 10px;
+}
+
+.mu-pdt-15 {
+  padding-top: 15px;
+}
+
+.mu-dp-ib {
+  display: inline-block;
+}
+
+.mu-dp-f {
+  display: flex;
+}
+
+.mu-mw-content {
+  max-width: 960px;
+}
+
+.mu-bs1 {
+  box-shadow: 0 0 0 1px #e5e5e5;
+}
+
+.mu-signin-box {
+  display: flex;
+  box-shadow: 0 0 0 1px #e5e5e5;
+  border-top-right-radius: 4px;
+  border-top-left-radius: 4px;
+}
+
+.mu-signin-span {
+  border: none;
+  box-shadow: 0 0 0 1px #e5e5e5;
+  border-top-right-radius: 4px;
+  border-top-left-radius: 4px;
+  width: 50%;
+  font-size: 18px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.mu-signin-box .mu-signin-span:first-of-type {
+  border-top-left-radius: 4px;
+  border-top-right-radius: 0px;
+}
+
+.mu-signin-box .mu-signin-span:last-of-type {
+  border-top-right-radius: 4px;
+  border-top-left-radius: 0px;
+}
+
+.mu-signin-span.active {
+  box-shadow: none;
+  border-bottom: 2px solid #1f78d1;
+}
+
+.mu-signin-span:not(.active) {
+  background-color: #f4f4f4;
+}
+
+.mu-fwn {
+  font-weight: normal;
+}
+
+.mu-fs-18 {
+  font-size: 18px;
+}
+
+.mu-fs-21 {
+  font-size: 21px;
+}
+
+.mu-bbr2 {
+  border-bottom-right-radius: 2px;
+  border-bottom-left-radius: 2px;
+}
+
+.mu-switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 21px;
+}
+
+.mu-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.mu-switch input:checked + .slider {
+  background-color: #2196F3;
+}
+
+.mu-switch input:checked + .slider:before {
+  transform: translateX(26px);
+}
+
+.mu-switch .slider {
+  position: absolute;
+  border-radius: 4px;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: 0.4s;
+}
+
+.mu-switch .slider:before {
+  position: absolute;
+  border-radius: 4px;
+  content: "";
+  height: 14px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: 0.4s;
+}
+
+.mu-w25 {
+  width: 25%;
+}
+
+.mu-w50 {
+  width: 50%;
+}
+
+.mu-w100 {
+  width: 100%;
+}
+
+.mu-w1e {
+  width: 1em;
+}
+
+.mu-cp {
+  cursor: pointer;
+}
+
+.mu-sidebar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  top: 0;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  background-color: #f5f5f5;
+  border-right: 1px solid #eee;
+  padding-right: 0px;
+  padding-left: 0px;
+}
+
+.mu-sidebar li.active a {
+  box-shadow: inset 4px 0 0 #305c88;
+  background: rgba(0,0,0,0.04);
+}
+
+.mu-sidebar li.active a:hover {
+  background-color: #fff;
+}
+
+.mu-sidebar a {
+  color: #707070;
+}
+
+.mu-mainbar {
+  position: fixed;  
+  top: 51px;
+}
+
+.mu-mt-42 {
+  margin-top: 42px;
+}
+
+.mu-navbar {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  height: 40px;
+  min-height: 40px;
+}
+
+.mu-navbar .navbar-brand {
+  padding: 10px 15px;
+}
+
+.mu-navbar .navbar-nav > li > a {
+  padding: 10px 15px;
+}
+
+.mu-bar-top {
+  z-index: 1030;
+}

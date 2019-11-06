@@ -11,6 +11,7 @@ from operator import itemgetter, attrgetter
 
 table_jingdong_itemid = DBS["wm"]["jingdong_itemid"]
 table_jingdong_price = DBS["wm"]["jingdong_price"]
+table_jingdong_price_old = DBS["wm"]["jingdong_price_old"]
 
 
 @tornado.gen.coroutine
@@ -110,3 +111,62 @@ def remove_item(handler, req_data):
     })
 
     raise tornado.gen.Return((result.raw_result, 1))
+
+
+@tornado.gen.coroutine
+def price_walk(handler, req_data):
+    ap(req_data)
+
+    raw_item, now_price, old_price = yield [
+        table_jingdong_itemid.find_one({"itemid": req_data["itemid"]}),
+        table_jingdong_price.find_one({"itemid": req_data["itemid"]}),
+        table_jingdong_price_old.find({"itemid": req_data["itemid"]}).limit(1000).to_list(length=None),
+    ]
+
+    all_price = old_price + [now_price]
+    date_set = set([])
+    for item in all_price:
+        item["date"] = item["datetime"].split(" ")[0]
+        if item["calc_price"] <= 0:
+            continue
+        date_set.add(item["date"])
+
+    date_set = sorted(date_set)
+    lowest_price = 0
+    price_list = []
+    calc_price_list = []
+    calc_advice_list = []
+    for date in date_set:
+        date_price = [x for x in all_price if x["date"] == date and x["calc_price"] > 0]
+        max_p, xi = date_price[0]["calc_price"], 0
+        min_p, ni = date_price[0]["calc_price"], 0
+        for i, item in enumerate(date_price):
+            if i == 0:
+                continue
+            price = item["calc_price"]
+            if max_p < price:
+                max_p = price
+                xi = i
+            if price < min_p:
+                min_p = price
+                ni = i
+
+        if lowest_price == 0 or min_p < lowest_price:
+            lowest_price = min_p
+        calc_advice_list.append(date_price[ni]["calc_advice"])
+        price_list.append(date_price[ni]["price"])
+        calc_price_list.append([
+            date_price[0]["calc_price"],
+            date_price[-1]["calc_price"],
+            min_p,
+            max_p,
+        ])
+
+    return {
+        "price_list": price_list,
+        "lowest_price": lowest_price,
+        "good_price": raw_item["good_price"],
+        "datetime_list": list(date_set),
+        "calc_price_list": calc_price_list,
+        "calc_advice_list": calc_advice_list,
+    }, 1

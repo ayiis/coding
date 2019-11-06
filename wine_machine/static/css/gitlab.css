@@ -48756,3 +48756,7 @@ a.btn-delete {
     color: #ff0;
     font-weight: bold;
 }
+
+.dt_calc_price>a {
+    color: #e88034;
+}

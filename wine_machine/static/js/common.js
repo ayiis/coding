@@ -251,7 +251,10 @@ window.common = {
     },
     window_scroll_top: function(){
         $(window).scrollTop(0);
-    }
+    },
+    set_modal_size: function(modal_ele){
+
+    },
 };
 
 
@@ -279,3 +282,19 @@ Number.prototype._toFixed = Number.prototype._toFixed || Number.prototype.toFixe
 Number.prototype.toFixed = function(precision) {
     return (+(Math.round(+(this + 'e' + precision)) + 'e' + -precision))._toFixed(precision);
 }
+
+$(window).on('load', function() {
+    // 动态调整 模态框 显示的位置
+    $('.modal').on('show.bs.modal', function (e) {
+        var content_width = $(this).find('>.modal-content').width();
+        var screen_width = Math.min($(window).width(), $(document).width(), $(document.body).width(), $(document.body).outerWidth(true));
+        var screen_margin = parseInt((screen_width - content_width) / 2);
+        $(this).find('>.modal-dialog').css({
+            "margin-left": screen_margin + "px",
+        });
+    });
+
+    $('#btn_show').on('click', function() {
+        $('#my_modal').modal('show');
+    });
+});

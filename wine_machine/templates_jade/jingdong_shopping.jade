@@ -4,6 +4,9 @@ html
         meta(charset='UTF-8')
         style(type='text/css').
             @import url('/css/gitlab.css');
+            @import url('/css/bootstrap.min.css');
+            @import url('/css/bootstrap-theme.min.css');
+            @import url('/css/bootstrap.makeup.css');
         title 京东购物
     body.ui_blue(data-group='', data-page='profiles:accounts:show', data-project='')
         | {% include './lib/header'%}
@@ -52,6 +55,14 @@ html
                             th 商家
                             th 更新时间
                         tbody#tbody_task
+
+        //,style="display: inline-block;opacity:1"
+        #my_modal.modal.fade(tabindex='-1', role='dialog')
+          .modal-dialog(role='document', style='margin:30px auto;width:800px;')
+            .modal-content
+              .modal-body
+                #price_walk(style='width:800px;height:400px;display:inline-block;')
+
         script#templete_task(type='templete')
           tr.tree-item
             td.cgray.dt_status
@@ -63,9 +74,9 @@ html
             td.cgray.dt_name
               span
             td.cgray.dt_price
-              a(target="_blank")
+              a(target="_blank", href="#")
             td.cgray.dt_calc_price
-              span
+              a(target="_blank", href="#")
             td.cgray.dt_good_price
               input.good_price(type="text",style="width:4em;height:32px;border:1px solid #ddd;")
             td.cgray.dt_store
@@ -77,5 +88,10 @@ html
         | {% include './lib/bottom_script'%}
         script(src='/js/lib/jingdong_shopping.js?ts={{handler.system_start_ts}}')
         script(src='/js/common.js?ts={{handler.system_start_ts}}')
+        script(src='/js/echarts.js')
+        script(src='/js/bootstrap.min.js')
+        script(src='/js/build_chart.js')
         script.
-          window.jingdong_shopping.init()
+            $(window).on('load', function() {
+                window.jingdong_shopping.init();
+            });

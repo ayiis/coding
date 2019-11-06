@@ -163,7 +163,7 @@ def execute():
             is_good_price = False
             try:
                 calc_discount.JDDiscount.calc(item)
-                if 0 < item["calc_price"] < item["good_price"]:
+                if 0 < item["calc_price"] < item.get("good_price", 0):
                     is_good_price = True
                 calc_price_text = "\r\n预估价：%s，%s\r\n" % (item["calc_price"], item["calc_advice"])
             except Exception:

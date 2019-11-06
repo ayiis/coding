@@ -14,7 +14,13 @@ html
                 p
                 p hello world!
 
-                #ffff(style='width: 1080px; height: 500px;display:inline-block;')
+                button#btn_show.btn.btn-primary.btn-lg(type='button', data-toggle='modal', data-target='#myModal') Launch demo modal
+
+        .hide#my_modal.ay_modal
+            div
+                div
+                    div(style='width: 200px; height: 100px;display:inline-block;') 123456
+                    //- #ffff(style='width: 800px; height: 400px;display:inline-block;')
 
         | {% include './lib/bottom_script' %}
         script(src='/js/echarts.js')

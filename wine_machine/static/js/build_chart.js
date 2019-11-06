@@ -1,158 +1,154 @@
-!(function() {
+// https://www.echartsjs.com/zh/option.html#series-candlestick
+!(function(){
+
+window.build_good_chart = function(settings) {
+    var downColor = '#aaa';  // e00
+    var downBorderColor = '#aaa'; // 900
+    var upColor = '#ddd';   // ef3
+    var upBorderColor = '#ddd';  // aa3
+
     var option = {
-        title: {
-            text: '阶梯瀑布图',
-            subtext: 'From ExcelHome',
-            sublink: 'http://e.weibo.com/1341556070/Aj1J2x5a5'
-        },
-        tooltip : {
-            trigger: 'axis',
-            axisPointer : {            // 坐标轴指示器，坐标轴触发有效
-                type : 'shadow'        // 默认为直线，可选为：'line' | 'shadow'
-            },
-            formatter: function (params) {
-                var tar;
-                if (params[1].value != '-') {
-                    tar = params[1];
-                }
-                else {
-                    tar = params[0];
-                }
-                return tar.name + '<br/>' + tar.seriesName + ' : ' + tar.value;
+        tooltip: {
+            trigger: 'item',
+            formatter: callback_tooltip,
+            axisPointer: {
+                type: 'cross'
             }
-        },
-        legend: {
-            data:['支出','收入']
         },
         grid: {
-            left: '3%',
-            right: '4%',
-            bottom: '3%',
-            containLabel: true
+            bottom: 30,
+            top: 20,
+            left: 60,
+            right: 60,
         },
+        animation: false,
         xAxis: {
-            type : 'category',
-            splitLine: {show:false},
-            data :  function (){
-                var list = [];
-                for (var i = 1; i <= 11; i++) {
-                    list.push('11月' + i + '日');
-                }
-                return list;
-            }()
+            scale: true,
+            data: settings.x,
+            splitLine: {
+                show: false,
+            },
         },
         yAxis: {
-            type : 'value'
+            scale: true,
+            splitArea: {
+                show: true
+            },
+            splitLine: {
+                show: false,
+            },
         },
+        dataZoom: [{type: 'inside'}],
         series: [
             {
-                name: '辅助',
-                type: 'bar',
-                stack: '总量',
+                // name: 'none',
+                type: 'candlestick',
+                data: settings.y,
                 itemStyle: {
                     normal: {
-                        // show: false,
-                        // barBorderColor: 'rgba(0,0,0,0)',
-                        // color: 'rgba(0,0,0,0)'
-                    },
-                    emphasis: {
-                        // barBorderColor: 'rgba(0,0,0,0)',
-                        // color: 'rgba(0,0,0,0)'
+                        color: upColor,
+                        color0: downColor,
+                        borderColor: upBorderColor,
+                        borderColor0: downBorderColor
                     }
                 },
-                data: [0, 900, 1245, 1530, 1376, 1376, 1511, 1689, 1856, 1495, 1292]
-            },
-            {
-                name: '收入',
-                type: 'bar',
-                stack: '总量',
-                label: {
+                markLine: {
+                    symbol: "none",
+                    data: [{
+                        yAxis: settings.good,
+                        name: '好价',
+                        lineStyle: {
+                            normal: {
+                                color: "green",
+                                width: 1,
+                                type: "dashed",
+                            }
+                        }
+                    }, ],
+                },
+            }, {
+                name: '低价',
+                type: 'line',
+                data: calculate_min(),
+                smooth: true,
+                lineStyle: {
                     normal: {
-                        show: true,
-                        position: 'top'
+                        color: "red",
+                        opacity: 0.5,
+                        type: "dashed",
                     }
-                },
-                data: [900, 345, 393, '-', '-', 135, 178, 286, '-', '-', '-']
+                }
             },
-            {
-                name: '支出',
-                type: 'bar',
-                stack: '总量',
-                label: {
-                    normal: {
-                        show: true,
-                        position: 'bottom'
-                    }
-                },
-                data: ['-', '-', '-', 108, 154, '-', '-', '-', 119, 361, 203]
-            }
-        ]
+        ],
     };
 
-    function build() {
-        var chart = echarts.init($('#ffff')[0]);
-        chart.clear();
-        chart.setOption(option);
-        // chart.on('click', function(params) {
-        //     if(settings["click_callback"]) {
-        //         settings["click_callback"](params);
-        //     }
-        // });
+    function calculate_min() {
+        var result = [];
+        for (var i = 0, len = settings.y.length; i < len; i++) {
+            result.push(settings.y[i][2]);
+        }
+        return result;
     }
-    build();
+
+    function callback_tooltip(params) {
+        if(params.componentType === "series") {
+            if (params.seriesType === "line") {
+                return params.seriesName + ": " + params.value;
+            }
+            var last_index = params['dataIndex'] - 1;
+            var chajia = 0;
+            if (last_index >= 0) {
+                chajia = (params.data[3] - settings.y[last_index][2]).toFixed(2);
+            }
+            var text = [params.data[3] + (chajia>=0?'<i style="color:'+upColor+'"> +':'<i style="color:'+downColor+'"> ') + chajia + '</i>'];
+            return text.join('<br>');
+        } else if (params.componentType === "markLine") {
+            return params.name + ": " + params.value;
+        }
+        return params.name + ": " + params.value;
+    }
+
+    var eleid = settings.ele.getAttribute('id');
+    if(!window.build_good_chart[eleid]) {
+        window.build_good_chart[eleid] = echarts.init(settings.ele);
+    }
+    var chart = window.build_good_chart[eleid];
+    chart.clear();
+    chart.setOption(option);
+}
+
+var settings = {
+    "ele": $('#ffff')[0],
+    // x轴
+    "x": ["190801", "190802", "190803", "190804", "190805", "190806"],
+    // y轴
+    "y": [
+        // 数据意义：开(open)，收(close)，最低(lowest)，最高(highest)
+        [1,2,1,2],
+        [2,2,2,2],
+        [2,4,3,6],
+        [4,2,1,4],
+        [2,5,2,6],
+        [5,6,2,6],
+    ],
+    "good": 4.2,
+}
+
+window.build_good_chart(settings);
 
 })();
 
-(function() {
-    window.build_chart2 = {
-        init: function(settings) {
-            // 通用地图显示设置
-            var option = {
-                tooltip : {
-                    trigger: 'axis'
-                },
-                legend: {
-                    data: settings["area_list"]
-                },
-                toolbox: {
-                    show : false,
-                    feature : {
-                        mark : {show: true},
-                        dataView : {show: true, readOnly: false},
-                        magicType : {show: true, type: ['line', 'bar', 'stack', 'tiled']},
-                        restore : {show: true},
-                        saveAsImage : {show: true}
-                    }
-                },
-                calculable : true,
-                xAxis : [
-                    {
-                        type : 'category',
-                        boundaryGap : false,
-                        data : settings["date_list"]
-                    }
-                ],
-                yAxis : [
-                    {
-                        scale: true,
-                        type : 'value'
-                    }
-                ],
-                series : settings["data"]
-            };
-            var eleid = settings["ele"].getAttribute('id');
-            if(!window.build_chart2[eleid]) {
-                window.build_chart2[eleid] = echarts.init(settings["ele"]);
-            }
-            var chart = window.build_chart2[eleid];
+console.log(1);
 
-            chart.clear();
-            chart.setOption(option);
-            chart.on('click', function(params) {
-                if(settings["click_callback"]){
-                    settings["click_callback"](params);
-                }
-            });
-        }
-    };
-});
+
+
+
+
+
+
+
+
+
+
+
+

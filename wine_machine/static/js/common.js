@@ -273,3 +273,9 @@ Date.prototype.format = function (format) {
                 ("00" + o[k]).substr(("" + o[k]).length));
     return format;
 };
+
+
+Number.prototype._toFixed = Number.prototype._toFixed || Number.prototype.toFixed;
+Number.prototype.toFixed = function(precision) {
+    return (+(Math.round(+(this + 'e' + precision)) + 'e' + -precision))._toFixed(precision);
+}

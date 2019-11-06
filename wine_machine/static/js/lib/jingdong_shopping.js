@@ -18,9 +18,9 @@ window.jingdong_shopping = {
             self.update_status(task_id, task_send_type == true ? 1 : 2);
         });
         $('#tbody_task').on('click', '.btn-delete', function(event) {
-            var tr = $(this).closest('tr')
+            var tr = $(this).closest('tr');
             var task_id = tr.find('td:eq(1)').find('span').attr('val');
-            self.remove_item(task_id, function(){
+            self.remove_item(task_id, function() {
                 tr.remove();
             });
             return false;
@@ -193,5 +193,8 @@ window.jingdong_shopping = {
                 $.notify(error, "error");
             }
         });
+    },
+    show_price_walk: function() {
+        common.bs_modal_message(temp_text, "本地预览");
     },
 }

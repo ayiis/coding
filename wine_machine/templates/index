@@ -14,7 +14,14 @@
         </div>
         <p></p>
         <p>hello world!</p>
-        <div id="ffff" style="width: 1080px; height: 500px;display:inline-block;"></div>
+        <button id="btn_show" type="button" data-toggle="modal" data-target="#myModal" class="btn btn-primary btn-lg">Launch demo modal</button>
+      </div>
+    </div>
+    <div id="my_modal" class="hide ay_modal">
+      <div>
+        <div>
+          <div style="width: 200px; height: 100px;display:inline-block;">123456</div>
+        </div>
       </div>
     </div>{% include './lib/bottom_script' %}
     <script src="/js/echarts.js"></script>

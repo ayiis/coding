@@ -38,7 +38,7 @@ def init():
     # exit(1)
 
     # exit(1)
-    raise tornado.gen.Return(True)
+    # raise tornado.gen.Return(True)
 
     if config.WATCH_DOGS["jingdong"]["enable"]:
         # tornado_timmer.set_interval(config.WATCH_DOGS["jingdong"]["period"], ws_jingdong.execute)

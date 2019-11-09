@@ -48751,9 +48751,15 @@ a.btn-delete {
     font-size: 12px;
 }
 
-.ay_good_price {
+.ay_good_price{
     background-color: #f50;
-    color: #ff0;
+    /*color: #ff0;*/
+    font-weight: bold;
+}
+
+.ay_notice_price {
+    background-color: #f3e86f;
+    /*color: #ff0;*/
     font-weight: bold;
 }
 

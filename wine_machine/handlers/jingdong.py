@@ -106,11 +106,39 @@ def update_good_price(handler, req_data):
 def remove_item(handler, req_data):
     ap(req_data)
 
-    result = yield table_jingdong_itemid.delete_one({
+    # 删除之前残留的，将价格移入old价格
+    # yield clear_lost_items()
+
+    item_detail = yield table_jingdong_itemid.find_one_and_delete({
         "_id": ObjectId(req_data["_id"]),
     })
 
-    raise tornado.gen.Return((result.raw_result, 1))
+    item_price = yield table_jingdong_price.find_one_and_delete({
+        "itemid": item_detail["itemid"],
+    })
+
+    del item_price["_id"]
+    yield table_jingdong_price_old.insert_one(item_price)
+
+    raise tornado.gen.Return((True, 1))
+
+
+@tornado.gen.coroutine
+def clear_lost_items():
+
+    item_detail_list = yield table_jingdong_itemid.find({}).to_list(length=None)
+    itemid_list = [x["itemid"] for x in item_detail_list]
+    item_price_lost = yield table_jingdong_price.find({
+        "itemid": {
+            "$nin": itemid_list,
+        }
+    }).to_list(length=None)
+    for item_price in item_price_lost:
+        yield table_jingdong_price.delete_one({
+            "_id": ObjectId(item_price["_id"]),
+        })
+        del item_price["_id"]
+        yield table_jingdong_price_old.insert_one(item_price)
 
 
 @tornado.gen.coroutine

@@ -24,9 +24,14 @@ class JDDiscount(object):
         if result:
             return cls.man_zhe(price, result.group(1), float(result.group(2)), float(result.group(3)))
 
-        result = re.match(r".*(满([\d.]+)享([\d.]+)折).*", text) or re.match(r".*(满([\d.]+)元，可减([\d.]+)%).*", text)
+        result = re.match(r".*(满([\d.]+)享([\d.]+)折).*", text)
         if result:
             return cls.man_zhe_num(price, result.group(1), float(result.group(2)), float(result.group(3)))
+
+        result = re.match(r".*(满([\d.]+)元，可减([\d.]+)%).*", text)
+        if result:
+            return cls.man_minus_percent(price, result.group(1), float(result.group(2)), float(result.group(3)))
+
         if "换购" in text:
             pass
         elif "即赠" in text:
@@ -103,7 +108,6 @@ class JDDiscount(object):
     def man_zhe_num(cls, price, p_text, num_reach, num_minus):
         """
             1. 满399享9折
-            2. 满138元，可减15%
         """
         advice = "(%s),不需凑单" % (p_text)
         price_plus = num_reach - price
@@ -112,6 +116,20 @@ class JDDiscount(object):
             advice = "(%s),需凑单%s元" % (p_text, price_plus)
 
         discount = round(price * (1 - num_minus / 10), 2)
+        return discount, advice
+
+    @classmethod
+    def man_minus_percent(cls, price, p_text, num_reach, num_minus):
+        """
+            1. 满138元，可减15%
+        """
+        advice = "(%s),不需凑单" % (p_text)
+        price_plus = num_reach - price
+        # 任何情况都 # 凑单金额小于折扣金额时，补充凑单金额
+        if 0 < price_plus < num_reach:  # < num_minus:
+            advice = "(%s),需凑单%s元" % (p_text, price_plus)
+
+        discount = round(price * (num_minus / 100), 2)
         return discount, advice
 
     @classmethod
@@ -176,7 +194,9 @@ def test():
             "PASSWORD": "",
         }})
         itemid = yield mongodb.DBS["db_wm"]["jingdong_itemid"].find({}).to_list(length=None)
-        item_list = yield mongodb.DBS["db_wm"]["jingdong_price_old"].find({}).to_list(length=None)
+        item_list = yield mongodb.DBS["db_wm"]["jingdong_price"].find({
+            # "_id": ObjectId("5dafb4bb632c52b5bc74d004"),
+        }).to_list(length=None)
         itemid_map = {x["itemid"]: x for x in itemid}
         print("item_list.length:", len(item_list))
         for item in item_list:
@@ -184,7 +204,7 @@ def test():
                 continue
             try:
                 JDDiscount.calc(item)
-                yield mongodb.DBS["db_wm"]["jingdong_price_old"].update_one(
+                yield mongodb.DBS["db_wm"]["jingdong_price"].update_one(
                     {
                         "_id": ObjectId(item["_id"]),
                     }, {

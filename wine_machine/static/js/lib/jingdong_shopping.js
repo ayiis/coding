@@ -18,7 +18,8 @@ window.jingdong_shopping = {
             self.update_status(task_id, task_send_type == true ? 1 : 2);
         });
         $('#tbody_task').on('click', '.btn-delete', function(event) {
-            var task_id = $(this).closest('tr').attr('val');
+            var tr = $(this).closest('tr');
+            var task_id = tr.attr('val');
             self.remove_item(task_id, function() {
                 tr.remove();
             });
@@ -108,8 +109,12 @@ window.jingdong_shopping = {
                         } else {
                             templete_task.find('td.dt_status').find('input').attr('checked', null);
                         }
-                        if(item.calc_price > 0 && item.calc_price <= item.good_price) {
-                            templete_task.find('td.dt_calc_price').addClass('ay_good_price');
+                        if(item.calc_price > 0) {
+                            if (item.calc_price <= item.good_price) {
+                                templete_task.find('td.dt_calc_price').addClass('ay_good_price');
+                            } else if (item.calc_price*0.9 <= item.good_price) {
+                                templete_task.find('td.dt_calc_price').addClass('ay_notice_price');
+                            }
                         }
 
                         ele_list.push(templete_task);
@@ -213,7 +218,7 @@ window.jingdong_shopping = {
                 if (res_data.code == 200) {
                     var settings = {
                         "ele": $('#price_walk')[0],
-                        "x_start": Math.min(res_data.data.good_price, res_data.data.lowest_price),
+                        "x_start": Math.min(res_data.data.good_price, res_data.data.lowest_price) - 1,
                         "tips": res_data.data.calc_advice_list,
                         "prices": res_data.data.price_list,
                         // x轴

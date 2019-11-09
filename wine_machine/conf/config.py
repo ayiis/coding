@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 SYSTEM = {
-    "listening_port": 60003,
+    "listening_port": 60002,
 }
 
 MONGODB = {

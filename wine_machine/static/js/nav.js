@@ -27,20 +27,21 @@
         });
     });
 
-    $('.dropdown-menu-toggle').click(function() {
+    $('.dropdown-menu-toggle').on('click', function() {
         if($(this).attr('aria-expanded') == 'false') {
             $(this).attr('aria-expanded', 'true');
-            $(this).closest('div').addClass('open');
+            $(this).closest('.dropdown').addClass('open');
         } else {
             $(this).attr('aria-expanded', 'false');
-            $(this).closest('div').removeClass('open');
+            $(this).closest('.dropdown').removeClass('open');
         }
+        return false;
     });
 
-    $('.dropdown-menu').on('click', 'a', function(event){
-        event.preventDefault();
+    $('.dropdown-menu').on('click', 'a', function(){
         $('.dropdown-menu-toggle').click();
         $(this).closest('.dropdown').find('.dropdown-toggle-text').attr('val', $(this).attr('val')).text($(this).text());
+        return false;
     });
 
     $(document.body).on('click', '.view_task', function() {

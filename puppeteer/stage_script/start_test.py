@@ -39,9 +39,9 @@ def wrap_test(func):
 
             func(result)
         except Exception as e:
-            print("[FAILED] %ss %s: %s" % (round(time.time() - ts, 2), script_name, e))
+            print("[❌ FAILED] %ss %s: %s" % (round(time.time() - ts, 2), script_name, e))
         else:
-            print("[PASS]  %ss %s" % (round(time.time() - ts, 2), script_name))
+            print("[✅ PASS]  %ss %s" % (round(time.time() - ts, 2), script_name))
 
     return do
 
@@ -152,6 +152,7 @@ def basic_test():
 def main():
 
     # basic_test()
+    # return
 
     @wrap_test
     def test_take_screen_shot(result):

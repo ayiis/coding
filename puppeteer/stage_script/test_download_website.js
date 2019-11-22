@@ -130,7 +130,6 @@ async function start(urlToFetch) {
   // setTimeout(async () => {await browser.close(); }, 1000 * 60);
 }
 
-const output_dir = './vidlox';
-// start('http://www.weather.com.cn/weather/101280101.shtml');
-start('https://vidlox.me/mfd2fhlhnr0t');
+const output_dir = './download_website';
+start('http://www.weather.com.cn/weather/101280101.shtml');
 // start('https://www.baidu.com');

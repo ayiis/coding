@@ -24,7 +24,7 @@ const fse = require('fs-extra'); // v 5.0.0
         });
     });
 
-    for(var i=0; i<url_list.length; i++) {
+    for(var i = 0 ; i < url_list.length ; i++) {
         const url = url_list[i];
         await page.goto(url);
         await page.mainFrame().waitForSelector('#postlist');
@@ -57,7 +57,7 @@ const fse = require('fs-extra'); // v 5.0.0
 
     }
 
-    // await browser.close();
+    await browser.close();
 })();
 
 

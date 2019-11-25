@@ -9,7 +9,8 @@ const _ = `
     4. wait for js execute
     5. wait for a reuqest
     6. wait for anything(with a function)
-    7. wait for ajax
+    7. wait for ajax 
+        request.resourceType() === 'xhr'
 `;
 
 const target_page = 'https://fanyi.baidu.com';
@@ -36,7 +37,10 @@ async function human_type(page, sentence) {
 async function networkidle_timeout(page, timeout=500, max_timeout=30000) {
     let padding_request_set = new Set([]);
     const callback_request = function(request) {
-        padding_request_set.add(request);
+        // Some types of request that worth waiting for
+        if (['xhr', 'script', 'document', 'text/html', 'text/plain'].indexOf(request.resourceType()) !== -1) {
+            padding_request_set.add(request);
+        }
     }
     const callback_requestfailed = function (request) {
         padding_request_set.has(request) && padding_request_set.delete(request);

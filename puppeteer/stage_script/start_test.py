@@ -37,11 +37,11 @@ def wrap_test(func):
             ts = time.time()
             result = exec_command("node %s" % script_name)
 
-            func(result)
+            print_text = func(result)
         except Exception as e:
             print("[❌ FAILED] %ss %s: %s" % (round(time.time() - ts, 2), script_name, e))
         else:
-            print("[✅ PASS]  %ss %s" % (round(time.time() - ts, 2), script_name))
+            print("[✅ PASS]  %ss %s %s" % (round(time.time() - ts, 2), script_name, print_text))
 
     return do
 
@@ -148,6 +148,13 @@ def basic_test():
 
     test_take_screenshot("test_take_screenshot.js")
 
+    @wrap_test
+    def test_wait_for(result):
+        assert result == "我想要的一切", "即将来临"
+        return result
+
+    test_wait_for("test_wait_for.js")
+
 
 def main():
 
@@ -155,15 +162,11 @@ def main():
     # return
 
     @wrap_test
-    def test_take_screen_shot(result):
-        assert not result, "FAILED: %s" % result
-        with open("full.png", "rb") as rf:
-            data = rf.read(8)
-            data = data.decode("ISO-8859-1")
-            assert "PNG" in data, "Not a PNG file."
-        os.remove("full.png")
+    def test_wait_for(result):
+        assert result == "我想要的一切", "即将来临"
+        return result
 
-    test_take_screen_shot("test_take_screenshot.js")
+    test_wait_for("test_wait_for.js")
 
 
 if __name__ == "__main__":

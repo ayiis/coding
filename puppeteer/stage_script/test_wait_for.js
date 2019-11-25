@@ -9,6 +9,7 @@ const _ = `
     4. wait for js execute
     5. wait for a reuqest
     6. wait for anything(with a function)
+    7. wait for ajax
 `;
 
 const target_page = 'https://fanyi.baidu.com';
@@ -71,8 +72,8 @@ async function networkidle_timeout(page, timeout=500, max_timeout=30000) {
 
 (async () => {
 
-    // const browser = await puppeteer.launch({headless: true, devtools: false});
-    const browser = await puppeteer.launch({headless: false, devtools: true});
+    const browser = await puppeteer.launch({headless: true, devtools: false});
+    // const browser = await puppeteer.launch({headless: false, devtools: true});
 
     const context = browser.defaultBrowserContext();
     context.clearPermissionOverrides();
@@ -89,6 +90,7 @@ async function networkidle_timeout(page, timeout=500, max_timeout=30000) {
         WF_BUTTON_CLICKED = true,
         WF_JS_EXECUTE = true,
         WF_REUQEST = true,
+        WF_AJAX = true,
         WF_FUNCTION = true;
 
     if(WF_REUQEST === true) {
@@ -131,29 +133,41 @@ async function networkidle_timeout(page, timeout=500, max_timeout=30000) {
             });
         }
 
-        await page.waitForFunction('window.status === "nothing"');
+        if (WF_FUNCTION === true) {
+            await page.waitForFunction('window.status === "nothing"');
+        }
     }
 
-    const button_select_fl = '.select-from-language';
-    await page.mainFrame().waitForSelector(button_select_fl, {visible: true});
-    await page.click(button_select_fl);
+    if(WF_BUTTON_CLICKED === true) {
+        const button_select_fl = '.select-from-language';
+        await page.mainFrame().waitForSelector(button_select_fl, {visible: true});
+        await page.click(button_select_fl);
+    }
 
-    const button_swe = '.from-language-list .language-list .data-lang[value=swe]';
-    await page.mainFrame().waitForSelector(button_swe, {visible: true});
-    await page.click(button_swe, {delay: 20});
+    if(WF_BUTTON_CLICKED === true) {
+        const button_swe = '.from-language-list .language-list .data-lang[value=swe]';
+        await page.mainFrame().waitForSelector(button_swe, {visible: true});
+        await page.click(button_swe, {delay: 20});
+    }
 
-    await page.waitForFunction('$(".select-from-language .language-selected").text().trim() === "瑞典语"');
+    if (WF_JS_EXECUTE === true) {
+        await page.waitForFunction('$(".select-from-language .language-selected").text().trim() === "瑞典语"');
+    }
+
     await page.click('#baidu_translate_input', {delay: 20});
 
-    await human_type(page, "Allt Jag Vill Ha");
-    // wait for translation
-    await networkidle_timeout(page, 500);
+    await human_type(page, "Allt Jag Vill Ha");   // 我想要的一切
+
+    if(WF_AJAX === true) {
+        // wait for translation
+        await networkidle_timeout(page, 500);
+    }
 
     const content = await page.evaluate(() => {
         return $('.target-output').text().trim();
     });
 
-    console.log(content);   // 我想要的一切
+    console.log(content);
 
     await browser.close();
 

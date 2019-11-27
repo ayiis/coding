@@ -6,9 +6,11 @@ const pAll = require("p-all");
     const actions = [];
     const browser = await puppeteer.launch({
         executablePath: '/mine/soft/Google Chrome.app/Contents/MacOS/Google Chrome',
-        headless: true,
+        // userDataDir: '/Users/yangyang/Library/Application Support/Google/Chrome/',
+        userDataDir: '/tmp/tmp',
+        // headless: true,
         devtools: false,
-        // headless: false,
+        headless: false,
         // devtools: true,
         slowMo: 10,
         defaultViewport: null

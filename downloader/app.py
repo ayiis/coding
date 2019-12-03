@@ -11,8 +11,8 @@ parser.add_argument("-m", "--thread_max", type=int)
 parser.add_argument("-o", "--output_file", type=str)
 
 args = parser.parse_args()
-wrap_request.CHUNK_SIZE = args.chunk_size or wrap_request.CHUNK_SIZE
-wrap_request.CHUNK_TIMEOUT = args.chunk_timeout or wrap_request.CHUNK_TIMEOUT
+wrap_request.CHUNK_SIZE = (args.chunk_size or 0) * 1024 or wrap_request.CHUNK_SIZE
+wrap_request.CHUNK_TIMEOUT = args.chunk_timeout or (wrap_request.CHUNK_SIZE // (5 * wrap_request.KB))
 wrap_request.THREAD_MAX = args.thread_max or wrap_request.THREAD_MAX
 # print(args)
 

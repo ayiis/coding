@@ -73,11 +73,12 @@ class Wrapper(object):
 
     def finish_task(self, task):
         self.task_finish_count += 1
-        print("done: %s-%s - %s%%" % (
-            task["start"],
-            task["end"],
-            round(self.task_finish_count / self.task_total_count * 100, 2),
-        ))
+        # print("done: %s-%s - %s%%" % (
+        #     task["start"],
+        #     task["end"],
+        #     round(self.task_finish_count / self.task_total_count * 100, 2),
+        # ))
+        self.touch_status_bar()
 
     def get_header_info(self):
         """
@@ -191,6 +192,8 @@ class Wrapper(object):
         )
         print()
 
+        self.create_status_bar()
+
         thread_list = []
         for i in range(THREAD_MAX):
 
@@ -211,20 +214,41 @@ class Wrapper(object):
             "Avg speed: %s/s" % pretty_file_size(self.file_size / max(time.time() - ts, 1)),
         )
 
+    def create_status_bar(self):
+        from progress.bar import Bar
+        self._status_bar = Bar("Download status:", fill="█", max=self.task_total_count, suffix="%(percent)d%%")
+
+    def touch_status_bar(self):
+        self._status_bar.next()
+        if self.task_finish_count == self.task_total_count:
+            self._status_bar.finish()
+
 
 def main():
+
     args = {
         # "target_url": "https://ayiis.me/",
-        # "target_url": "https://ayiis.me/aydocs/download/ex.zip",
-        "target_url": "http://war3down1.uuu9.com/war3/201911/201911251725.rar",
+        "target_url": "https://ayiis.me/aydocs/download/ex.zip",
+        # "target_url": "http://war3down1.uuu9.com/war3/201911/201911251725.rar",
         # "target_url": "https://ss0.bdstatic.com/5aV1bjqh_Q23odCf/static/superman/img/logo/bd_logo1_31bdc765.png",
         # "file_name": "baidu.png",
-        "file_name": "201911251725.rar",
+        # "file_name": "https://warehouse-camo.cmh1.psfhosted.org/807e4b51537640bee0aa77064dc577ee1669a4fd/68747470733a2f2f6661726d352e737461746963666c69636b722e636f6d2f343331372f33353139383338363337345f313933396166336465365f6b5f642e6a7067",
+        "file_name": "ex.zip",
+        # "file_name": "201911251725.rar",
     }
     w = Wrapper(args)
 
     w.start_task()
 
 
+def test():
+    import logging
+    logging.basicConfig(level=logging.DEBUG)
+    s = requests.Session()
+    r = s.get("https://ayiis.me/aydocs/UltraEdit32.rar", timeout=(3, 1))
+    print(r.text[:20])
+
+
 if __name__ == "__main__":
+    # test()
     main()

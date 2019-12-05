@@ -1,18 +1,32 @@
 """
     为了应对日益严重的 tcp 中断情况
+
+
+    TODO:
+        ok 1. try and find how Chrome resume download
+            - shutdown wifi to make it broke
+
+        2. how to speed up single thread downloader
+            - seems no way
+
+        ok 3. Try skip dns
+            - cache the ip and port
 """
 import q
+import re
 import time
 import traceback
 import threading
 import queue
 import requests
+from requests_toolbelt.adapters import host_header_ssl
 
 KB = 1024
-CHUNK_SIZE = (128 * KB)                     # 每个线程一次下载的大小 ?128KB
-CHUNK_TIMEOUT = CHUNK_SIZE // (3 * KB)      # 每个线程一次下载速度最慢 ?3KB/s 超时
+CHUNK_SIZE = (128 * KB)                     # 每个线程一次下载的大小 ?256KB
+CHUNK_TIMEOUT = CHUNK_SIZE // (8 * KB)      # 每个线程一次下载速度最慢 ?4KB/s 超时
 HEAD_TIMEOUT = CHUNK_SIZE // CHUNK_TIMEOUT // KB * 2 + 5  # 2: header视作2KB; 5: 适应值
 THREAD_MAX = 8                             # 最大线程数量 ?8 个
+READ_CHUNK_SIZE = requests.models.CONTENT_CHUNK_SIZE or (10 * 1024)
 
 
 def pretty_file_size(byte):
@@ -39,6 +53,16 @@ class Wrapper(object):
         self.task_queue = queue.Queue()
         self.task_finish_count = 0
         self.task_total_count = 0
+        self.target_host = re.match(r"http[s]?://([^/]+)", self.target_url).group(1)
+        self.target_addr = None
+        self.last_task = None
+        self.last_task_done = False
+        self.lock = threading.Lock()
+        self.lock2 = threading.Lock()
+        self.lock_file = threading.Lock()
+        self.fail_times = 0
+        self.download_finished = False
+        self.header_info_done = False
         print(
             "KB:", KB,
             ", CHUNK_SIZE:", pretty_file_size(CHUNK_SIZE),
@@ -56,38 +80,67 @@ class Wrapper(object):
         tmp_size = 0
 
         while tmp_size < self.file_size:
-            self.task_queue.put({"start": tmp_size, "end": min(tmp_size + CHUNK_SIZE, self.file_size)})
+            self.task_queue.put({
+                "start": tmp_size,
+                "end": min(tmp_size + CHUNK_SIZE, self.file_size),
+            })
             tmp_size = tmp_size + CHUNK_SIZE
 
         self.task_total_count = self.task_queue.qsize()
 
     def get_next_task(self):
+        """
+            use lock to make sure
+        """
+        try:
+            self.lock.acquire()
 
-        if self.task_queue.empty():
-            return None
+            task = None
+            if self.task_queue.empty():
+                if self.last_task:
+                    task, self.last_task = self.last_task, None
+            else:
+                task = self.task_queue.get()
+                if self.task_queue.empty():
+                    task["is_last"] = True
+                    self.last_task = task
 
-        return self.task_queue.get()
+            return task
+
+        except Exception:
+            pass
+        finally:
+            self.lock.release()
 
     def fail_task(self, task):
-        self.task_queue.put(task)
+        # self.task_queue.put(task)
+        self.fail_times += 1
+        print("[WARNING] Total fail: %s / %s" % (self.fail_times, self.task_total_count))
 
     def finish_task(self, task):
-        self.task_finish_count += 1
-        # print("done: %s-%s - %s%%" % (
-        #     task["start"],
-        #     task["end"],
-        #     round(self.task_finish_count / self.task_total_count * 100, 2),
-        # ))
-        self.touch_status_bar()
 
-    def get_header_info(self):
-        """
-            发送一个 head 请求，获取内容总长度
-        """
-        res = requests.head(self.target_url, timeout=HEAD_TIMEOUT)
-        self.file_size = int(res.headers["content-length"])
+        try:
+            self.lock2.acquire()
 
-    def get_header_info_r(self, queue_out):
+            if self.task_finish_count == self.task_total_count:
+                return
+
+            self.task_finish_count += 1
+            self.touch_status_bar()
+
+            if self.task_finish_count == self.task_total_count:
+                self.finish_status_bar()
+
+        finally:
+            self.lock2.release()
+
+    def header_print(self, *argv):
+        if self.header_info_done:
+            return
+        else:
+            print(*argv)
+
+    def get_header_info(self, queue_out):
         """
             获取内容总长度 并验证是否支持 Range 方式下载
         """
@@ -95,23 +148,41 @@ class Wrapper(object):
             "Range": "Bytes=0-43",  # a wav header length is 44
             "Accept-Encoding": "*",
         }
-        # 重试2次
-        for i in range(2):
+        # 重试3次
+        for i in range(3):
+            if self.header_info_done:
+                break
             try:
-                res = requests.get(self.target_url, headers=headers, timeout=HEAD_TIMEOUT)
+                res = requests.get(self.target_url, headers=headers, timeout=HEAD_TIMEOUT, stream=True)
                 hcr = res.headers.get("Content-Range")
+
+                peer = res.raw._fp.fp.raw._sock.getpeername()
+                self.target_addr = "%s:%s" % (peer[0], peer[1])
+
                 if not hcr:
-                    raise Exception("Not suit for content-range.")
+                    self.header_print("Not suit for content-range.")
+                    self.header_print(res.headers)
+                    queue_out.put(0)
+                    break
+
+                content = res.raw.read(49)     # only for content
 
                 self.file_size = int(hcr.split("/")[1])
-                if not (len(res.content) == 44 and hcr == "bytes 0-43/%s" % (self.file_size)):
+                if not (len(content) == 44 and hcr == "bytes 0-43/%s" % (self.file_size)):
+                    self.header_print("Len not good: %s" % len(content))
                     queue_out.put(0)
-                    raise Exception("Len not good: %s" % len(res.content))
+                    break
+
+            except requests.exceptions.ReadTimeout:
+                self.header_print("Get header info: ReadTimeout..")
             except Exception:
-                print(traceback.format_exc())
+                self.header_print(traceback.format_exc())
             else:
                 queue_out.put(self.file_size)
                 break
+
+        # 3次都失败了，告诉外面不用等待了
+        queue_out.put(0)
 
     def double_finger(self):
         """
@@ -121,68 +192,221 @@ class Wrapper(object):
         thread_list = []
 
         for i in range(2):
-            thread = threading.Thread(target=self.get_header_info_r, args=(queue_out, ))
+            thread = threading.Thread(target=self.get_header_info, args=(queue_out, ))
             thread.start()
             thread_list.append(thread)
 
-        # print("waiting...")
-        res = queue_out.get()
-        if res < 1:
-            raise Exception("Not good.")
+        return queue_out.get()
+
+    def write_file(self, content, seek=None):
+
+        try:
+            self.lock_file.acquire()
+
+            if seek is not None:
+                self.fd.seek(seek)
+
+            self.fd.write(content)
+
+        finally:
+            self.lock_file.release()
 
     def do_task(self):
         """
             1
         """
-        while True:
+        with requests.Session() as session:
+            # Speed up: skip the dns query by SSLAdapter
+            session.mount("https://", host_header_ssl.HostHeaderSSLAdapter())
+            target_url = re.sub(
+                r"^(http[s]?\://)%s([/]?)" % self.target_host,
+                r"\g<1>%s\g<2>" % self.target_addr,
+                self.target_url,
+                flags=re.I
+            )
+            retry = False
 
-            task = self.get_next_task()
-            if task is None:
-                # print("task done", "exit thread.")
-                return None
+            while True:
 
-            try:
+                if not retry:
+                    task = self.get_next_task()
+                    if task is None:
+                        # print("task done", "exit thread.")
+                        return None
 
-                headers = {
-                    # `start` <= Range <= `end`
-                    # So `end` should -1
-                    "Range": "Bytes=%s-%s" % (task["start"], task["end"] - 1),
-                    "Accept-Encoding": "*",
-                }
-                res = requests.get(self.target_url, headers=headers, timeout=CHUNK_TIMEOUT)
+                if "is_last" in task:
+                    is_last = True
+                else:
+                    is_last = False
 
-                # print("%s-%s download success" % (task["start"], task["end"]))
+                try:
 
-                if len(res.content) != task["end"] - task["start"]:
-                    print("Not suit: %s != %s ; from %s to %s" % (
-                        len(res.content),
-                        task["end"] - task["start"],
-                        task["start"],
-                        task["end"],
-                    ))
-                    raise Exception("Not suitable.")
+                    headers = {
+                        "Host": self.target_host,
+                        # `start` <= Range <= `end`, So `end` should -1
+                        "Range": "Bytes=%s-%s" % (task["start"], task["end"] - 1),
+                        "Accept-Encoding": "*",
+                    }
+                    res = session.get(target_url, headers=headers, timeout=(5, CHUNK_TIMEOUT), stream=True)
 
-                self.fd.seek(task["start"])
-                self.fd.write(res.content)
+                    content = b""
+                    while True:
+                        if is_last and self.last_task_done:
+                            # raise Exception("Last is done.")
+                            return None
+                        if len(content) == task["end"] - task["start"]:
+                            break
 
-            except Exception:
-                print(traceback.format_exc())
-                self.fail_task(task)
+                        content += res.raw.read(READ_CHUNK_SIZE)     # no headers, only the content
 
-            else:
-                self.finish_task(task)
+                    # DEBUG: never should this happened.
+                    if len(content) != task["end"] - task["start"]:
+                        print("[ERROR] Not suit: %s != %s ; from %s to %s" % (
+                            len(content),
+                            task["end"] - task["start"],
+                            task["start"],
+                            task["end"],
+                        ))
+                        print(res.headers)
+                        raise Exception("Not suitable.")
+
+                    self.write_file(content, task["start"])
+
+                except Exception:
+                    print(traceback.format_exc())
+                    if is_last and self.last_task_done:
+                        retry = False
+                    else:
+                        retry = True
+                    self.fail_task(task)
+
+                else:
+                    retry = False
+                    if is_last:
+                        if not self.last_task_done:
+                            self.last_task_done = True
+                            self.finish_task(task)
+                    else:
+                        self.finish_task(task)
+
+    def single_line_downloader(self):
+
+        thread = threading.Thread(target=self.start_single_line_bar, args=())
+        thread.start()
+
+        self.fd = open(self.file_name, "wb+")
+        with requests.Session() as session:
+            res = session.get(
+                self.target_url,
+                headers={
+                    "Accept-Encoding": "*"
+                },
+                timeout=180,
+                stream=True,
+            )
+
+            while True:
+                content = res.raw.read(READ_CHUNK_SIZE)     # no headers, only the content
+                if not content:
+                    break
+                self.write_file(content)
+                self.touch_download_speed(READ_CHUNK_SIZE)  # no need to use len(content)
+
+        self.download_finished = True
+        self.finish_single_line_bar()
+        self.fd.close()
+
+    def touch_download_speed(self, chunk_size):
+        """
+            存储并返回前5秒的平均下载速度
+            在 get_download_speed 计算
+        """
+        if not hasattr(self, "init_ts"):
+            self.init_ts = time.time()
+            self.ts_counter = {
+                "total_size": 0
+            }
+
+        ts_counter = self.ts_counter
+
+        self.now_ts_s = int(time.time() - self.init_ts)
+        ts_counter[self.now_ts_s] = ts_counter.get(self.now_ts_s, 0) + chunk_size
+        ts_counter["total_size"] += chunk_size
+
+        if ts_counter.get(self.now_ts_s - 6):
+            del ts_counter[self.now_ts_s - 6]
+
+    def get_download_speed(self):
+        """
+            计算下载速度
+        """
+        total_size = 0
+        total_ts = 0
+        for i in range(self.now_ts_s, self.now_ts_s - 6, -1):
+            if i in self.ts_counter:
+                total_size += self.ts_counter[i]
+                total_ts += 1
+
+        return pretty_file_size(total_size / max(total_ts, 1))
+
+    def finish_single_line_bar(self):
+        # self._status_bar.finish()
+        pass
+
+    def touch_single_line_bar(self):
+        if self.download_finished:
+            self._status_bar.phases = [" "]
+            ts_s = round(time.time() - self.init_ts, 2)
+            self._status_bar.message = "Total Size: %s, Total Time: %ss, Avg Speed: %s/s " % (
+                pretty_file_size(self.ts_counter["total_size"]),
+                ts_s,
+                pretty_file_size(self.ts_counter["total_size"] / max(ts_s, 1)),
+            )
+            self._status_bar.message = self._status_bar.message.ljust(49, " ")
+            self._status_bar.next()
+            self._status_bar.finish()
+            print("Done.")
+        else:
+            self._status_bar.message = "Got: %s, Speed: %s/s " % (
+                pretty_file_size(self.ts_counter["total_size"]),
+                self.get_download_speed()
+            )
+            self._status_bar.message = self._status_bar.message.ljust(36, " ")
+            self._status_bar.next()
+
+    def start_single_line_bar(self):
+        from progress.spinner import Spinner
+        Spinner.phases = ['🕐', '🕑', '🕒', '🕓', '🕔', '🕕', '🕖', '🕗', '🕘', '🕙', '🕚', '🕛']
+        self.touch_download_speed(0)
+        self._status_bar = Spinner("Init downloader.. ")
+        self._status_bar.next()
+
+        while not self.download_finished:
+            self.touch_download_speed(0)
+            self.touch_single_line_bar()
+            time.sleep(0.2)
+
+        self.touch_single_line_bar()
 
     def start_task(self):
 
+        # 获取文件尺寸，测试是否支持 range 方式（多线程，断点续传）
         ts = time.time()
-        self.double_finger()
+        res = self.double_finger()
+        self.header_info_done = True
+        if res <= 0:
+            print("[WANRING] start single line downloader..")
+            return self.single_line_downloader()
+
         self.split_task()
+        print("Get server info: %s -> %s" % (self.target_host, self.target_addr))
         print("Get file info: %ss, download chunk: %s" % (round(time.time() - ts, 3), self.task_queue.qsize()))
 
         # 预先分配空间
         self.fd = open(self.file_name, "wb+")
         self.fd.seek(self.file_size)
-        self.fd.write(b"")
+        # self.fd.write(b"")
+        self.write_file(b"")
 
         ts = time.time()
         print(
@@ -210,7 +434,7 @@ class Wrapper(object):
         print(
             "[✅ DONE]",
             time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time())),
-            "Total time:", round(time.time() - ts, 3), "s",
+            "Total time: %ss" % round(time.time() - ts, 3),
             "Avg speed: %s/s" % pretty_file_size(self.file_size / max(time.time() - ts, 1)),
         )
 
@@ -220,8 +444,9 @@ class Wrapper(object):
 
     def touch_status_bar(self):
         self._status_bar.next()
-        if self.task_finish_count == self.task_total_count:
-            self._status_bar.finish()
+
+    def finish_status_bar(self):
+        self._status_bar.finish()
 
 
 def main():
@@ -229,6 +454,7 @@ def main():
     args = {
         # "target_url": "https://ayiis.me/",
         "target_url": "https://ayiis.me/aydocs/download/ex.zip",
+        # "target_url": "https://ayiis.me/aydocs/download/ex.zip",  # 61749db2be5027cebde151c307777c6d
         # "target_url": "http://war3down1.uuu9.com/war3/201911/201911251725.rar",
         # "target_url": "https://ss0.bdstatic.com/5aV1bjqh_Q23odCf/static/superman/img/logo/bd_logo1_31bdc765.png",
         # "file_name": "baidu.png",
@@ -241,7 +467,7 @@ def main():
     w.start_task()
 
 
-def test():
+def test_session():
     import logging
     logging.basicConfig(level=logging.DEBUG)
     s = requests.Session()
@@ -249,6 +475,65 @@ def test():
     print(r.text[:20])
 
 
+def test_stream():
+    res = requests.get("https://ss0.bdstatic.com/5aV1bjqh_Q23odCf/static/superman/img/logo/bd_logo1_31bdc765.png", timeout=(3, 3), stream=True)
+    head = res.raw.read(44)     # only about content
+    print("head:", head)
+    peer = res.raw._fp.fp.raw._sock.getpeername()
+    print("ip:", peer[0], peer[1])
+    q.d()
+
+
+def test_https():
+    from requests_toolbelt.adapters import host_header_ssl
+    with requests.Session() as s:
+        s.mount("https://", host_header_ssl.HostHeaderSSLAdapter())
+        res = s.get("http://ayiis.me/aydocs/download/ex.zip", headers={"Host": "ayiis.me"}, stream=True)
+        # res = s.get("https://113.113.73.32/5aV1bjqh_Q23odCf/static/superman/img/logo/bd_logo1_31bdc765.png", headers={"Host": "ss0.bdstatic.com"}, stream=True)
+        # res = requests.get(
+        #     "https://113.113.73.32/5aV1bjqh_Q23odCf/static/superman/img/logo/bd_logo1_31bdc765.png",
+        #     timeout=(3, 3),
+        #     headers={
+        #         "Host": "ss0.bdstatic.com",
+        #     },
+        #     stream=True,
+        # )
+        print(111111111111)
+        content = res.raw.read()     # only about content
+        print("headers:", res.headers)
+        open("akufwigf1b222.png", "wb").write(content)
+
+
+def test_bar():
+    from progress.spinner import Spinner
+    Spinner.phases = ['🕐', '🕑', '🕒', '🕓', '🕔', '🕕', '🕖', '🕗', '🕘', '🕙', '🕚', '🕛']
+    _status_bar = Spinner("Downloading.. ", end="www")
+    for i in range(100):
+        time.sleep(0.02)
+        _status_bar.next()
+        _status_bar.message
+    _status_bar.finish()
+
+
+def test_bar2():
+    from tqdm import tqdm
+    import time
+    pbar = tqdm(total=100)
+    for i in range(10):
+        time.sleep(0.1)
+        pbar.update(10)
+    pbar.close()
+
+
 if __name__ == "__main__":
-    # test()
+
+    import logging
+    logging.basicConfig(level=logging.DEBUG)
+
+    # test_bar()
+    # test_bar2()
+
+    # test_https()
+    # test_stream()
+    # test_session()
     main()

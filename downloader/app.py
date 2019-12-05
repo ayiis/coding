@@ -12,12 +12,16 @@ parser.add_argument("-o", "--output_file", type=str)
 
 args = parser.parse_args()
 wrap_request.CHUNK_SIZE = (args.chunk_size or 0) * 1024 or wrap_request.CHUNK_SIZE
-wrap_request.CHUNK_TIMEOUT = args.chunk_timeout or (wrap_request.CHUNK_SIZE // (5 * wrap_request.KB))
+wrap_request.CHUNK_TIMEOUT = args.chunk_timeout or (wrap_request.CHUNK_SIZE // (8 * wrap_request.KB))
+wrap_request.HEAD_TIMEOUT = 8
 wrap_request.THREAD_MAX = args.thread_max or wrap_request.THREAD_MAX
 # print(args)
 
 
 def main():
+
+    # import logging
+    # logging.basicConfig(level=logging.DEBUG)
 
     req_data = {
         "target_url": args.target_url,

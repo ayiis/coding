@@ -18,14 +18,19 @@ import time
 import traceback
 import threading
 import queue
+import socket
+import urllib3
 import requests
 from requests_toolbelt.adapters import host_header_ssl
 
+# stupid thing
+# urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 KB = 1024
-CHUNK_SIZE = (128 * KB)                     # 每个线程一次下载的大小 ?256KB
-CHUNK_TIMEOUT = CHUNK_SIZE // (8 * KB)      # 每个线程一次下载速度最慢 ?4KB/s 超时
+CHUNK_SIZE = (256 * KB)                     # 每个线程一次下载的大小 ?256KB
+CHUNK_TIMEOUT = CHUNK_SIZE // (16 * KB)      # 每个线程一次下载速度最慢 ?4KB/s 超时
 HEAD_TIMEOUT = CHUNK_SIZE // CHUNK_TIMEOUT // KB * 2 + 5  # 2: header视作2KB; 5: 适应值
-THREAD_MAX = 8                             # 最大线程数量 ?8 个
+THREAD_MAX = 6                             # 最大线程数量 ?6 个
 READ_CHUNK_SIZE = requests.models.CONTENT_CHUNK_SIZE or (10 * 1024)
 
 
@@ -43,6 +48,36 @@ def pretty_file_size(byte):
             break
 
     return "%s%s" % (round(res, 2), size[i])
+
+
+god_mode_setting = {
+    "cache_create_connection": None,
+    "cache_addr_list": [],
+    "cache_addr_counter": 0,
+}
+
+
+def god_mode():
+
+    if god_mode_setting["cache_create_connection"] is None:
+        god_mode_setting["cache_addr_list"] = list(set(god_mode_setting["cache_addr_list"]))
+        god_mode_setting["cache_create_connection"] = urllib3.util.connection.create_connection
+        print("Host list:", god_mode_setting["cache_addr_list"])
+
+    def next_god_mode():
+        if god_mode_setting["cache_addr_counter"] == len(god_mode_setting["cache_addr_list"]) - 1:
+            god_mode_setting["cache_addr_counter"] = 0
+        else:
+            god_mode_setting["cache_addr_counter"] += 1
+
+    def wrap_create_connection(address, *argc, **argv):
+
+        new_address = (god_mode_setting["cache_addr_list"][god_mode_setting["cache_addr_counter"]], address[1])
+        # print("new_address: %s -> %s" % (address, new_address))
+        next_god_mode()
+        return god_mode_setting["cache_create_connection"](new_address, *argc, **argv)
+
+    urllib3.util.connection.create_connection = wrap_create_connection
 
 
 class Wrapper(object):
@@ -63,6 +98,7 @@ class Wrapper(object):
         self.fail_times = 0
         self.download_finished = False
         self.header_info_done = False
+        self.dns_query_done = False
         print(
             "KB:", KB,
             ", CHUNK_SIZE:", pretty_file_size(CHUNK_SIZE),
@@ -153,11 +189,19 @@ class Wrapper(object):
             if self.header_info_done:
                 break
             try:
-                res = requests.get(self.target_url, headers=headers, timeout=HEAD_TIMEOUT, stream=True)
+                res = requests.get(
+                    self.target_url,
+                    headers=headers,
+                    timeout=HEAD_TIMEOUT,
+                    stream=True,
+                    # verify=False,
+                )
                 hcr = res.headers.get("Content-Range")
 
                 peer = res.raw._fp.fp.raw._sock.getpeername()
                 self.target_addr = "%s:%s" % (peer[0], peer[1])
+
+                god_mode_setting["cache_addr_list"].append(peer[0])
 
                 if not hcr:
                     self.header_print("Not suit for content-range.")
@@ -189,14 +233,30 @@ class Wrapper(object):
             并发获取内容总长度, 通过 queue_out 通知主线程
         """
         queue_out = queue.Queue()
-        thread_list = []
+
+        for i in range(2):
+            thread = threading.Thread(target=self.give_me_five)
+            thread.start()
 
         for i in range(2):
             thread = threading.Thread(target=self.get_header_info, args=(queue_out, ))
             thread.start()
-            thread_list.append(thread)
 
         return queue_out.get()
+
+    def give_me_five(self):
+
+        for i in range(3):
+            if self.dns_query_done:
+                break
+            try:
+                dns_result = socket.getaddrinfo(self.target_host, 0, 0, 0, 0)
+                god_mode_setting["cache_addr_list"] = list(set([z[-1][0] for z in dns_result]))
+                self.dns_query_done = True
+                break
+            except Exception:
+                if not self.dns_query_done:
+                    self.header_print(traceback.format_exc())
 
     def write_file(self, content, seek=None):
 
@@ -217,14 +277,18 @@ class Wrapper(object):
         """
         with requests.Session() as session:
             # Speed up: skip the dns query by SSLAdapter
-            session.mount("https://", host_header_ssl.HostHeaderSSLAdapter())
-            target_url = re.sub(
-                r"^(http[s]?\://)%s([/]?)" % self.target_host,
-                r"\g<1>%s\g<2>" % self.target_addr,
-                self.target_url,
-                flags=re.I
-            )
+            # Must use `verify=False` to avoid:
+            # SSLCertVerificationError("hostname 'a.com' doesn't match either of 'b.com', 'c.com'")
+            # session.mount("https://", host_header_ssl.HostHeaderSSLAdapter())
+            # target_url = re.sub(
+            #     r"^(http[s]?\://)%s([/]?)" % self.target_host,
+            #     r"\g<1>%s\g<2>" % self.target_addr,
+            #     self.target_url,
+            #     flags=re.I
+            # )
+            target_url = self.target_url
             retry = False
+            content = b""
 
             while True:
 
@@ -242,14 +306,19 @@ class Wrapper(object):
                 try:
 
                     headers = {
-                        "Host": self.target_host,
+                        # "Host": self.target_host,
                         # `start` <= Range <= `end`, So `end` should -1
-                        "Range": "Bytes=%s-%s" % (task["start"], task["end"] - 1),
+                        "Range": "Bytes=%s-%s" % (task["start"] + len(content), task["end"] - 1),
                         "Accept-Encoding": "*",
                     }
-                    res = session.get(target_url, headers=headers, timeout=(5, CHUNK_TIMEOUT), stream=True)
+                    res = session.get(
+                        target_url,
+                        headers=headers,
+                        timeout=(5, CHUNK_TIMEOUT),
+                        stream=True,
+                        # verify=False,
+                    )
 
-                    content = b""
                     while True:
                         if is_last and self.last_task_done:
                             # raise Exception("Last is done.")
@@ -272,6 +341,13 @@ class Wrapper(object):
 
                     self.write_file(content, task["start"])
 
+                except (urllib3.exceptions.ReadTimeoutError, requests.exceptions.ReadTimeout):
+                    if is_last and self.last_task_done:
+                        retry = False
+                    else:
+                        retry = True
+                    self.fail_task(task)
+
                 except Exception:
                     print(traceback.format_exc())
                     if is_last and self.last_task_done:
@@ -281,6 +357,7 @@ class Wrapper(object):
                     self.fail_task(task)
 
                 else:
+                    content = b""
                     retry = False
                     if is_last:
                         if not self.last_task_done:
@@ -288,6 +365,8 @@ class Wrapper(object):
                             self.finish_task(task)
                     else:
                         self.finish_task(task)
+                finally:
+                    time.sleep(0.2)
 
     def single_line_downloader(self):
 
@@ -398,6 +477,15 @@ class Wrapper(object):
             print("[WANRING] start single line downloader..")
             return self.single_line_downloader()
 
+        # 查 DNS，如果堵塞了，等待3秒（本心：为了应对垃圾网络）
+        for i in range(30):
+            if not self.dns_query_done:
+                time.sleep(0.1)
+
+        # 强制使用指定IP解析域名，提高速度
+        peer_ip, peer_port = self.target_addr.split(":")
+        god_mode()
+
         self.split_task()
         print("Get server info: %s -> %s" % (self.target_host, self.target_addr))
         print("Get file info: %ss, download chunk: %s" % (round(time.time() - ts, 3), self.task_queue.qsize()))
@@ -405,7 +493,6 @@ class Wrapper(object):
         # 预先分配空间
         self.fd = open(self.file_name, "wb+")
         self.fd.seek(self.file_size)
-        # self.fd.write(b"")
         self.write_file(b"")
 
         ts = time.time()
@@ -453,7 +540,8 @@ def main():
 
     args = {
         # "target_url": "https://ayiis.me/",
-        "target_url": "https://ayiis.me/aydocs/download/ex.zip",
+        # "target_url": "https://ayiis.me/aydocs/UltraEdit32.rar,    # e9f89cbc70b02bb17d081fb60d7a9663
+        "target_url": "https://ayiis.me/aydocs/download/ex.zip",    # 61749db2be5027cebde151c307777c6d
         # "target_url": "https://ayiis.me/aydocs/download/ex.zip",  # 61749db2be5027cebde151c307777c6d
         # "target_url": "http://war3down1.uuu9.com/war3/201911/201911251725.rar",
         # "target_url": "https://ss0.bdstatic.com/5aV1bjqh_Q23odCf/static/superman/img/logo/bd_logo1_31bdc765.png",
@@ -486,8 +574,32 @@ def test_stream():
 
 def test_https():
     from requests_toolbelt.adapters import host_header_ssl
+    import socket
+
+    cache_func = urllib3.util.connection.create_connection
+    def wrap_create_connection(address, timeout=socket._GLOBAL_DEFAULT_TIMEOUT, source_address=None, socket_options=None):
+
+        address = ("14.215.56.238", "443")
+        return cache_func(address, timeout, source_address, socket_options)
+
+    urllib3.util.connection.create_connection = wrap_create_connection
+
+    s = requests.Session()
+    s.mount("https://", host_header_ssl.HostHeaderSSLAdapter())
+    res = s.get(
+        "https://file3.data.weipan.cn/84687038/33aa2de11a520c616796445637c52edf13b9a17f?ip=1575539119,59.42.106.170&ssig=Djju4kRf0E&Expires=1575539719&KID=sae,l30zoo1wmz&fn=%E5%91%A8%E6%9D%B0%E4%BC%A6+-+%E4%B8%83%E9%87%8C%E9%A6%99.mp3&se_ip_debug=59.42.106.170&from=1221134",
+        headers={"Host": "file3.data.weipan.cn"},
+        stream=True,
+        # verify=False,
+    )
+    content = res.raw.read(44)
+    print(content)
+
+    exit(1)
     with requests.Session() as s:
+        s = requests.Session()
         s.mount("https://", host_header_ssl.HostHeaderSSLAdapter())
+        # res = s.get("http://202.104.186.233:443/84687038/33aa2de11a520c616796445637c52edf13b9a17f?ip=1575535072,59.42.106.170&ssig=9xRrS2tbWs&Expires=1575535672&KID=sae,l30zoo1wmz&fn=%E5%91%A8%E6%9D%B0%E4%BC%A6+-+%E4%B8%83%E9%87%8C%E9%A6%99.mp3&se_ip_debug=59.42.106.170&from=1221134", headers={"Host": "file3.data.weipan.cn"}, stream=True)
         res = s.get("http://ayiis.me/aydocs/download/ex.zip", headers={"Host": "ayiis.me"}, stream=True)
         # res = s.get("https://113.113.73.32/5aV1bjqh_Q23odCf/static/superman/img/logo/bd_logo1_31bdc765.png", headers={"Host": "ss0.bdstatic.com"}, stream=True)
         # res = requests.get(
@@ -525,6 +637,23 @@ def test_bar2():
     pbar.close()
 
 
+def test_dns():
+    import dns.resolver
+
+    # target_site = "img2018.cnblogs.com"
+    target_site = "www.baidu.com"
+
+    answers = dns.resolver.query(target_site)
+    list1 = [str(a) for a in answers]
+
+    dns_result = socket.getaddrinfo(target_site, 0, 0, 0, 0)
+    list2 = list(set([z[-1][0] for z in dns_result]))
+
+    # assert list1 == list(set(list1)), "dns.resolver is bad"
+    # assert list2 == list(set(list2)), "socket.getaddrinfo is bad"
+    assert set(list1) == set(list2), "list1 != list2"
+
+
 if __name__ == "__main__":
 
     import logging
@@ -533,7 +662,9 @@ if __name__ == "__main__":
     # test_bar()
     # test_bar2()
 
+    test_dns()
+
     # test_https()
     # test_stream()
     # test_session()
-    main()
+    # main()

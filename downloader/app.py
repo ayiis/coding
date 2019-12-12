@@ -25,8 +25,12 @@ def main():
 
     req_data = {
         "target_url": args.target_url,
-        "file_name": args.output_file or args.target_url.split("/")[-1],
+        "file_name": args.output_file,
     }
+    if not req_data["file_name"]:
+        req_data["file_name"] = args.target_url.split("/")[-1]
+        req_data["file_name"] = req_data["file_name"].split("?")[0]
+
     if not req_data["file_name"] or len(req_data["file_name"]) > 64:
         req_data["file_name"] = uuid.uuid4().hex
 

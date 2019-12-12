@@ -541,8 +541,14 @@ def main():
     args = {
         # "target_url": "https://ayiis.me/",
         # "target_url": "https://ayiis.me/aydocs/UltraEdit32.rar,    # e9f89cbc70b02bb17d081fb60d7a9663
-        "target_url": "https://ayiis.me/aydocs/download/ex.zip",    # 61749db2be5027cebde151c307777c6d
-        # "target_url": "https://ayiis.me/aydocs/download/ex.zip",  # 61749db2be5027cebde151c307777c6d
+        # "target_url": "https://ayiis.me/aydocs/download/ex.zip",    # 61749db2be5027cebde151c307777c6d
+        # "target_url": "https://ayiis.me/aydocs/readme.txt",        # 9495df25b9b9d1a04d14b17923961760
+        # "target_url": "https://img2018.cnblogs.com/news/34358/201912/34358-20191211155626893-1187684302.jpg",        #
+        # "target_url": "https://1-im.guokr.com/LAQ0touxN2eFtub6GZ0Nm6EEq3UV8muBo5ojuymziDtQEAAAgAYAAEpQ.jpg?imageView2/1/w/648/h/356",        #
+        # "target_url": "https://pic1.zhimg.com/50/v2-188092cbfc0d010a96a22374eaea9877_hd.jpg",        #
+        # "target_url": "https://img.iplaysoft.com/wp-content/uploads/2019/aliyun-sale/aliyun_201912_2x.jpg",        #
+        # "target_url": "http://image3.uuu9.com/war3/war3rpg/UploadFiles_1951/201910/201910181520141521.jpg",        #
+        "target_url": "http://war3down1.uuu9.com/war3/201404/201404081001.rar",        #
         # "target_url": "http://war3down1.uuu9.com/war3/201911/201911251725.rar",
         # "target_url": "https://ss0.bdstatic.com/5aV1bjqh_Q23odCf/static/superman/img/logo/bd_logo1_31bdc765.png",
         # "file_name": "baidu.png",
@@ -656,15 +662,15 @@ def test_dns():
 
 if __name__ == "__main__":
 
-    import logging
-    logging.basicConfig(level=logging.DEBUG)
+    # import logging
+    # logging.basicConfig(level=logging.DEBUG)
 
     # test_bar()
     # test_bar2()
 
-    test_dns()
+    # test_dns()
 
     # test_https()
     # test_stream()
     # test_session()
-    # main()
+    main()

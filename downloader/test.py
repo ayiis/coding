@@ -73,7 +73,7 @@ def test():
     }
     do_test(args)
 
-    return
+    # return
 
     args = {
         "target_url": "https://img2018.cnblogs.com/news/34358/201912/34358-20191211155626893-1187684302.jpg",

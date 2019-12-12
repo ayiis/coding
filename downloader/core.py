@@ -12,7 +12,6 @@ import utils
 
 import requests
 
-CHUNK_TIMEOUT = 9
 READ_CHUNK_SIZE = requests.models.CONTENT_CHUNK_SIZE or (10 * 1024)
 MAX_TRUNK_SIZE = READ_CHUNK_SIZE * 1024
 
@@ -130,7 +129,7 @@ class MultiThreadDownloader(object):
     def split_task(self):
         """
             将任务切割成多份，根据线程数量切割
-            10K <= 任务大小 <= 10M
+            10K <= 任务单位大小 <= 10M
         """
         if self.arg.file_size // READ_CHUNK_SIZE < self.arg.max_thread:
             package_count = math.ceil(self.arg.file_size / READ_CHUNK_SIZE)
@@ -225,7 +224,7 @@ class MultiThreadDownloader(object):
                     res = session.get(
                         self.arg.target_url,
                         headers=headers,
-                        timeout=(5, CHUNK_TIMEOUT),
+                        timeout=(5, self.arg.chunk_timeout),
                         stream=True,
                     )
 
@@ -248,11 +247,13 @@ class MultiThreadDownloader(object):
                 except (urllib3.exceptions.ReadTimeoutError, requests.exceptions.ReadTimeout):
                     retry = True
                     self.fail_task(task)
+                    time.sleep(0.2)
 
                 except Exception:
                     print(traceback.format_exc())
                     retry = True
                     self.fail_task(task)
+                    time.sleep(0.2)
 
                 else:
                     retry = False
@@ -303,9 +304,9 @@ class DownloadBuilder(object):
     """
     def __init__(self, arg):
         super(DownloadBuilder, self).__init__()
-        # self.arg = arg
-        self.max_thread = arg.get("max_thread", 8)
-        self.header_timeout = arg.get("header_timeout", 8)
+        self.arg = arg
+        self.max_thread = arg.get("max_thread") or 8
+        self.chunk_timeout = arg.get("chunk_timeout") or 8
         self.target_url = arg["target_url"]
         self.file_name = arg.get("file_name", None)
         self.target_host = re.match(r"http[s]?://([^/]+)", self.target_url).group(1)
@@ -329,10 +330,10 @@ class DownloadBuilder(object):
                 dns_result = socket.getaddrinfo(self.target_host, 0, 0, 0, 0)
                 self.addr_list = list(set([z[-1][0] for z in dns_result]))
                 self.dns_query_done = True
-                break
             except Exception:
                 if not self.dns_query_done:
                     self.header_print(traceback.format_exc())
+                time.sleep(0.2)
 
     def get_header_info(self, queue_out):
         """
@@ -350,14 +351,14 @@ class DownloadBuilder(object):
                 res = requests.get(
                     self.target_url,
                     headers=headers,
-                    timeout=self.header_timeout,
+                    timeout=self.chunk_timeout,
                     stream=True,
                 )
                 hcr = res.headers.get("Content-Range")
 
                 peer = res.raw._fp.fp.raw._sock.getpeername()
                 self.addr_list.append(peer[0])
-                self.header_print("Get host addr: %s -> %s:%s" % (self.target_host, peer[0], peer[1]))
+                # self.header_print("Get host addr: %s -> %s:%s" % (self.target_host, peer[0], peer[1]))
 
                 if not hcr:
                     self.header_print("Not suit for content-range.")
@@ -439,31 +440,10 @@ class DownloadBuilder(object):
 
 if __name__ == "__main__":
     args = {
-        # "target_url": "https://news.cnblogs.com/",
-        # "target_url": "https://ayiis.me/",
-        # "target_url": "https://ayiis.me/aydocs/UltraEdit32.rar",    # e9f89cbc70b02bb17d081fb60d7a9663
-        # "target_url": "https://ayiis.me/aydocs/download/ex.zip",   # 61749db2be5027cebde151c307777c6d
-        # "target_url": "https://ayiis.me/aydocs/download/fff.zip",    # 965e2c518542d7be0748757ac168e425
-        # "target_url": "https://ayiis.me/aydocs/download/xx1024.file",    # 0f343b0931126a20f133d67c2b018a3b
-        # "target_url": "https://ayiis.me/aydocs/download/xx10240.file",    # 1276481102f218c981e0324180bafd9f
-        # "target_url": "https://ayiis.me/aydocs/download/xx102400.file",    # 4c6426ac7ef186464ecbb0d81cbfcb1e
-        # "target_url": "https://ayiis.me/aydocs/download/xx10240_16",    # 6cc3d8ecd5a9967c9227be8d17b988a6
-        # "target_url": "https://ayiis.me/aydocs/download/xx10240_8",    # 030a4f48dc8db0956add25994004e5ca
-        # "target_url": "https://ayiis.me/aydocs/download/xx10240_8+1",    # 380395a711ac160a1887d8a046eb4ba1
-        # "target_url": "https://ayiis.me/aydocs/download/xx10240_8-1",    # 929d7d6bd36b6f8879370ca24674cc81
-        "target_url": "https://ayiis.me/aydocs/readme.txt",        # 9495df25b9b9d1a04d14b17923961760
-        # "target_url": "https://img2018.cnblogs.com/news/34358/201912/34358-20191211155626893-1187684302.jpg",        #
-        # "target_url": "https://1-im.guokr.com/LAQ0touxN2eFtub6GZ0Nm6EEq3UV8muBo5ojuymziDtQEAAAgAYAAEpQ.jpg?imageView2/1/w/648/h/356",        #
-        # "target_url": "https://pic1.zhimg.com/50/v2-188092cbfc0d010a96a22374eaea9877_hd.jpg",        #
-        # "target_url": "https://img.iplaysoft.com/wp-content/uploads/2019/aliyun-sale/aliyun_201912_2x.jpg",        #
-        # "target_url": "http://image3.uuu9.com/war3/war3rpg/UploadFiles_1951/201910/201910181520141521.jpg",        #
-        # "target_url": "http://war3down1.uuu9.com/war3/201404/201404081001.rar",        #
-        # "target_url": "http://war3down1.uuu9.com/war3/201911/201911251725.rar",
-        # "target_url": "https://ss0.bdstatic.com/5aV1bjqh_Q23odCf/static/superman/img/logo/bd_logo1_31bdc765.png",
-        # "target_url": "https://warehouse-camo.cmh1.psfhosted.org/807e4b51537640bee0aa77064dc577ee1669a4fd/68747470733a2f2f6661726d352e737461746963666c69636b722e636f6d2f343331372f33353139383338363337345f313933396166336465365f6b5f642e6a7067",
-        # "file_name": "baidu.png",
+        "target_url": "https://ayiis.me/aydocs/readme.txt",
         "file_name": "ex.zip",
-        # "file_name": "201911251725.rar",
+        "max_thread": None,
+        "chunk_timeout": None,
     }
     db = DownloadBuilder(args)
     db.start_task()

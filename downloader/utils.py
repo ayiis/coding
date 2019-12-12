@@ -2,6 +2,7 @@ import time
 import urllib3
 from progress.bar import Bar
 from progress.spinner import Spinner
+import threading
 
 KB = 1024
 
@@ -57,8 +58,15 @@ class ConnectPatch(object):
 
 class BaseStatus(object):
 
+    def __init__(self):
+        self.lock = threading.Lock()
+
     def touch_status_bar(self):
-        self._status_bar.next()
+        try:
+            self.lock.acquire()
+            self._status_bar.next()
+        finally:
+            self.lock.release()
 
     def set_message(self, message):
         self._status_bar.message = message

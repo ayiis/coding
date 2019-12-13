@@ -23,9 +23,6 @@ class SingleThreadDownloader(object):
     def __init__(self, arg):
         super(SingleThreadDownloader, self).__init__()
         self.arg = arg
-        self.file_name = arg.file_name
-        self.target_url = arg.target_url
-        # self.now_ts_s = 0
 
     def write_file(self, content):
         self.fd.write(content)
@@ -73,12 +70,13 @@ class SingleThreadDownloader(object):
         thread = threading.Thread(target=self.bar.start, args=())
         thread.start()
 
-        self.fd = open(self.file_name, "wb+")
+        self.fd = open(self.arg.file_name, "wb+")
         with requests.Session() as session:
             res = session.get(
-                self.target_url,
+                self.arg.target_url,
                 headers={
-                    "Accept-Encoding": "*"
+                    "Accept-Encoding": "*",
+                    "Referer": self.arg.target_url,
                 },
                 timeout=180,
                 stream=True,
@@ -92,6 +90,7 @@ class SingleThreadDownloader(object):
                 self.touch_download_speed(READ_CHUNK_SIZE)  # no need to use len(content)
 
         self.bar.finish_download()
+        thread.join()
         self.fd.close()
 
 
@@ -220,6 +219,7 @@ class MultiThreadDownloader(object):
                         # `start` <= Range <= `end`, So `end` should -1
                         "Range": "Bytes=%s-%s" % (task["start"], task["end"] - 1),
                         "Accept-Encoding": "*",
+                        "Referer": self.arg.target_url,
                     }
                     res = session.get(
                         self.arg.target_url,
@@ -421,10 +421,8 @@ class DownloadBuilder(object):
         ts = time.time()
         res = self.double_finger()
         self.header_info_done = True
-        if not self.file_name:
-            self.file_name = "zszf.html"
 
-        print("Get file info: %ss" % (round(time.time() - ts, 3)))
+        print("Get file info: %ss, save as %s" % (round(time.time() - ts, 3), self.file_name))
 
         if res <= 0:
             print("[WANRING] start single line downloader..")

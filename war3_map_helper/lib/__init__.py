@@ -142,11 +142,14 @@ def MyReader(file_path):
 
                 # 判断是否新节点
                 # 未兼容 单行 [=[ 和 ]=] 同时存在的情况
-                elif re.match(r"^\[([a-z0-9]+)\]$", line, re.I):
-                    sect_name = re.match(r"^\[([a-z0-9]+)\]$", line, re.I).group(1)
+                elif re.match(r"^\[([a-z0-9]{4})\]$", line, re.I):
+                    sect_name = re.match(r"^\[([a-z0-9]{4})\]$", line, re.I).group(1)
                     ini_obj[sect_name] = {}
                     # print("Add new section: [%s]" % sect_name)
-
+                elif re.match(r"^\[([^\[\]\"\']+)\]$", line, re.I):
+                    print("warn:", "Be not 'abcd' type ID:", line)
+                    sect_name = re.match(r"^\[([^\[\]\"\']+)\]$", line, re.I).group(1)
+                    ini_obj[sect_name] = {}
                 # 直接赋值
                 elif "=" in line:
                     key_name = line.split("=")[0]

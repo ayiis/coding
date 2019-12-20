@@ -22,6 +22,9 @@ from lib.w_war3mapskin import (
 from lib.w_war3map_wts import (
     Worker as War3mapWtsWorker,
 )
+from lib.w_war3map_j import (
+    Worker as War3mapJWorker,
+)
 from lib.w_common_ini import (
     AbilityWorker,
     BuffWorker,
@@ -30,25 +33,26 @@ from lib.w_common_ini import (
     ItemWorker,
     UnitWorker,
     UpgradeWorker,
+    W3iWorker,
 )
 
-lni_work_files = {
+ini_work_files = {
     # "table/ability2.ini": AbilityWorker,
 
-    # "map/war3mapskin.txt": War3mapskinWorker,
+    "map/war3mapskin.txt": War3mapskinWorker,
 
-    # "table/ability.ini": AbilityWorker,
-    # "table/buff.ini": BuffWorker,
-    # "table/destructable.ini": DestructableWorker,
-    # "table/doodad.ini": DoodadWorker,
-    # "table/item.ini": ItemWorker,
-    # "table/unit.ini": UnitWorker,
-    # "table/upgrade.ini": UpgradeWorker,
+    "table/ability.ini": AbilityWorker,
+    "table/buff.ini": BuffWorker,
+    "table/destructable.ini": DestructableWorker,
+    "table/doodad.ini": DoodadWorker,
+    "table/item.ini": ItemWorker,
+    "table/unit.ini": UnitWorker,
+    "table/upgrade.ini": UpgradeWorker,
 
-    # "table/w3i.ini": None,
+    "table/w3i.ini": W3iWorker,
 }
 
-slk_work_fils = {
+slk_work_files = {
 
 }
 
@@ -57,29 +61,8 @@ wts_work_files = {
 }
 
 jass_work_files = {
-    "map/war3map.j": None,
+    "map/war3map.j": War3mapJWorker,
 }
-
-
-def get_files():
-    pass
-
-
-def build(source_path="templates_jade", target_path="templates", recursive=True):
-
-    if not Path(target_path).exists():
-        os.makedirs(target_path)
-    elif not Path(target_path).is_dir():
-        raise Exception("%s is not a dir!" % target_path)
-
-    for path in Path(source_path).glob("*"):
-        path_string = "%s" % path
-
-        if recursive and path.is_dir():
-            build("%s/%s" % (source_path, path.name), "%s/%s" % (target_path, path.name))
-
-        elif path.is_file() and path_string[-5:] == ".jade" and len(path_string) > 5:
-            pass
 
 
 class TranslateWorkerForIni(object):
@@ -97,9 +80,9 @@ class TranslateWorkerForIni(object):
             使用 ini parser
             将字符（英文/俄文）统一转化成小写
         """
-        for file_name in lni_work_files:
+        for file_name in ini_work_files:
             file_path = "%s/%s" % (self.arg["target_dir"], file_name)
-            worker = lni_work_files[file_name]
+            worker = ini_work_files[file_name]
             if not worker:
                 continue
 
@@ -186,7 +169,7 @@ class TranslateWorkerForIni(object):
         # 去除字符串前后的标点空格和特殊字符
         # string = re.sub(r"^[\~\!\@\#\$\%\^\&\*\(\)\_\+\=\-\`\[\]\\\{\}\|\;\'\:\"\,\.\/\<\>\?\s]*|[\~\!\@\#\$\%\^\&\*\(\)\_\+\=\-\`\[\]\\\{\}\|\;\'\:\"\,\.\/\<\>\?\s]*$", "", string, flags=re.I)
         trans_line = string
-        trans_strings = [x.lower() for x in self.take_string_from_sentense(string)]
+        trans_strings = list(set([x.lower() for x in self.take_string_from_sentense(string)]))
         if trans_strings:
             # print("trans_strings:", set(trans_strings))
             good_key = self.trans_result_keys & set(trans_strings)
@@ -316,6 +299,12 @@ class TranslateWorkerForIni(object):
                         # print("Add new section: [%s]" % sect_name)
                         self.write_raw_string(wf, rawline)
 
+                    elif re.match(r"^\[([^\[\]\"\']+)\]$", line, re.I):
+                        # print("warn:", "Be not english:", line)
+                        # sect_name = re.match(r"^\[([^\[\]\"\']+)\]$", line, re.I).group(1)
+                        # ini_obj[sect_name] = {}
+                        self.write_raw_string(wf, rawline)
+
                     # 直接赋值
                     elif "=" in line:
                         key_name = line.split("=")[0]
@@ -339,9 +328,9 @@ class TranslateWorkerForIni(object):
 
     def rewrite_ini(self):
         self.trans_result_keys = self.trans_result.keys()
-        for file_name in lni_work_files:
+        for file_name in ini_work_files:
             file_path = "%s/%s" % (self.arg["target_dir"], file_name)
-            worker = lni_work_files[file_name]
+            worker = ini_work_files[file_name]
             if not worker:
                 continue
 
@@ -351,6 +340,18 @@ class TranslateWorkerForIni(object):
 
             work_item = worker.WORK_ITEM
             self.my_writer(file_path, work_item)
+
+    def check_result(self, eee):
+        for file_name in ini_work_files:
+            file_path = "%s/%s" % (self.arg["target_dir"], file_name)
+            with open("%s.mta2.cache" % file_path, "r") as rf:
+                contents = rf.readlines()
+            for lineno, line in enumerate(contents):
+                for e in eee:
+                    if e in line:
+                        print("[Break]:", file_name, lineno, e, line)
+
+        print("[Done check]")
 
 
 class TranslateWorkerForWts(object):
@@ -410,7 +411,6 @@ class TranslateWorkerForWts(object):
     def restruct_strings(self):
         """
             直接整个字符串丢进去翻译，不处理
-            NO - TODO THIS
         """
         self.sentence_set = set([])
         temp_list = list(set(self.text_cache))
@@ -478,7 +478,7 @@ class TranslateWorkerForWts(object):
     def write_translate_string(self, wf, line, string):
         # 去除字符串前后的标点空格和特殊字符
         trans_line = string
-        trans_strings = [x.lower() for x in self.take_string_from_sentense(string)]
+        trans_strings = list(set([x.lower() for x in self.take_string_from_sentense(string)]))
         if trans_strings:
             # print("trans_strings:", set(trans_strings))
             good_key = self.trans_result_keys & set(trans_strings)
@@ -497,21 +497,322 @@ class TranslateWorkerForWts(object):
 
         wf.write(line.replace(string, trans_line))
 
+    def check_result(self, eee):
+        for file_name in wts_work_files:
+            file_path = "%s/%s" % (self.arg["target_dir"], file_name)
+            with open("%s.mta2.cache" % file_path, "r") as rf:
+                contents = rf.readlines()
+            for lineno, line in enumerate(contents):
+                for e in eee:
+                    if e in line:
+                        print("[Break]:", file_name, lineno, e, line)
+
+        print("[Done check]")
+
+
+class TranslateWorkerForJ(object):
+    """docstring for TranslateWorkerForJ"""
+    def __init__(self, arg):
+        super(TranslateWorkerForJ, self).__init__()
+        self.arg = arg
+        while self.arg["target_dir"][-1] == "/": self.arg["target_dir"] = self.arg["target_dir"][:-1]
+        self.text_cache = []
+
+    def grep_j(self):
+
+        for file_name in jass_work_files:
+            file_path = "%s/%s" % (self.arg["target_dir"], file_name)
+            worker = jass_work_files[file_name]
+            if not worker:
+                continue
+
+            if not Path(file_path).is_file():
+                print("[EMPTY]", file_path)
+                continue
+
+            wk = worker({"file_path": file_path})
+            string_list = wk.grep_string_from_config()
+            string_list = [x.strip().lower() for x in string_list]
+            self.text_cache += string_list
+
+    def restruct_strings(self):
+        """
+            直接整个字符串丢进去翻译，不处理
+        """
+        self.sentence_set = set([])
+        temp_list = list(set(self.text_cache))
+        for i, sentence in enumerate(temp_list):
+            strings = list(self.take_string_from_sentense(sentence))
+            self.sentence_set.update(strings)
+
+        # tt = list(self.sentence_set)
+        # tt.sort(key=lambda x: len(x))
+
+    def take_string_from_sentense(self, sentence):
+        # 包含 + - % 0-9 因为只是数字不同的技能实在太多了
+        temp = re.sub(r"(\<[a-z0-9]{4},[a-z0-9]+\>|\|c[0-9a-f]{8}|[0-9\+\-\%]|\|n|\|r|[\~\!\@\#\$\^\&\*\(\)\_\=\`\[\]\\\{\}\|\;\'\:\"\,\.\/\<\>\?])", "*", sentence, flags=re.I)
+        # # 除外 + - % 0-9
+        # temp = re.sub(r"(\|c[0-9a-f]{8}|\|n|\|r|[\~\!\@\#\$\^\&\*\(\)\_\=\`\[\]\\\{\}\|\;\'\:\"\,\.\/\<\>\?])", "*", sentence, flags=re.I)
+        for string in temp.split("*"):
+            string = string.strip()
+            if string:
+                # 中文和标点符号就放过了吧，老铁
+                if re.match(r"^[\u4e00-\u9fa5\u3002|\uff1f|\uff01|\uff0c|\u3001|\uff1b|\uff1a|\u201c|\u201d|\u2018|\u2019|\uff08|\uff09|\u300a|\u300b|\u3008|\u3009|\u3010|\u3011|\u300e|\u300f|\u300c|\u300d|\ufe43|\ufe44|\u3014|\u3015|\u2026|\u2014|\uff5e|\ufe4f|\uffe5|\ ]+$", string, flags=re.I):
+                    continue
+
+                # 忽略单个字母和数字之类的 例如快捷键
+                if re.match(r"^[a-z0-9]$", string, flags=re.I):
+                    continue
+
+                # 忽略特殊字符
+                if re.match(r"^[0-9|\+\-\%]+$", string, flags=re.I):
+                    continue
+
+                yield string
+
+    def do_translate(self, translater):
+
+        try:
+            self.trans_result = {}
+            fy = translation_tool.init_fanyi(translater, "ru", "zh")
+            for sentence in self.sentence_set:
+
+                # 多加try保平安
+                try:
+                    res = fy.translate(sentence)
+                    self.trans_result[sentence] = res
+                except Exception:
+                    print(traceback.format_exc())
+
+            # print("self.trans_result:", self.trans_result)
+        except Exception:
+            print(traceback.format_exc())
+            pass
+
+        finally:
+            fy.save_result()
+
+    def rewrite_j(self):
+        self.trans_result_keys = self.trans_result.keys()
+        for file_name in jass_work_files:
+            file_path = "%s/%s" % (self.arg["target_dir"], file_name)
+            with open(file_path, "r") as rf:
+                contents = rf.readlines()
+
+            with open("%s.mta2.cache" % file_path, "w") as wf:
+                key_index = None
+                wait_line1 = False
+                for lineno, rawline in enumerate(contents):
+                    line = rawline
+
+                    if wait_line1:
+                        # 双引号未闭合: 计算 " 但不计算 \"
+                        if (line.count("\"") - line.count("\\\"")) % 2 == 0:
+                            self.write_translate_string(wf, rawline, line, key_index, "middle")
+                        else:
+                            wait_line1 = False
+                            self.write_translate_string(wf, rawline, line, key_index, "end")
+                    elif re.match(War3mapJWorker.re_call, line, flags=re.I):
+                        key_index = re.match(War3mapJWorker.re_call, line, flags=re.I).group(1)
+                        if (line.count("\"") - line.count("\\\"")) % 2 == 1:
+                            wait_line1 = True
+                            self.write_translate_string(wf, rawline, line, key_index, "start")
+                        else:
+                            self.write_translate_string(wf, rawline, line, key_index, "inside")
+                    else:
+                        self.write_raw_string(wf, rawline)
+
+    def do_re_sub(self, m):
+
+        # print("m:", m)
+        return m.group(1).replace(",", "\4")
+
+    def write_raw_string(self, wf, line):
+        wf.write(line)
+
+    def fuck_reg(self, string):
+        string2 = list(string)
+        start_t = False
+        for i, c in enumerate(string2):
+            if start_t:
+                if c == ",":
+                    string2[i] = "\4"
+                elif c == "\"":
+                    start_t = False
+            elif c == "\"":
+                start_t = True
+
+        return "".join(string2)
+
+    def write_translate_string(self, wf, line, rawstring, key_index, mark):
+        # 去除字符串前后的标点空格和特殊字符
+
+        # 兼容平台换行格式
+        while rawstring[-1:] == "\n":
+            rawstring = rawstring[:-1]
+
+        strings = []
+
+        # 忽略空字符串 和 TRIGSTR_xx 等固定字符串
+        if not rawstring or re.match(r"^TRIGSTR_[\d]+$", rawstring):
+            return self.write_raw_string(wf, line)
+
+        elif mark == "middle":
+            strings.append("\"%s\"" % line)
+
+        elif mark == "start":
+            line = line.replace("\\\"", "\3")
+            i_temp = line.rindex("\"")
+            r_string = line[i_temp:] + "\""
+            strings.append(r_string)
+            eline = line[:i_temp] + ")"
+
+            rline = eline.replace("\\\"", "\3")
+            rline = rline[rline.find("(") + 1: rline.rfind(")")]
+
+            # 这里的正则表达式没写对，只匹配了第一个 "" 里面的字符串，如果有多个则不行
+            # rline = re.sub(r"(\".*?\"){1,}", self.do_re_sub, rline, flags=re.I)
+            rline = self.fuck_reg(rline)
+
+            rline_list = rline.split(",")
+            for i in War3mapJWorker.LINE_PLACE[key_index][:-1]:
+                if len(rline_list) > i and rline_list[i]:
+                    strings.append(rline_list[i])
+
+            # print("[start] rawstring:", rawstring)
+            # print("strings:", len(strings), strings)
+            # q.d()
+
+        elif mark == "end":
+
+            line = line.replace("\\\"", "\3")
+            i_temp = line.index("\"")
+            l_string = "\"" + line[:i_temp + 1]
+            strings.append(l_string)
+            eline = "(\"" + line[i_temp:]
+
+            rline = eline.replace("\\\"", "\3")
+            rline = rline[rline.find("(") + 1: rline.rfind(")")]
+
+            # 这里的正则表达式没写对，只匹配了第一个 "" 里面的字符串，如果有多个则不行
+            # rline = re.sub(r"(\".*?\")", self.do_re_sub, rline, flags=re.I)
+            rline = self.fuck_reg(rline)
+
+            rline_list = rline.split(",")
+            ll = War3mapJWorker.LINE_PLACE[key_index][-1]
+            for i in War3mapJWorker.LINE_PLACE[key_index][:-1]:
+                if -len(rline_list) < i - ll and rline_list[i - ll]:
+                    strings.append(rline_list[i - ll])
+
+            # print("[end] rawstring:", rawstring)
+            # print("strings:", len(strings), strings)
+            # q.d()
+            # l_string = line.replace("\\\"", "\3").split("\"")[0].replace("\3", "\\\"")
+            # strings.append(r_string)
+
+        elif mark == "inside":
+
+            # 去假双引号 (在字符串里)
+            rline = rawstring.replace("\\\"", "\3")
+
+            # 去括号
+            rline = rline[rline.find("(") + 1: rline.rfind(")")]
+
+            # 去假逗号 (在字符串里)
+            # rline = re.sub(r"(\".*?\")", self.do_re_sub, rline, flags=re.I)
+            rline = self.fuck_reg(rline)
+
+            # 取目标字符串 (第x个参数)(不会这么惨，遇到嵌套方法的吧。。。)
+            rline_list = rline.split(",")
+            for i in War3mapJWorker.LINE_PLACE[key_index][:-1]:
+                if len(rline_list) > i and rline_list[i]:
+                    strings.append(rline_list[i])
+
+        # 后面会split的
+        string = ".,".join(strings)
+
+        # 还原string
+        string = string.strip().replace("\4", ",")
+
+        # 判断 string 长度，剔除非 "字符串" 和 空字符串
+        if len(string) >= 3 and string[0] == string[-1] == "\"":
+
+            # 去首尾的 双引号
+            string = string[1:-1]
+
+        else:
+            string = ""
+
+        # if "Дева из колодца" in rawstring:
+        #     q.d()
+
+        trans_line = string
+        trans_strings = ""
+        if string:
+            trans_strings = list(set([x.lower() for x in self.take_string_from_sentense(string)]))
+
+        if trans_strings:
+            # print("trans_strings:", set(trans_strings))
+            good_key = self.trans_result_keys & set(trans_strings)
+            good_key = list(good_key)
+            if good_key:
+                # print("good_key:", good_key)
+                if not len(good_key) == len(set(trans_strings)):
+                    print("len is not good")
+                    q.d()
+                good_trans = {x: self.trans_result[x] for x in good_key}
+                # print("good_trans:", good_trans)
+                good_key.sort(key=lambda x: -len(x))
+                # print("trans_line:", trans_line.strip())
+                for key in good_key:
+                    line = re.sub(re.escape(key), good_trans[key], line, flags=re.I)
+
+            # if "Цель: Упокоить Чумную деву" in rawstring:
+            #     q.d()
+            # if "Дева из колодца" in rawstring:
+            #     q.d()
+
+            return wf.write(line)
+        # if "Дева из колодца" in rawstring:
+        #     q.d()
+        # q.d()
+
+        if "Цель: Упокоить Чумную деву" in rawstring:
+            q.d()
+        wf.write(line.replace(string, trans_line))
+
+    def check_result(self, eee):
+        for file_name in jass_work_files:
+            file_path = "%s/%s" % (self.arg["target_dir"], file_name)
+            with open("%s.mta2.cache" % file_path, "r") as rf:
+                contents = rf.readlines()
+            for lineno, line in enumerate(contents):
+                for e in eee:
+                    if e in line:
+                        print("[Break]:", file_name, lineno, e, line)
+
+        print("[Done check]")
+
 
 def test():
 
+    # 翻译完成后，检查所有文件是否还含有俄文字母
+    eee = ["А", "Б", "В", "Г", "Д", "Е", "Ё", "Ж", "З", "И", "Й", "К", "Л", "М", "Н", "О", "П", "Р", "С", "Т", "У", "Ф", "Х", "Ц", "Ч", "Ш", "Щ", "ъ", "ы", "ь", "Э", "Ю", "Я"]
+    eee += [x.lower() for x in eee]
+    eee = list(set(eee))
+
     if not Path("./data/").is_dir():
         os.mkdir("./data/")
+    arg = {
+        "target_dir": "/mine/war3work/(2)Game of Life and Death-v2/",
+    }
 
     if False:
         fy = translation_tool.init_fanyi("test", "ru", "zh")
         res = fy.translate("test")
         print("res:", res)
 
-    if False:
-        arg = {
-            "target_dir": "/mine/war3work/(2)Game of Life and Death-v2/",
-        }
+    if True:
         tw = TranslateWorkerForIni(arg)
         tw.grep_ini()
         text_set = list(set(tw.text_cache))
@@ -529,10 +830,9 @@ def test():
 
         tw.rewrite_ini()
 
+        tw.check_result(eee)
+
     if True:
-        arg = {
-            "target_dir": "/mine/war3work/(2)Game of Life and Death-v2/",
-        }
         tw = TranslateWorkerForWts(arg)
         tw.grep_wts()
 
@@ -541,12 +841,34 @@ def test():
         print("Count in set:", len(text_set))
 
         tw.restruct_strings()
+        print("sentence_set:", len(tw.sentence_set))
 
-        # tw.do_translate("test")
-        tw.do_translate("baidu")
+        tw.do_translate("test")
+        # tw.do_translate("baidu")
         print("trans_result:", len(tw.trans_result))
 
         tw.rewrite_wts()
+
+        tw.check_result(eee)
+
+    if True:
+        tw = TranslateWorkerForJ(arg)
+        tw.grep_j()
+
+        text_set = list(set(tw.text_cache))
+        # print("text_set:", text_set)
+        print("Count in set:", len(text_set))
+
+        tw.restruct_strings()
+        print("sentence_set:", len(tw.sentence_set))
+
+        tw.do_translate("test")
+        # tw.do_translate("baidu")
+        print("trans_result:", len(tw.trans_result))
+
+        tw.rewrite_j()
+
+        tw.check_result(eee)
 
 
 if __name__ == "__main__":

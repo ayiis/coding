@@ -1,0 +1,403 @@
+import q
+import uuid
+import asyncio
+import traceback
+from pyppeteer import launch
+from urllib.parse import urlparse
+
+
+async def fff(interceptedRequest, rand_str):
+
+    try:
+
+        url = urlparse(interceptedRequest.url)
+
+        if url.netloc[-11:] == ".google.com":
+            await interceptedRequest.abort()
+
+        elif url.path == "/" + rand_str:
+            with open("./../data/jquery.min.js", "r") as rf:
+                await interceptedRequest.respond({
+                    "status": 200,
+                    "body": rf.read(),
+                })
+
+        else:
+            await interceptedRequest.continue_()
+
+    except Exception:
+        print(traceback.format_exc())
+
+
+async def main():
+    args = {
+        # "headless": True, "devtools": False,
+        "headless": False, "devtools": True,
+        # "headless": False, "devtools": False,
+        "executablePath": "/mine/soft/Google Chrome.app/Contents/MacOS/Google Chrome",
+        "userDataDir": "/tmp/tmp",
+        "ignoreHTTPSErrors": True,
+        "args": [
+            "--proxy-server=",
+            "--proxy-bypass-list=",
+        ]
+        # "defaultViewport": True,
+        # "ignoreDefaultArgs": ["--enable-automation"],
+        # "args": ["--disable-infobars"],
+        # "executablePath": executablePath
+    }
+    rand_str = uuid.uuid4().hex
+
+    browser = await launch(**args)
+    pages = await browser.pages()
+    page = pages[0]
+
+    await page.setRequestInterception(True)
+    page.on('request', lambda x: fff(x, rand_str))
+
+    # await page.goto('https://translate.google.cn/', waitUntil='networkidle2', timeout=1000 * 60)
+    await page.goto('https://translate.google.cn/#view=home&op=translate&sl=ru&tl=zh-CN', waitUntil='networkidle2', timeout=1000 * 60)
+    # await page.goto('https://www.baidu.com/', waitUntil='networkidle2')
+    await page.reload(waitUntil='networkidle2')
+
+    print("Load ok.")
+
+    # 插入 jquery
+    await page.evaluate("""rand_str => {
+        document.body.appendChild(document.createElement('script')).setAttribute('src', rand_str);
+        return true;
+    }""", rand_str)
+    await page.waitForResponse(lambda res: urlparse(res.url).path == "/" + rand_str and res.status == 200)
+
+    print("Done insert jquery")
+
+    # # 选原文 语言
+    # button_from = '.sl-more.tlid-open-source-language-list'
+    # await page.waitForSelector(button_from, visible=True)
+    # await page.click(button_from, delay=20)
+    # await asyncio.sleep(0.2)
+    # # 选
+    # button_select_fl = '.language-list-unfiltered-langs-sl_list .language_list_item_wrapper.language_list_item_wrapper-ru'
+    # # button_select_fl = '.language_list_item_wrapper.language_list_item_wrapper-ru.item-selected.item-emphasized'
+    # await page.waitForSelector(button_select_fl, visible=True)
+    # await page.click(button_select_fl, delay=20)
+
+    # print("Click:", "选原文 = ru")
+    # await asyncio.sleep(0.5)
+
+    # # 选译文 语言
+    # button_to = '.tl-more.tlid-open-target-language-list'
+    # await page.waitForSelector(button_to, visible=True)
+    # await page.click(button_to, delay=20)
+    # await asyncio.sleep(0.2)
+
+    # # 选 因为同样的class有2个。。
+    # button_select_tl = '.language-list-unfiltered-langs-tl_list .language_list_item_wrapper.language_list_item_wrapper-zh-CN .language_list_item.language_list_item_language_name'
+    # # button_select_tl = '.language_list_item_wrapper.language_list_item_wrapper-zh-CN.item-selected.item-emphasized'
+    # await page.waitForSelector(button_select_tl, visible=True)
+    # await page.click(button_select_tl, delay=20)
+
+    print("Click:", "选译文 = zh")
+    await asyncio.sleep(0.2)
+
+    # await page.waitForFunction('$(".select-from-language .language-selected").text().trim() === "瑞典语"')
+    await page.click('#source', delay=20)
+
+    # await page.keyboard.type('baidu.com')
+
+    # await page.keyboard.type('рыцарь\r\n' * 20)
+
+    # def funk(el):
+    #     el.value = 'рыцарь\r\nрыцарь'
+
+    # await page.Jeval('#source', '(el => el.value="рыцарь\r\nрыцарь")')
+    # await page.querySelectorEval('#source', 'node => node.value="рыцарь\r\nрыцарь"')
+
+    # assert (await feedHandle.JJeval('.tweet', '(nodes => nodes.map(n => n.innerText))')) == ['Hello!', 'Hi!']
+
+    await page.evaluate("""() => {
+        $('#source').val('%s');
+    }""" % ('рыцарь\\r\\n' * 20))
+
+    await asyncio.sleep(5)
+
+    # https://translate.google.cn/translate_a/single?client=webapp&sl=ru&tl=zh-CN&hl=zh-CN&dt=at&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&source=bh&otf=1&ssel=0&tsel=0&kc=145&tk=426839.11692&q=%D1%80%D1%8B%D1%86%D0%B0%D1%80%D1%8C%0A%0A%D1%80%D1%8B%D1%86%D0%B0%D1%80%D1%8C%0A%0A%D1%80%D1%8B%D1%86%D0%B0%D1%80%D1%8C%0A%0A%D1%80%D1%8B%D1%86%D0%B0%D1%80%D1%8C%0A%0A%D1%80%D1%8B%D1%86%D0%B0%D1%80%D1%8C%0A%0A%D1%80%D1%8B%D1%86%D0%B0%D1%80%D1%8C%0A%0A%D1%80%D1%8B%D1%86%D0%B0%D1%80%D1%8C%0A%0A%D1%80%D1%8B%D1%86%D0%B0%D1%80%D1%8C%0A%0A%D1%80%D1%8B%D1%86%D0%B0%D1%80%D1%8C%0A%0A%D1%80%D1%8B%D1%86%D0%B0%D1%80%D1%8C%0A%0A%D1%80%D1%8B%D1%86%D0%B0%D1%80%D1%8C%0A%0A%D1%80%D1%8B%D1%86%D0%B0%D1%80%D1%8C%0A%0A%D1%80%D1%8B%D1%86%D0%B0%D1%80%D1%8C%0A%0A%D1%80%D1%8B%D1%86%D0%B0%D1%80%D1%8C%0A%0A%D1%80%D1%8B%D1%86%D0%B0%D1%80%D1%8C%0A%0A%D1%80%D1%8B%D1%86%D0%B0%D1%80%D1%8C%0A%0A%D1%80%D1%8B%D1%86%D0%B0%D1%80%D1%8C%0A%0A%D1%80%D1%8B%D1%86%D0%B0%D1%80%D1%8C%0A%0A%D1%80%D1%8B%D1%86%D0%B0%D1%80%D1%8C%0A%0A%D1%80%D1%8B%D1%86%D0%B0%D1%80%D1%8C
+
+    contents = await page.evaluate("""() => {
+        return $('.result-shield-container.tlid-copy-target>.tlid-translation.translation').find('span').map(function(){ return $(this).text() }).toArray().join('\\r\\n');
+    }""")
+
+    print("contents:", contents)
+
+    # await page.screenshot({'path': 'example.png'})
+    element = await page.querySelector('title')
+    title = await page.evaluate('(element) => element.textContent', element)
+
+    print("title:", title)
+    # await browser.close()
+
+    await asyncio.sleep(30)
+
+
+def test():
+    asyncio.get_event_loop().run_until_complete(main())
+
+
+if __name__ == "__main__":
+    test()
+
+
+
+import asyncio
+from pyppeteer import launch
+
+
+async def main():
+    args = {
+        # "headless": True, "devtools": False,
+        # "headless": False, "devtools": True,
+        "headless": False, "devtools": False,
+        "executablePath": "/mine/soft/Google Chrome.app/Contents/MacOS/Google Chrome",
+        "userDataDir": "/tmp/tmp",
+        "ignoreHTTPSErrors": True,
+        # "defaultViewport": True,
+        # "ignoreDefaultArgs": ["--enable-automation"],
+        # "args": ["--disable-infobars"],
+        # "executablePath": executablePath
+    }
+
+    browser = await launch(**args)
+    pages = await browser.pages()
+    page = pages[0]
+
+    await page.goto('https://fanyi.baidu.com/', waitUntil='networkidle2')
+    await page.reload(waitUntil='networkidle2')
+    await page.waitForSelector('.select-to-language>.select-inner>.language-selected')
+
+    button_select_fl = '.select-from-language'
+    await page.waitForSelector(button_select_fl, visible=True)
+    await page.click(button_select_fl, delay=20)
+
+    button_swe = '.from-language-list .language-list .data-lang[value=swe]'
+    await page.waitForSelector(button_swe, visible=True)
+    await page.click(button_swe, delay=20)
+
+    await page.waitForFunction('$(".select-from-language .language-selected").text().trim() === "瑞典语"')
+
+    await page.click('#baidu_translate_input', delay=20)
+
+    await page.keyboard.type('Allt Jag Vill Ha')
+
+    await asyncio.sleep(3)
+
+    content = await page.evaluate("""() => {
+        return $('.target-output').text().trim();
+    }""")
+
+    print("content:", content)
+
+    # await page.screenshot({'path': 'example.png'})
+    element = await page.querySelector('title')
+    title = await page.evaluate('(element) => element.textContent', element)
+
+    print("title:", title)
+    # await browser.close()
+
+    await asyncio.sleep(30)
+
+
+def test():
+    asyncio.get_event_loop().run_until_complete(main())
+
+
+if __name__ == "__main__":
+    test()
+
+
+"""
+const puppeteer = require('puppeteer');
+const fse = require('fs-extra'); // v 5.0.0
+const _ = `
+    1. wait for network done 
+    1. body load
+    1. load another page
+    2. wait for element appeared
+    3. wait for button clicked
+    4. wait for js execute
+    5. wait for a reuqest
+    6. wait for anything(with a function)
+    7. wait for ajax 
+        request.resourceType() === 'xhr'
+
+    BUG:
+
+        <visible>   Not work if element under z-index discover
+                    Even worse: click will fire the top element instead of the target element
+                    e.g. In test_download_file.js 
+`;
+
+const target_page = 'https://fanyi.baidu.com';
+
+async function human_type(page, sentence) {
+    // delay 15~45ms for each press
+    for(var i = 0 ; i < sentence.length ; i++ ) {
+        if(/^[a-zA-Z]$/.test(sentence[i])) {
+            await page.keyboard.type(
+                sentence[i], 
+                {delay: parseInt(Math.random() * 10000 % 30 + 15)}
+            );
+        } else {
+            await page.keyboard.type(
+                sentence[i], 
+                {delay: parseInt(Math.random() * 10000 % 60 + 55)}
+            );
+        }
+    }
+}
+
+// wait until all request is done for at least `timeout` ms.
+// from https://github.com/jtassin/pending-xhr-puppeteer/blob/master/src/index.ts
+async function networkidle_timeout(page, timeout=500, max_timeout=30000) {
+    let padding_request_set = new Set([]);
+    const callback_request = function(request) {
+        // Some types of request that worth waiting for
+        if (['xhr', 'script', 'document', 'text/html', 'text/plain'].indexOf(request.resourceType()) !== -1) {
+            padding_request_set.add(request);
+        }
+    }
+    const callback_requestfailed = function (request) {
+        padding_request_set.has(request) && padding_request_set.delete(request);
+    }
+    const callback_requestfinished = function (request) {
+        padding_request_set.has(request) && padding_request_set.delete(request);
+    }
+    page.on('request', callback_request);
+    page.on('requestfailed', callback_requestfailed);
+    page.on('requestfinished', callback_requestfinished);
+
+    let total_time = 0;
+    let count_timeout = 0;
+    let split_timeout = timeout / 5;
+    while(count_timeout < timeout) {
+        if (padding_request_set.size > 0) {
+            count_timeout = 0 ;
+        } else {
+            count_timeout += split_timeout;
+        }
+        total_time += split_timeout;
+        if (max_timeout < total_time) {
+            break;
+        }
+        await page.waitFor(split_timeout);
+    }
+
+    // clear all listener
+    page.removeListener("request", callback_request);
+    page.removeListener("requestfailed", callback_requestfailed);
+    page.removeListener("requestfinished", callback_requestfinished);
+}
+
+(async () => {
+
+    const browser = await puppeteer.launch({headless: true, devtools: false});
+    // const browser = await puppeteer.launch({headless: false, devtools: true});
+
+    // const context = browser.defaultBrowserContext();
+    // context.clearPermissionOverrides();
+    // await context.overridePermissions(target_page, ['clipboard-read', 'clipboard-write']);
+
+    const page = await browser.newPage();
+    const rand_str = `/${Math.random().toString(36)}`;
+    const url = 'https://fanyi.baidu.com/';
+
+    const 
+        WF_NEWWORK_DONE = true,
+        WF_BODY_LOAD = true,
+        WF_ELEMENT_APPEARED = true,
+        WF_BUTTON_CLICKED = true,
+        WF_JS_EXECUTE = true,
+        WF_REUQEST = true,
+        WF_AJAX = true,
+        WF_FUNCTION = true;
+
+    if(WF_REUQEST === true) {
+        await page.setRequestInterception(true);
+        page.on('request', async(interceptedRequest) => {
+            const url = new URL(interceptedRequest.url());
+            if (url.pathname !== rand_str) {
+                return interceptedRequest.continue();
+            }
+            const buffer= await fse.readFile('_data_/nothing.js');
+            interceptedRequest.respond({
+                status: 200,
+                body: buffer,
+            });
+        });
+    }
+
+    if(WF_NEWWORK_DONE === true) {
+        await page.goto(url, {waitUntil: 'networkidle2'});
+    }
+
+    if(WF_BODY_LOAD === true) {
+        await page.reload({waitUntil: 'networkidle2'});
+    }
+
+    if(WF_ELEMENT_APPEARED === true) {
+        await page.mainFrame().waitForSelector('.select-to-language>.select-inner>.language-selected');
+    }
+
+    if(WF_REUQEST === true) {
+        const add_script = await page.evaluate(rand_str => {
+            document.body.appendChild(document.createElement('script')).setAttribute('src', rand_str);
+            return true;
+        }, rand_str);
+
+        if (add_script) {
+            await page.waitForResponse(response => {
+                // callback indefinite times until return `true`
+                return response.request().url().endsWith(rand_str);
+            });
+        }
+
+        if (WF_FUNCTION === true) {
+            await page.waitForFunction('window.status === "nothing"');
+        }
+    }
+
+    if(WF_BUTTON_CLICKED === true) {
+        const button_select_fl = '.select-from-language';
+        await page.mainFrame().waitForSelector(button_select_fl, {visible: true});
+        await page.click(button_select_fl);
+    }
+
+    if(WF_BUTTON_CLICKED === true) {
+        const button_swe = '.from-language-list .language-list .data-lang[value=swe]';
+        await page.mainFrame().waitForSelector(button_swe, {visible: true});
+        await page.click(button_swe, {delay: 20});
+    }
+
+    if (WF_JS_EXECUTE === true) {
+        await page.waitForFunction('$(".select-from-language .language-selected").text().trim() === "瑞典语"');
+    }
+
+    await page.click('#baidu_translate_input', {delay: 20});
+
+    await human_type(page, "Allt Jag Vill Ha");   // 我想要的一切
+
+    if(WF_AJAX === true) {
+        // wait for translation
+        await networkidle_timeout(page, 500);
+    }
+
+    const content = await page.evaluate(() => {
+        return $('.target-output').text().trim();
+    });
+
+    console.log(content);
+
+    await browser.close();
+
+})();
+
+"""

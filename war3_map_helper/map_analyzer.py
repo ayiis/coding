@@ -11,6 +11,7 @@
 import q
 import os
 import re
+import shutil
 import traceback
 from pathlib import Path
 import time
@@ -812,7 +813,7 @@ def test():
         res = fy.translate("test")
         print("res:", res)
 
-    if True:
+    if False:
         tw = TranslateWorkerForIni(arg)
         tw.grep_ini()
         text_set = list(set(tw.text_cache))
@@ -832,7 +833,7 @@ def test():
 
         tw.check_result(eee)
 
-    if True:
+    if False:
         tw = TranslateWorkerForWts(arg)
         tw.grep_wts()
 
@@ -851,7 +852,7 @@ def test():
 
         tw.check_result(eee)
 
-    if True:
+    if False:
         tw = TranslateWorkerForJ(arg)
         tw.grep_j()
 
@@ -869,6 +870,27 @@ def test():
         tw.rewrite_j()
 
         tw.check_result(eee)
+
+    if True:
+
+        def move_file(file_name):
+            file_path = "%s/%s" % (arg["target_dir"], file_name)
+            new_file_path = "%s.mta2.cache" % file_path
+            bak_file_path = "%s.bak" % file_path
+            shutil.move(file_path, bak_file_path)
+            shutil.move(new_file_path, file_path)
+
+        for file_name in ini_work_files:
+            move_file(file_name)
+
+        for file_name in slk_work_files:
+            move_file(file_name)
+
+        for file_name in wts_work_files:
+            move_file(file_name)
+
+        for file_name in jass_work_files:
+            move_file(file_name)
 
 
 if __name__ == "__main__":

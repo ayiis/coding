@@ -158,7 +158,8 @@ def MyReader(file_path):
                     ini_obj[sect_name][key_name] = key_val.strip()
 
                 else:
-                    raise Exception("[CANNOT PARSE]")
+                    print("[SKIP]", line)
+                    # raise Exception("[CANNOT PARSE]")
 
             except Exception:
                 print(traceback.format_exc())

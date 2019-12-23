@@ -11,9 +11,15 @@ class Worker(object):
     """
         docstring for Worker
     """
-    WORK_ITEM = ["QuestMessageBJ", "CreateQuestBJ", "CreateTextTagLocBJ", "QuestSetDescriptionBJ", "DisplayTimedTextToForce", "DialogAddButtonBJ", "SetMapDescription"]
+    WORK_ITEM = [
+        "QuestMessageBJ", "CreateQuestBJ", "CreateTextTagLocBJ", "QuestSetDescriptionBJ",
+        "DisplayTimedTextToForce", "DialogAddButtonBJ", "SetMapDescription", "DisplayTextToPlayer",
+        "DisplayTextToForce", "DisplayTimedTextToPlayer",
+        "CustomDefeatBJ", "DialogSetMessageBJ", "MultiboardSetItemValueBJ"
+    ]
     WORK_ITEM = [x.lower() for x in WORK_ITEM]
 
+    # 字符串位置*N, 参数数量
     LINE_PLACE = {
         "QuestMessageBJ": [2, 3],
         "CreateQuestBJ": [1, 2, 4],
@@ -25,6 +31,12 @@ class Worker(object):
         "SetMapName": [0, 1],
         "BJDebugMsg": [0, 1],
         "SetTextTagText": [1, 3],
+        "DisplayTextToPlayer": [3, 4],
+        "DisplayTextToForce": [1, 2],
+        "DisplayTimedTextToPlayer": [4, 5],
+        "CustomDefeatBJ": [0, 2],
+        "DialogSetMessageBJ": [0, 2],
+        "MultiboardSetItemValueBJ": [3, 4],
     }
     re_call = r"^[\s]*call[\s]+(%s)" % "|".join(WORK_ITEM)
 
@@ -57,6 +69,20 @@ class Worker(object):
 
         return "".join(string2)
 
+    def fuck_reg2(self, string, sc="\""):
+        ss = ""
+        wait = False
+        for i, c in enumerate(string):
+            if wait:
+                if c == sc and ss:
+                    yield "%s%s%s" % (sc, ss, sc)
+                    wait = False
+                    ss = ""
+                else:
+                    ss += c
+            elif c == sc:
+                wait = True
+
     def get_string_from(self, wts_obj, key_index, rawstring, mark):
 
         strings = []
@@ -88,7 +114,8 @@ class Worker(object):
             rline_list = rline.split(",")
             for i in self.LINE_PLACE[key_index][:-1]:
                 if len(rline_list) > i and rline_list[i]:
-                    strings.append(rline_list[i])
+                    # strings.append(rline_list[i])
+                    strings += self.fuck_reg2(rline_list[i])
 
             # print("[start] rawstring:", rawstring)
             # print("strings:", len(strings), strings)
@@ -114,7 +141,8 @@ class Worker(object):
             ll = self.LINE_PLACE[key_index][-1]
             for i in self.LINE_PLACE[key_index][:-1]:
                 if -len(rline_list) < i - ll and rline_list[i - ll]:
-                    strings.append(rline_list[i - ll])
+                    # strings.append(rline_list[i - ll])
+                    strings += self.fuck_reg2(rline_list[i - ll])
 
             # print("[end] rawstring:", rawstring)
             # print("strings:", len(strings), strings)
@@ -135,28 +163,52 @@ class Worker(object):
             rline_list = rline.split(",")
             for i in self.LINE_PLACE[key_index][:-1]:
                 if len(rline_list) > i and rline_list[i]:
-                    strings.append(rline_list[i])
+                    # strings.append(rline_list[i])
+                    strings += self.fuck_reg2(rline_list[i])
 
-        # 后面会split的
-        string = ".,".join(strings)
+        for i, string in enumerate(strings):
+            # 判断 string 长度，剔除非 "字符串" 和 空字符串
+            if len(string) >= 3 and string[0] == string[-1] == "\"":
+                # strings[i] = string[1:-1]
+                pass
+            else:
+                # q.d()
+                strings[i] = ""
 
-        # 还原string
-        string = string.strip().replace("\4", ",")
+            if re.match(r"^TRIGSTR_[0-9]+$", string, flags=re.I):
+                print("am i?", string)
+                strings[i] = ""
 
-        # 判断 string 长度，剔除非 "字符串" 和 空字符串
-        if len(string) >= 3 and string[0] == string[-1] == "\"":
+        # for string in strings:
+            # # 后面会split的
+            # string = ",".join(strings)
 
-            # 去首尾的 双引号
-            string = string[1:-1]
+            # 还原string
+            string = string.strip().replace("\4", ",")
 
-        else:
-            string = ""
+            # 判断 string 长度，剔除非 "字符串" 和 空字符串
+            # if len(string) >= 3 and string[0] == string[-1] == "\"":
 
-        # 忽略空字符串 和 TRIGSTR_xx 等固定字符串
-        if not string or re.match(r"^TRIGSTR_[\d]+$", string):
-            pass
-        else:
-            wts_obj[key_index].append(string)
+            #     # 去首尾的 双引号
+            #     string = string[1:-1]
+            #     # pass
+
+            # else:
+            #     string = ""
+
+            # if "TRIGSTR_111" in rawstring:
+            #     q.d()
+
+            # if "герой древности" in rawstring.lower():
+            #     q.d()
+
+            # 忽略空字符串 和 TRIGSTR_xx 等固定字符串
+            if not string or re.match(r"^TRIGSTR_[0-9]+$", string, flags=re.I):
+                pass
+            else:
+                wts_obj[key_index].append(string)
+
+            # q.d()
 
     def grep_string_from_config(self):
         string_list = []

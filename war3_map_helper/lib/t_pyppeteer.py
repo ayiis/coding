@@ -3,6 +3,7 @@ import re
 import uuid
 import asyncio
 import traceback
+from pathlib import Path
 from pyppeteer import launch
 from urllib.parse import urlparse
 
@@ -33,11 +34,11 @@ async def fff(interceptedRequest, rand_str):
         print(traceback.format_exc())
 
 
-async def main():
+async def main(from_lan, to_lan):
     args = {
-        "headless": True, "devtools": False,
+        # "headless": True, "devtools": False,
         # "headless": False, "devtools": True,
-        # "headless": False, "devtools": False,
+        "headless": False, "devtools": False,
         "executablePath": "/mine/soft/Google Chrome.app/Contents/MacOS/Google Chrome",
         "userDataDir": "/tmp/tmp",
         "ignoreHTTPSErrors": True,
@@ -60,7 +61,7 @@ async def main():
     page.on('request', lambda x: fff(x, rand_str))
 
     # await page.goto('https://translate.google.cn/', waitUntil='networkidle2', timeout=1000 * 60)
-    await page.goto('https://translate.google.cn/#view=home&op=translate&sl=ru&tl=zh-CN', waitUntil='networkidle2', timeout=1000 * 60)
+    await page.goto('https://translate.google.cn/#view=home&op=translate&sl=%s&tl=%s' % (from_lan, to_lan), waitUntil='networkidle2', timeout=1000 * 60)
     # await page.goto('https://www.baidu.com/', waitUntil='networkidle2')
     await page.reload(waitUntil='networkidle2')
 
@@ -120,21 +121,30 @@ async def main():
     # assert (await feedHandle.JJeval('.tweet', '(nodes => nodes.map(n => n.innerText))')) == ['Hello!', 'Hi!']
 
     # with open("/tmp/up/note1.txt", "r") as rf:
-    with open("/tmp/up/empty.ru-zh.txt", "r") as rf:
+    with open("/tmp/up/empty.en-zh.txt", "r") as rf:
         dict_contents = rf.readlines()
-        dict_contents = set([line.strip() for line in dict_contents])
+        dict_contents = [line for line in dict_contents]
 
-    with open("/tmp/up/note2.txt", "r") as rf:
-        dict_contents2 = rf.readlines()
-        dict_contents2 = set([line.split("\0")[0] for line in dict_contents2])
+    # if not Path("/tmp/up/base.en-zh.txt").is_file():
+    todo_dict_contents = []
+    with open("/tmp/up/base.en-zh.txt", "w") as wf:
+        for content in dict_contents:
+            if "\0" in content:
+                wf.write(content)
+            else:
+                todo_dict_contents.append(content.strip())
 
-    todo_dict_contents = dict_contents - dict_contents2
-    todo_dict_contents = list(todo_dict_contents)
+    # with open("/tmp/up/base.en-zh.txt", "r") as rf:
+    #     dict_contents2 = rf.readlines()
+    #     dict_contents2 = set([line.split("\0")[0] for line in dict_contents2])
+
+    # todo_dict_contents = dict_contents - dict_contents2
+    # todo_dict_contents = list(todo_dict_contents)
 
     todo_count = len(todo_dict_contents)
     print("todo dict:", todo_count)
 
-    with open("/tmp/up/note2.txt", "a") as wf:
+    with open("/tmp/up/base.en-zh.txt", "a") as wf:
         req_len = 0
         req_count = 0
         cache_req = []
@@ -219,12 +229,15 @@ async def main():
                 print(traceback.format_exc())
                 await asyncio.sleep(5)
 
-    await asyncio.sleep(30)
+    await asyncio.sleep(5)
     await browser.close()
 
 
 def test():
-    asyncio.get_event_loop().run_until_complete(main())
+    # asyncio.get_event_loop().run_until_complete(main(from_lan="ru", to_lan="zh-CN"))
+    asyncio.get_event_loop().run_until_complete(main(from_lan="en", to_lan="zh-CN"))
+
+    print("cp /tmp/up/base.en-zh.txt /mine/github/coding/war3_map_helper/data/")
 
 
 if __name__ == "__main__":

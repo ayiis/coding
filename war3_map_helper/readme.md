@@ -13,11 +13,13 @@
 
         - 翻译质量较差
 
-    ⏱ 谷歌翻译
+    ✅ 谷歌翻译
 
         - 网页端，支持文档翻译
 
         - 质量较好
+
+        - 使用 pupeerteer 自动翻译
 
 
 ## 需要处理的脚本
@@ -66,14 +68,131 @@
             SetMapName
             BJDebugMsg
             SetTextTagText
+            CustomDefeatBJ
+            DialogSetMessageBJ
+            MultiboardSetItemValueBJ
 
         SKIP:
-            ^TRIGSTR_[\d]+$
+            ✅ ^TRIGSTR_[\d]+$
 
-            *注意，字符串可跨行
+            ✅ *注意，字符串可跨行
+
+            ✅ unit.ini 的跨行问题
+
+            ⏱ mapskin.txt 并没有汉化所有字符串
+
+            ✅ war3map.j 方法名orc被汉化了
+
+                ⏱ 这种网址可如何是好啊？
+                    
+                    ==> https://wintermaul.one/
+
+                平常的赋值很难汉化到
+
+                    set udg_HINT[1]=(udg_HINT[0]+"Visit |cff00FF00ENT|r forum for see news, changelogs, bug reports, suggestions, etc. |cff00FF00https://www.entgaming.net|r")
+
+                    call DisplayTimedTextToPlayer(loc_player01,0,0,10,"-disable - Disables reacts made by -reg")
+                    -disable
+
+            ⏱ 没有lni 转换出来 《光束爆破, 警察菜刀》 的 模型丢了。。。
+
+                光束爆破: "war3mapImported\\Magic Orb.mdl"
+                警察菜刀: "war3mapImported\\GyroCopter.mdl"
+
+                自带的(listfile) 和火龙分析结果 都不靠谱
+
+                - 先转出来 lni
+
+                - 通过提取所有字符串获得所有资源路径
+
+                - 填入 (listfile)
+
+                - 替换原来的 (listfile)
+
+                - 重新转出来
+
+            ✅ 这种自定义路径的 | 替换到魔兽目录的资源 (是自带的，忽略)
+
+                file = "Abilities\\Spells\\Orc\\Purge\\PurgeBuffTarget.mdl"
 
 
     ⏱ BUG:
 
         trigstr 被提取 到了 字典里
+        翻译结果前后不一致，不同类型的脚本间有差异:
+
+            释义 错误: (选择了不恰当的释义)（与熟知的释义不符）（多见于游戏）
+
+                - сундуке 会被翻译成 胸围
+                - перезарядка => 冷却
+                - время действия => 持续时间
+                - босс => boss
+
+            名词前后不一致: (变形太多)
+
+                - город
+                - райдне => 赖德(Raidne)
+                - халген => 海尔根(Halgen)
+                - лигос => 利格斯(Ligos)
+                - чейдинхолом => 启顿霍林(Cheydinhol)
+                - аквилея => 阿奎莱亚(Aquileia)
+                - ансельвуд => 安塞尔伍德(Anselwood)
+                - заргос => 萨尔戈斯(Zargos)
+                - города => 布鲁日(Brugge)
+                - берхольн => 伯克霍尔(Berkholn)
+                - кингланда => 王国领地(Kingland)
+                - нордлингским => 诺德(Nordling)
+                - аскарии => 阿斯卡里亚(Ascaria)
+                - кроуг => 克罗格(Kroog)
+                - винсхил => 温斯希尔(Winshill)
+                - салем => 塞勒姆(Salem)
+                - норвинг => 挪威(Norving)
+                - игвар => 伊格瓦尔(igvar)
+                - дрим => 梦(Dream)
+                - ангорведа => 安哥维达(Angorveda)
+                - архилич => 扎蒙(Zeymon)
+                - анифуса => 阿尼法斯(Anifus)
+                - альбрехт => 阿尔布雷希特(Albrecht)
+                - холти => 霍尔蒂(Holty)
+                - магнус => 马格努斯(Magnus)
+                - арантира => 阿兰蒂拉(Arantira)
+                - Валенват => 瓦伦瓦(Valenvate)
+                - Волхириан => 沃尔克希尔(Volhirian)
+                - элвине верентисе => 阿尔文·韦尔尼斯(Alvin Verntis)
+                - верентис => 韦尔尼斯(Verntis)
+                - Мирвуд => 米尔伍德(Mirwood)
+                - Кронли => 克朗利(Cronley)
+                - Аквилейский => 阿基林(Aquilean)
+                - Хамдия => 哈米迪亚(Hamdia)
+                - Хавмер => 霍默(Hawmer)
+                - клабище => 杜什尼克(Dushnik)
+                - Глубины Ортала => 深邃的奥尔塔拉(Orthal)
+                - валтрум => 瓦尔特鲁姆(Valtrum)
+                - реинов => 雷诺夫(Reinov)
+                - гранстранг => 格兰斯特朗(Granstrang)
+                - аркани => 拉索(Lasso)
+                - Аурэль => 奥雷尔(Aurel)
+
+
+        jass的 漂浮文字 的地名都集中在 Trig_Loki_Actions ？
+
+
+
+python map_analyzer.py
+
+python translation_tool.py
+
+cd lib
+
+python t_pyppeteer.py
+
+cp /tmp/up/base.en-zh.txt /mine/github/coding/war3_map_helper/data/
+
+[  CHECK AND RENAME  ]
+
+cd ..
+
+rm Wintermaul_One_Revolution_v1.3 -rf && cp -r Wintermaul_One_Revolution_v1.3.bak Wintermaul_One_Revolution_v1.3
+
+python map_analyzer.py
 

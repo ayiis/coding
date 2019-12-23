@@ -226,15 +226,27 @@ def test():
 
     fy.save_result()
 
-    with open("./data/dict_base.ru-zh.log", "r") as rf:
+    with open("./data/dict_base.en-zh.log", "r") as rf:
         contents = rf.readlines()
-        contents = [x.split("\0")[0].strip() for x in contents]
+        # contents = []
+        # for content in contents0:
+        #     x, y = content.split("\0")
+        #     if y.strip() == "((.))":
+        #         contents.append(x)
+        # contents = [x.split("\0")[0].strip() for x in contents if ]
 
-    with open("/tmp/empty.ru-zh.txt", "w") as wf:
+    with open("/tmp/up/empty.en-zh.txt", "w") as wf:
 
         for lineno, line in enumerate(contents):
-            wf.write(line)
+            line = line.strip()
+            x, y = line.split("\0")
+            if y.strip() == "((.))":
+                wf.write(x)
+            else:
+                wf.write(line)
             wf.write("\n")
+
+        # q.d()
 
 
 if __name__ == "__main__":

@@ -121,13 +121,13 @@ async def main(from_lan, to_lan):
     # assert (await feedHandle.JJeval('.tweet', '(nodes => nodes.map(n => n.innerText))')) == ['Hello!', 'Hi!']
 
     # with open("/tmp/up/note1.txt", "r") as rf:
-    with open("/tmp/up/empty.en-zh.txt", "r") as rf:
+    with open("/tmp/up/empty.%s-zh.txt" % from_lan, "r") as rf:
         dict_contents = rf.readlines()
         dict_contents = [line for line in dict_contents]
 
     # if not Path("/tmp/up/base.en-zh.txt").is_file():
     todo_dict_contents = []
-    with open("/tmp/up/base.en-zh.txt", "w") as wf:
+    with open("/tmp/up/base.%s-zh.txt" % from_lan, "w") as wf:
         for content in dict_contents:
             if "\0" in content:
                 wf.write(content)
@@ -144,7 +144,7 @@ async def main(from_lan, to_lan):
     todo_count = len(todo_dict_contents)
     print("todo dict:", todo_count)
 
-    with open("/tmp/up/base.en-zh.txt", "a") as wf:
+    with open("/tmp/up/base.%s-zh.txt" % from_lan, "a") as wf:
         req_len = 0
         req_count = 0
         cache_req = []
@@ -234,10 +234,13 @@ async def main(from_lan, to_lan):
 
 
 def test():
-    # asyncio.get_event_loop().run_until_complete(main(from_lan="ru", to_lan="zh-CN"))
-    asyncio.get_event_loop().run_until_complete(main(from_lan="en", to_lan="zh-CN"))
+    # RU
+    asyncio.get_event_loop().run_until_complete(main(from_lan="ru", to_lan="zh-CN"))
+    print("cp /tmp/up/base.ru-zh.txt /mine/github/coding/war3_map_helper/data/")
 
-    print("cp /tmp/up/base.en-zh.txt /mine/github/coding/war3_map_helper/data/")
+    # EN
+    # asyncio.get_event_loop().run_until_complete(main(from_lan="en", to_lan="zh-CN"))
+    # print("cp /tmp/up/base.en-zh.txt /mine/github/coding/war3_map_helper/data/")
 
 
 if __name__ == "__main__":

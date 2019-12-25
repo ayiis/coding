@@ -209,7 +209,7 @@ def init_fanyi(builder, from_lan, to_lan):
     return fy
 
 
-def test():
+def test(from_lan):
     # import logging
     # logging.basicConfig(level=logging.DEBUG)
 
@@ -226,7 +226,7 @@ def test():
 
     fy.save_result()
 
-    with open("./data/dict_base.en-zh.log", "r") as rf:
+    with open("./data/dict_base.%s-zh.log" % from_lan, "r") as rf:
         contents = rf.readlines()
         # contents = []
         # for content in contents0:
@@ -235,7 +235,7 @@ def test():
         #         contents.append(x)
         # contents = [x.split("\0")[0].strip() for x in contents if ]
 
-    with open("/tmp/up/empty.en-zh.txt", "w") as wf:
+    with open("/tmp/up/empty.%s-zh.txt" % from_lan, "w") as wf:
 
         for lineno, line in enumerate(contents):
             line = line.strip()
@@ -250,4 +250,5 @@ def test():
 
 
 if __name__ == "__main__":
-    test()
+    # test("en")
+    test("ru")

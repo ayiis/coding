@@ -67,7 +67,7 @@ wts_work_files = {
 jass_work_files = {
     # "map/scripts/wj.2.j": War3mapJWorker,
 
-    # "map/war3map.j": War3mapJWorker,
+    "map/war3map.j": War3mapJWorker,
     "map/scripts/war3map.j": War3mapJWorker,
 }
 
@@ -401,12 +401,18 @@ class TranslateWorkerForIni(object):
     def check_result(self, eee):
         for file_name in ini_work_files:
             file_path = "%s/%s" % (self.arg["target_dir"], file_name)
+
+            if not Path(file_path).is_file():
+                print("[EMPTY]", file_path)
+                continue
+
             with open("%s.mta2.cache" % file_path, "r") as rf:
                 contents = rf.readlines()
             for lineno, line in enumerate(contents):
                 for e in eee:
                     if e in line:
                         print("[Break]:", file_name, lineno, e, line)
+                        break
 
         print("[Done check]")
 
@@ -563,6 +569,7 @@ class TranslateWorkerForWts(object):
                 for e in eee:
                     if e in line:
                         print("[Break]:", file_name, lineno, e, line)
+                        break
 
         print("[Done check]")
 
@@ -884,12 +891,18 @@ class TranslateWorkerForJ(object):
     def check_result(self, eee):
         for file_name in jass_work_files:
             file_path = "%s/%s" % (self.arg["target_dir"], file_name)
+
+            if not Path(file_path).is_file():
+                print("[EMPTY]", file_path)
+                continue
+
             with open("%s.mta2.cache" % file_path, "r") as rf:
                 contents = rf.readlines()
             for lineno, line in enumerate(contents):
                 for e in eee:
                     if e in line:
                         print("[Break]:", file_name, lineno, e, line)
+                        break
 
         print("[Done check]")
 
@@ -904,14 +917,17 @@ def test_ru():
     if not Path("./data/").is_dir():
         os.mkdir("./data/")
     arg = {
-        "target_dir": "/mine/war3work/(2)Game of Life and Death-v2/",
+        # "target_dir": "/mine/war3work/(2)Game of Life and Death-v2/",
+        "target_dir": "/mine/war3work/OpenHero_0_99j_ENG",
     }
 
-    if True:
+    if False:
+    # if True:
         fy = translation_tool.init_fanyi("test", "ru", "zh")
         res = fy.translate("test")
         print("res:", res)
 
+    # if False:
     if True:
         tw = TranslateWorkerForIni(arg)
         tw.grep_ini()
@@ -932,6 +948,7 @@ def test_ru():
 
         tw.check_result(eee)
 
+    # if False:
     if True:
         tw = TranslateWorkerForWts(arg)
         tw.grep_wts()
@@ -951,6 +968,7 @@ def test_ru():
 
         tw.check_result(eee)
 
+    # if False:
     if True:
         tw = TranslateWorkerForJ(arg)
         tw.grep_j()
@@ -970,10 +988,13 @@ def test_ru():
 
         tw.check_result(eee)
 
+    # if False:
     if True:
 
         def move_file(file_name):
             file_path = "%s/%s" % (arg["target_dir"], file_name)
+            if not Path(file_path).is_file():
+                return
             new_file_path = "%s.mta2.cache" % file_path
             bak_file_path = "%s.bak" % file_path
             shutil.move(file_path, bak_file_path)
@@ -991,6 +1012,31 @@ def test_ru():
         for file_name in jass_work_files:
             move_file(file_name)
 
+    # 删除 bak 文件
+    # if False:
+    if True:
+
+        def delete_file(file_name):
+            file_path = "%s/%s" % (arg["target_dir"], file_name)
+            if not Path(file_path).is_file():
+                return
+
+            bak_file_path = "%s.bak" % file_path
+            # shutil.delete(bak_file_path)
+            os.remove(bak_file_path)
+
+        for file_name in ini_work_files:
+            delete_file(file_name)
+
+        for file_name in slk_work_files:
+            delete_file(file_name)
+
+        for file_name in wts_work_files:
+            delete_file(file_name)
+
+        for file_name in jass_work_files:
+            delete_file(file_name)
+
 
 def test_en():
 
@@ -1002,7 +1048,6 @@ def test_en():
     if not Path("./data/").is_dir():
         os.mkdir("./data/")
     arg = {
-        # "target_dir": "/mine/war3work/Wintermaul One Revolution v1.3/",
         "target_dir": "/mine/war3work/Wintermaul_One_Revolution_v1.3/",
     }
 
@@ -1069,8 +1114,8 @@ def test_en():
 
         # tw.check_result(eee)  # 英文暂时不能check
 
-    # if False:
-    if True:
+    if False:
+    # if True:
 
         def move_file(file_name):
             file_path = "%s/%s" % (arg["target_dir"], file_name)
@@ -1096,8 +1141,8 @@ def test_en():
             move_file(file_name)
 
     # 删除 bak 文件
-    # if False:
-    if True:
+    if False:
+    # if True:
 
         def delete_file(file_name):
             file_path = "%s/%s" % (arg["target_dir"], file_name)
@@ -1122,5 +1167,5 @@ def test_en():
 
 
 if __name__ == "__main__":
-    # test_ru()
-    test_en()
+    test_ru()
+    # test_en()

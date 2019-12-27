@@ -250,5 +250,5 @@ def test(from_lan):
 
 
 if __name__ == "__main__":
-    # test("en")
-    test("ru")
+    test("en")
+    # test("ru")

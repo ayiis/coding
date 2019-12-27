@@ -513,6 +513,9 @@ class TranslateWorkerForWts(object):
         # self.trans_result_keys.sort(key=lambda x: -len(x))
         for file_name in wts_work_files:
             file_path = "%s/%s" % (self.arg["target_dir"], file_name)
+            if not Path(file_path).is_file():
+                print("[EMPTY]", file_path)
+                continue
             with open(file_path, "r") as rf:
                 contents = rf.readlines()
                 # contents = contents.replace("\r", "\1").replace("\n", "\2")
@@ -836,7 +839,7 @@ class TranslateWorkerForJ(object):
                 pass
 
             else:
-                print("SKip string:", string, mark)
+                print("SKip string in J:", string, mark)
                 # q.d()
                 string = ""
 
@@ -1048,7 +1051,9 @@ def test_en():
     if not Path("./data/").is_dir():
         os.mkdir("./data/")
     arg = {
-        "target_dir": "/mine/war3work/Wintermaul_One_Revolution_v1.3/",
+        # "target_dir": "/mine/war3work/Wintermaul_One_Revolution_v1.3/",
+        "target_dir": "/mine/war3work/PatisauR's ORPG 1/",
+        # "target_dir": "/mine/war3work/Justice of Shadow 1.0/",
     }
 
     if False:
@@ -1167,5 +1172,5 @@ def test_en():
 
 
 if __name__ == "__main__":
-    test_ru()
-    # test_en()
+    # test_ru()
+    test_en()

@@ -193,6 +193,19 @@ cp /tmp/up/base.en-zh.txt /mine/github/coding/war3_map_helper/data/
 cd ..
 
 rm Wintermaul_One_Revolution_v1.3 -rf && cp -r Wintermaul_One_Revolution_v1.3.bak Wintermaul_One_Revolution_v1.3
+rm OpenHero_0_99j_ENG -rf && cp -r OpenHero_0_99j_ENG.bak OpenHero_0_99j_ENG
+rm "PatisauR's ORPG 1" -rf && cp -r "PatisauR's ORPG 1.bak" "PatisauR's ORPG 1"
+rm "Justice of Shadow 1.0" -rf && cp -r "Justice of Shadow 1.0.bak" "Justice of Shadow 1.0"
 
 python map_analyzer.py
 
+
+
+```code
+
+    call TransmissionFromUnitWithNameBJ(GetPlayersAllies(Player(0)),udg_unit32,"农夫罗德里克
+",空值,"那些强盗偷了我的账本, 没有它，我将失去我的整个农场. 请从他们的营地取回, 对我们来说意义重大.
+
+",0,15.,true)
+
+```

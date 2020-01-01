@@ -196,10 +196,14 @@ rm Wintermaul_One_Revolution_v1.3 -rf && cp -r Wintermaul_One_Revolution_v1.3.ba
 rm OpenHero_0_99j_ENG -rf && cp -r OpenHero_0_99j_ENG.bak OpenHero_0_99j_ENG
 rm "PatisauR's ORPG 1" -rf && cp -r "PatisauR's ORPG 1.bak" "PatisauR's ORPG 1"
 rm "Justice of Shadow 1.0" -rf && cp -r "Justice of Shadow 1.0.bak" "Justice of Shadow 1.0"
+rm "Otro Mapa TD de Warcraft III" -rf && cp -r "Otro Mapa TD de Warcraft III.bak" "Otro Mapa TD de Warcraft III"
+rm "Schizophrenia 1.23.10" -rf && cp -r "Schizophrenia 1.23.10.bak" "Schizophrenia 1.23.10"
+rm "ArtededefensaV4.7" -rf && cp -r "ArtededefensaV4.7.bak" "ArtededefensaV4.7"
+rm "opt-The Black Road v1.2" -rf && cp -r "opt-The Black Road v1.2.bak" "opt-The Black Road v1.2"
 
 python map_analyzer.py
 
-
+“”“”
 
 ```code
 
@@ -209,3 +213,7 @@ python map_analyzer.py
 ",0,15.,true)
 
 ```
+
+
+Buen@s días, tardes, noches
+早上好，下午，晚上。 告诉我如何让一个单位“没有英雄”获得生命点，伤害攻击点，单位等级...

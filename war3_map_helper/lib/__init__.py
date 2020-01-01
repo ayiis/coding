@@ -66,6 +66,8 @@ def MyReader(file_path):
             # 兼容平台换行格式
             while line[-1:] == "\n":
                 line = line[:-1]
+            while line[:1] == "\ufeff":
+                line = line[1:]
 
             try:
 
@@ -129,6 +131,9 @@ def MyReader(file_path):
                     # 无视注释和空行
                     if not line or line[:2] == "--":
                         continue
+
+                # if file_path == "/mine/war3work/Otro Mapa TD de Warcraft III/map/Units/CommandStrings.txt":
+                #     q.d()
 
                 # 判断值是否对象
                 if line[-1:] == "{":

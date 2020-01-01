@@ -57,6 +57,9 @@ class BaseFanyi(object):
                         continue
                     key, value = line.split("\0")
                     self.cache[key.lower()] = value
+        else:
+            with open(self.cache_path, "w") as wf:
+                wf.write("")
 
     def save_result(self):
         """
@@ -251,4 +254,6 @@ def test(from_lan):
 
 if __name__ == "__main__":
     test("en")
+    # test("es")
+    # test("vi")
     # test("ru")

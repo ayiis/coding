@@ -39,7 +39,7 @@ class UpgradeWorker(BaseWorker):
 
 
 class W3iWorker(BaseWorker):
-    WORK_ITEM = ["地图描述", "文本", "标题", "子标题", "名字", "队伍名称", "物品列表名称"]
+    WORK_ITEM = ["地图名称", "地图描述", "文本", "标题", "子标题", "名字", "队伍名称", "物品列表名称"]
     WORK_ITEM = [x.lower() for x in WORK_ITEM]
 
 

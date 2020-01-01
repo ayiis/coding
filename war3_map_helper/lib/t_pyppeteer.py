@@ -242,6 +242,14 @@ def test():
     asyncio.get_event_loop().run_until_complete(main(from_lan="en", to_lan="zh-CN"))
     print("cp /tmp/up/base.en-zh.txt /mine/github/coding/war3_map_helper/data/")
 
+    # # ES
+    # asyncio.get_event_loop().run_until_complete(main(from_lan="es", to_lan="zh-CN"))
+    # print("cp /tmp/up/base.es-zh.txt /mine/github/coding/war3_map_helper/data/")
+
+    # # VI
+    # asyncio.get_event_loop().run_until_complete(main(from_lan="vi", to_lan="zh-CN"))
+    # print("cp /tmp/up/base.vi-zh.txt /mine/github/coding/war3_map_helper/data/")
+
 
 if __name__ == "__main__":
     test()

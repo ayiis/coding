@@ -16,8 +16,9 @@ class Worker(object):
         "DisplayTimedTextToForce", "DialogAddButtonBJ", "SetMapDescription", "DisplayTextToPlayer",
         "DisplayTextToForce", "DisplayTimedTextToPlayer",
         "CustomDefeatBJ", "DialogSetMessageBJ", "MultiboardSetItemValueBJ",
-        "CreateTextTagUnitBJ", "SetPlayerName",
-        "TransmissionFromUnitWithNameBJ", "CreateQuestItemBJ"
+        "CreateTextTagUnitBJ", "SetPlayerName", "SetMapName",
+        "TransmissionFromUnitWithNameBJ", "CreateQuestItemBJ",
+        "TransmissionFromUnitTypeWithNameBJ", "CreateMultiboardBJ",
     ]
     WORK_ITEM = [x.lower() for x in WORK_ITEM]
 
@@ -43,6 +44,8 @@ class Worker(object):
         "SetPlayerName": [1, 2],
         "TransmissionFromUnitWithNameBJ": [2, 4, 8],
         "CreateQuestItemBJ": [1, 2],
+        "TransmissionFromUnitTypeWithNameBJ": [3, 6, 10],
+        "CreateMultiboardBJ": [2, 3],
     }
     re_call = r"^[\s]*call[\s]+(%s)" % "|".join(WORK_ITEM)
 

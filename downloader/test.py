@@ -2,6 +2,13 @@ import core
 import os
 import re
 import q
+"""
+    TODO:
+        1. 下载的最终网址是跳转后的网址，则获取到的host是错误的
+            - done
+        2. Working on 'Accept-Ranges': 'bytes' => 抓包迅雷吧
+            - 没想到竟然是 bytes 的大小写问题
+"""
 
 
 def execute_command(cmd):
@@ -148,4 +155,5 @@ def test():
 
 
 if __name__ == "__main__":
+
     test()

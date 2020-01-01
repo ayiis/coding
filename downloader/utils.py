@@ -132,6 +132,7 @@ class StatusSpinner(BaseStatus):
         self.touch_status_bar()
 
         while not self.download_finished:
+            self.arg.touch_download_speed(0)
             self.touch_bar()
             time.sleep(0.2)
 

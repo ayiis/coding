@@ -76,7 +76,9 @@ class SingleThreadDownloader(object):
                 self.arg.target_url,
                 headers={
                     "Accept-Encoding": "*",
+                    "Accept": "*/*",
                     "Referer": self.arg.target_url,
+                    "User-Agent": "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.1; WOW64; Trident/7.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; .NET4.0C; .NET4.0E)",
                 },
                 timeout=180,
                 stream=True,
@@ -161,7 +163,9 @@ class MultiThreadDownloader(object):
             "package size:",
             utils.pretty_file_size(base_package_count * READ_CHUNK_SIZE + (base_package_padding > 0 and READ_CHUNK_SIZE or 0) + package_padding),
             "&& Q size:",
-            self.task_queue.qsize()
+            self.task_queue.qsize(),
+            "&& thread:",
+            self.arg.max_thread,
         )
         self.task_total_count = self.task_queue.qsize()
 
@@ -217,9 +221,11 @@ class MultiThreadDownloader(object):
                     headers = {
                         # "Host": self.target_host,
                         # `start` <= Range <= `end`, So `end` should -1
-                        "Range": "Bytes=%s-%s" % (task["start"], task["end"] - 1),
+                        "Range": "bytes=%s-%s" % (task["start"], task["end"] - 1),
                         "Accept-Encoding": "*",
+                        "Accept": "*/*",
                         "Referer": self.arg.target_url,
+                        "User-Agent": "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.1; WOW64; Trident/7.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; .NET4.0C; .NET4.0E)",
                     }
                     res = session.get(
                         self.arg.target_url,
@@ -244,7 +250,12 @@ class MultiThreadDownloader(object):
 
                         task["start"] = task["start"] + READ_CHUNK_SIZE
 
-                except (urllib3.exceptions.ReadTimeoutError, requests.exceptions.ReadTimeout):
+                except (
+                    urllib3.exceptions.ConnectTimeoutError,
+                    urllib3.exceptions.ReadTimeoutError,
+                    requests.exceptions.ConnectTimeout,
+                    requests.exceptions.ReadTimeout,
+                ):
                     retry = True
                     self.fail_task(task)
                     time.sleep(0.2)
@@ -309,11 +320,16 @@ class DownloadBuilder(object):
         self.chunk_timeout = arg.get("chunk_timeout") or 8
         self.target_url = arg["target_url"]
         self.file_name = arg.get("file_name", None)
-        self.target_host = re.match(r"http[s]?://([^/]+)", self.target_url).group(1)
+        self.target_host = self.get_host_from_url(self.target_url)
         self.header_info_done = False
         self.dns_query_done = False
+        self.reset_dns_query = False
+        self.reset_dns_lock = threading.Lock()
         self.file_size = 0
         self.addr_list = []
+
+    def get_host_from_url(self, url):
+        return re.match(r"http[s]?://([^/]+)", url).group(1)
 
     def header_print(self, *argv):
         if self.header_info_done:
@@ -321,15 +337,25 @@ class DownloadBuilder(object):
         else:
             print(*argv)
 
-    def dns_query_by_socket(self):
+    def dns_query_by_socket(self, renew=False):
 
         for i in range(2):
             if self.dns_query_done:
                 break
             try:
                 dns_result = socket.getaddrinfo(self.target_host, 0, 0, 0, 0)
-                self.addr_list = list(set([z[-1][0] for z in dns_result]))
-                self.dns_query_done = True
+                try:
+                    self.reset_dns_lock.acquire()
+                    # renew => 使用更新后的host查询dns
+                    if self.reset_dns_query and not renew:
+                        break
+                    else:
+                        self.addr_list = list(set([z[-1][0] for z in dns_result]))
+                        self.dns_query_done = True
+                except Exception:
+                    raise
+                finally:
+                    self.reset_dns_lock.release()
             except Exception:
                 if not self.dns_query_done:
                     self.header_print(traceback.format_exc())
@@ -340,8 +366,10 @@ class DownloadBuilder(object):
             获取内容总长度 并验证是否支持 Range 方式下载
         """
         headers = {
-            "Range": "Bytes=0-43",  # a wav header length is 44
-            "Accept-Encoding": "*",
+            "Range": "bytes=0-43",  # a wav header length is 44
+            "Accept": "*/*",
+            "Referer": self.target_url,
+            "User-Agent": "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.1; WOW64; Trident/7.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; .NET4.0C; .NET4.0E)",
         }
         # 重试3次
         for i in range(3):
@@ -355,6 +383,15 @@ class DownloadBuilder(object):
                     stream=True,
                 )
                 hcr = res.headers.get("Content-Range")
+
+                if res.url != self.target_url:
+                    print("[Redirect to]:", res.url)
+                    self.reset_dns_lock.acquire()
+                    self.reset_dns_query = True
+                    self.addr_list = []
+                    self.target_url = res.url
+                    self.target_host = self.get_host_from_url(self.target_url)
+                    self.reset_dns_lock.release()
 
                 peer = res.raw._fp.fp.raw._sock.getpeername()
                 self.addr_list.append(peer[0])
@@ -394,7 +431,7 @@ class DownloadBuilder(object):
             thread.start()
 
         queue_out = queue.Queue()
-        for i in range(2):
+        for i in range(1):
             thread = threading.Thread(target=self.get_header_info, args=(queue_out, ))
             thread.start()
 
@@ -420,6 +457,10 @@ class DownloadBuilder(object):
         # 获取文件尺寸，测试是否支持 range 方式（多线程，断点续传）
         ts = time.time()
         res = self.double_finger()
+        if self.reset_dns_query:
+            self.dns_query_done = False
+            self.dns_query_by_socket(renew=True)
+
         self.header_info_done = True
 
         print("Get file info: %ss, save as %s" % (round(time.time() - ts, 3), self.file_name))
@@ -438,8 +479,9 @@ class DownloadBuilder(object):
 
 if __name__ == "__main__":
     args = {
-        "target_url": "https://ayiis.me/aydocs/readme.txt",
-        "file_name": "ex.zip",
+        # "target_url": "http://luna.epicwar.com/maps/60d1ebc52c203c0884e952754f496b57/5e0cba52/1203/300575/Green%20Circle%20TD%202020b.w3x",
+        "target_url": "http://www.epicwar.com/maps/download/300575/d2dec5888171f937240d92e67eed1a7a35225714b33e950d28d1df8979cff2c75e0cbeb8/Green%20Circle%20TD%202020b.w3x",
+        "file_name": "Clan_MgP_Micro_Training.w3x",
         "max_thread": None,
         "chunk_timeout": None,
     }

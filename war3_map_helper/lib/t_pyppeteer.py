@@ -42,10 +42,10 @@ async def main(from_lan, to_lan):
         "executablePath": "/mine/soft/Google Chrome.app/Contents/MacOS/Google Chrome",
         "userDataDir": "/tmp/tmp",
         "ignoreHTTPSErrors": True,
-        "args": [
-            "--proxy-server=",
-            "--proxy-bypass-list=",
-        ],
+        # "args": [
+        #     "--proxy-server=",
+        #     "--proxy-bypass-list=",
+        # ],
         "defaultViewport": False,
         # "ignoreDefaultArgs": ["--enable-automation"],
         # "args": ["--disable-infobars"],
@@ -56,6 +56,8 @@ async def main(from_lan, to_lan):
     browser = await launch(**args)
     pages = await browser.pages()
     page = pages[0]
+    # await page.goto('https://translate.google.cn/#view=home&op=translate&sl=%s&tl=%s' % (from_lan, to_lan), waitUntil='networkidle2', timeout=1000 * 60)
+    # await asyncio.sleep(20)
 
     await page.setRequestInterception(True)
     page.on('request', lambda x: fff(x, rand_str))

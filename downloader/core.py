@@ -12,8 +12,8 @@ import utils
 
 import requests
 
-READ_CHUNK_SIZE = requests.models.CONTENT_CHUNK_SIZE or (10 * 1024)
-MAX_TRUNK_SIZE = READ_CHUNK_SIZE * 1024
+READ_CHUNK_SIZE = requests.models.CONTENT_CHUNK_SIZE or (10 * 1024)     # 默认 10K
+MAX_TRUNK_SIZE = READ_CHUNK_SIZE * 1024     # 默认 10M
 
 
 class SingleThreadDownloader(object):
@@ -75,6 +75,7 @@ class SingleThreadDownloader(object):
             res = session.get(
                 self.arg.target_url,
                 headers={
+                    # 2020-01-14 因为ayiis.me的nginx存在 transfer-encoding 覆盖 range 的问题，在此处增加 Accept-Encoding
                     "Accept-Encoding": "*",
                     "Accept": "*/*",
                     "Referer": self.arg.target_url,
@@ -222,7 +223,8 @@ class MultiThreadDownloader(object):
                         # "Host": self.target_host,
                         # `start` <= Range <= `end`, So `end` should -1
                         "Range": "bytes=%s-%s" % (task["start"], task["end"] - 1),
-                        "Accept-Encoding": "*",
+                        # 2020-01-14 因为ayiis.me的nginx存在 transfer-encoding 覆盖 range 的问题，在此处移除 Accept-Encoding
+                        "Accept-Encoding": "",
                         "Accept": "*/*",
                         "Referer": self.arg.target_url,
                         "User-Agent": "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.1; WOW64; Trident/7.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; .NET4.0C; .NET4.0E)",
@@ -367,6 +369,8 @@ class DownloadBuilder(object):
         """
         headers = {
             "Range": "bytes=0-43",  # a wav header length is 44
+            # 2020-01-14 因为ayiis.me的nginx存在 transfer-encoding 覆盖 range 的问题，在此处移除 Accept-Encoding
+            "Accept-Encoding": "",
             "Accept": "*/*",
             "Referer": self.target_url,
             "User-Agent": "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.1; WOW64; Trident/7.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; .NET4.0C; .NET4.0E)",
@@ -396,6 +400,7 @@ class DownloadBuilder(object):
                 peer = res.raw._fp.fp.raw._sock.getpeername()
                 self.addr_list.append(peer[0])
                 # self.header_print("Get host addr: %s -> %s:%s" % (self.target_host, peer[0], peer[1]))
+                # q.d()
 
                 if not hcr:
                     self.header_print("Not suit for content-range.")
@@ -426,9 +431,14 @@ class DownloadBuilder(object):
         """
             并发获取内容总长度, 通过 queue_out 通知主线程
         """
-        for i in range(2):
-            thread = threading.Thread(target=self.dns_query_by_socket)
-            thread.start()
+        if re.match(r"(^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})(:[0-9]+)?$", self.target_host):
+            ip = re.match(r"(^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})(:[0-9]+)?$", self.target_host).group(1)
+            self.addr_list = [ip]
+            self.dns_query_done = True
+        else:
+            for i in range(2):
+                thread = threading.Thread(target=self.dns_query_by_socket)
+                thread.start()
 
         queue_out = queue.Queue()
         for i in range(1):
@@ -478,10 +488,10 @@ class DownloadBuilder(object):
 
 
 if __name__ == "__main__":
+
     args = {
-        # "target_url": "http://luna.epicwar.com/maps/60d1ebc52c203c0884e952754f496b57/5e0cba52/1203/300575/Green%20Circle%20TD%202020b.w3x",
-        "target_url": "http://www.epicwar.com/maps/download/300575/d2dec5888171f937240d92e67eed1a7a35225714b33e950d28d1df8979cff2c75e0cbeb8/Green%20Circle%20TD%202020b.w3x",
-        "file_name": "Clan_MgP_Micro_Training.w3x",
+        "target_url": "https://github.com/ayiis/chinese-poetry/archive/v0.1.zip",
+        "file_name": "test",
         "max_thread": None,
         "chunk_timeout": None,
     }

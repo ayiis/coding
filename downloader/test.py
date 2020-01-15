@@ -8,6 +8,8 @@ import q
             - done
         2. Working on 'Accept-Ranges': 'bytes' => 抓包迅雷吧
             - 没想到竟然是 bytes 的大小写问题
+        3. nginx存在 transfer-encoding 覆盖 range 的问题
+            - 在请求header和多线程下载时移除 Accept-Encoding
 """
 
 
@@ -112,37 +114,9 @@ def test():
     do_test(args)
 
     args = {
-        "target_url": "https://ayiis.me/aydocs/download/xx102400.file",
-        "file_name": "xx102400.file",
-        "md5": "4c6426ac7ef186464ecbb0d81cbfcb1e",
-    }
-    do_test(args)
-
-    args = {
-        "target_url": "https://ayiis.me/aydocs/download/xx10240_16",
-        "file_name": "xx10240_16",
-        "md5": "6cc3d8ecd5a9967c9227be8d17b988a6",
-    }
-    do_test(args)
-
-    args = {
-        "target_url": "https://ayiis.me/aydocs/download/xx10240_8-1",
-        "file_name": "xx10240_8-1",
-        "md5": "929d7d6bd36b6f8879370ca24674cc81",
-    }
-    do_test(args)
-
-    args = {
-        "target_url": "https://ayiis.me/aydocs/download/xx10240_8+1",
-        "file_name": "xx10240_8+1",
-        "md5": "380395a711ac160a1887d8a046eb4ba1",
-    }
-    do_test(args)
-
-    args = {
-        "target_url": "https://ayiis.me/aydocs/download/xx102400.file",
-        "file_name": "xx102400.file",
-        "md5": "4c6426ac7ef186464ecbb0d81cbfcb1e",
+        "target_url": "https://ayiis.me/aydocs/edu.max.js",
+        "file_name": "edu.max.js",
+        "md5": "234ffe028394dcad430ec296f4496fc5",
     }
     do_test(args)
 
@@ -154,6 +128,21 @@ def test():
     do_test(args)
 
 
-if __name__ == "__main__":
+def multi_proc():
 
+    for i in range(1, 63):
+        rno = str(i).rjust(3, "0")
+        print("https://pic.kissgoddess.com/gallery/26679/28022/%s.jpg" % rno)
+        # args = {
+        #     "target_url": "https://pic.kissgoddess.com/gallery/26679/28022/%s.jpg" % rno,
+        #     "file_name": "%s.jpg" % rno,
+        #     "max_thread": 3,
+        # }
+        # db = core.DownloadBuilder(args)
+        # db.start_task()
+        # q.d()
+
+
+if __name__ == "__main__":
+    # multi_proc()
     test()

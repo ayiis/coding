@@ -1,3 +1,17 @@
+"""
+    超级无敌神速霹雳下载器
+    - github
+    - uuu9
+    - epicwar3
+
+    通常，在 nginx 中，range 和 content-encoding:gzip 是不可共存的
+
+        - 因为 gzip 是实时进行的，返回的大小未知，而 range 要求服务器必须返回大小 (content-length)
+            1. github 表现是，第一次请求触发`打包`，`打包`完成后可以用range分批下载，需要多次下载才会触发，隔一段时间后失效
+                一开始是 'Transfer-Encoding': 'chunked' && 'Accept-Ranges': 'bytes'，后来是 'Content-Range'，两次是不同的返回
+            2. ayiis 表现是(错误)，只要设置了nginx的压缩，就无视 range
+            3. sksedu 表现是(正确)，只要请求里有 range，就无视 content-encoding:gzip
+"""
 # import wrap_request
 import argparse
 import uuid

@@ -127,22 +127,28 @@ async def main(from_lan, to_lan):
         dict_contents = rf.readlines()
         dict_contents = [line for line in dict_contents]
 
-    # if not Path("/tmp/up/base.en-zh.txt").is_file():
     todo_dict_contents = []
-    with open("/tmp/up/base.%s-zh.txt" % from_lan, "w") as wf:
-        for content in dict_contents:
-            if "\0" in content:
-                wf.write(content)
-            else:
-                todo_dict_contents.append(content.strip())
+    done_dict = []
+    for content in dict_contents:
+        if "\0" not in content:
+            todo_dict_contents.append(content.strip())
+        else:
+            done_dict.append(content.strip())
 
-    # with open("/tmp/up/base.en-zh.txt", "r") as rf:
-    #     dict_contents2 = rf.readlines()
-    #     dict_contents2 = set([line.split("\0")[0] for line in dict_contents2])
+    todo_dict_contents = set(todo_dict_contents)
 
-    # todo_dict_contents = dict_contents - dict_contents2
+    if not Path("/tmp/up/base.%s-zh.txt" % from_lan).is_file():
+        with open("/tmp/up/base.%s-zh.txt" % from_lan, "w") as wf:
+            for content in done_dict:
+                wf.write("%s\n" % content)
+    else:
+        with open("/tmp/up/base.%s-zh.txt" % from_lan, "r") as rf:
+            dict_contents2 = rf.readlines()
+            dict_contents2 = set([line.split("\0")[0] for line in dict_contents2])
+
+        todo_dict_contents = todo_dict_contents - dict_contents2
+
     # todo_dict_contents = list(todo_dict_contents)
-
     todo_count = len(todo_dict_contents)
     print("todo dict:", todo_count)
 

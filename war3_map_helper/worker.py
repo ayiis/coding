@@ -40,6 +40,7 @@ from lib.w_common_ini import (
 
 ini_work_files = {
     # "table/ability.2.ini": AbilityWorker,
+    # "table/ability.ini": AbilityWorker,
 
     "map/war3mapskin.txt": War3mapskinWorker,
 
@@ -77,12 +78,22 @@ def qq():
 
 
 class BaseWorker(object):
-    """docstring for BaseWorker"""
+
+    RSTRING = r"(\\[trn]|[\t\n\r]|(\|[rn])?\-[a-z0-9]+|http[s]?\:\/\/[^\ \"\'\|]+|\<[a-z0-9]{4}(\:[a-z0-9]{4})?,[a-z0-9]+\>|TRIGSTR_[0-9]+|\%[a-z]\b|\|c[0-9a-f]{8}|[0-9\+\-\%]|\|n|\|r|[\~\!\@\#\$\^\&\*\(\)\_\=\`\[\]\\\{\}\|\;\:\"\,\.\/\<\>\?“”])"
+
     def __init__(self):
         super(BaseWorker, self).__init__()
+        self.re_cache = []
 
     def write_raw_string(self, wf, line):
         wf.write(line)
+
+    def re_escape(self, match):
+        self.re_cache.append(match.group(0))
+        return "\0"
+
+    def re_unescape(self, match):
+        return self.re_cache.pop()
 
     def do_translate(self, translater, from_lan, to_lan):
 
@@ -113,11 +124,11 @@ class BaseWorker(object):
 
     def take_string_from_sentense(self, sentence):
         # 包含 + - % 0-9 因为只是数字不同的技能实在太多了 %s %z %d %c
-        temp = re.sub(r"(\-[a-z0-9]+|http[s]?\:\/\/[^\ \"\'\|]+|\<[a-z0-9]{4},[a-z0-9]+\>|TRIGSTR_[0-9]+|\%[a-z]\b|\|c[0-9a-f]{8}|[0-9\+\-\%]|\|n|\|r|[\~\!\@\#\$\^\&\*\(\)\_\=\`\[\]\\\{\}\|\;\:\"\,\.\/\<\>\?“”])", "*", sentence, flags=re.I)
+        temp = re.sub(self.RSTRING, "\0", sentence, flags=re.I)
         # # 除外 + - % 0-9
         # temp = re.sub(r"(\|c[0-9a-f]{8}|\|n|\|r|[\~\!\@\#\$\^\&\*\(\)\_\=\`\[\]\\\{\}\|\;\'\:\"\,\.\/\<\>\?])", "*", sentence, flags=re.I)
         # print("sentence:", sentence)
-        for string in temp.split("*"):
+        for string in temp.split("\0"):
             string = string.strip()
             if string:
                 # 中文和标点符号就放过了吧，老铁
@@ -225,9 +236,16 @@ class TranslateWorkerForIni(BaseWorker):
                 # print("good_trans:", good_trans)
                 good_key.sort(key=lambda x: -len(x))
                 # print("trans_line:", trans_line.strip())
+                trans_line = re.sub(self.RSTRING, self.re_escape, trans_line)
                 for key in good_key:
                     trans_line = re.sub(re.escape(key), good_trans[key], trans_line, flags=re.I)
                     # trans_line = trans_line.replace(key, good_trans[key])
+
+                self.re_cache.reverse()
+                trans_line = re.sub(r"[\0]", self.re_unescape, trans_line)
+
+                while " |n" in trans_line:
+                    trans_line = trans_line.replace(" |n", "|n")
                 # if "рыцарь" in good_key:
                 #     q.d()
                 # print("trans_line result:", trans_line)
@@ -488,16 +506,22 @@ class TranslateWorkerForWts(BaseWorker):
                 # print("good_trans:", good_trans)
                 good_key.sort(key=lambda x: -len(x))
                 # print("trans_line:", trans_line.strip())
+
+                trans_line = re.sub(self.RSTRING, self.re_escape, trans_line)
                 for key in good_key:
                     trans_line = re.sub(re.escape(key), good_trans[key], trans_line, flags=re.I)
+                    # trans_line = trans_line.replace(key, good_trans[key])
+
+                self.re_cache.reverse()
+                trans_line = re.sub(r"[\0]", self.re_unescape, trans_line)
 
         wf.write(line.replace(string, trans_line))
 
 
-class TranslateWorkerForJ(BaseWorker):
-    """docstring for TranslateWorkerForJ"""
+class TranslateWorkerForJ0(BaseWorker):
+    """docstring for TranslateWorkerForJ0"""
     def __init__(self, arg):
-        super(TranslateWorkerForJ, self).__init__()
+        super(TranslateWorkerForJ0, self).__init__()
         self.arg = arg
         while self.arg["target_dir"][-1] == "/": self.arg["target_dir"] = self.arg["target_dir"][:-1]
         self.text_cache = []
@@ -707,10 +731,103 @@ class TranslateWorkerForJ(BaseWorker):
                     # print("good_trans:", good_trans)
                     good_key.sort(key=lambda x: -len(x))
                     # print("trans_line:", trans_line.strip())
+                    trans_line = re.sub(self.RSTRING, self.re_escape, trans_line)
                     for key in good_key:
                         trans_line = re.sub(re.escape(key), good_trans[key], trans_line, flags=re.I)
+                        # trans_line = trans_line.replace(key, good_trans[key])
+
+                    self.re_cache.reverse()
+                    trans_line = re.sub(r"[\0]", self.re_unescape, trans_line)
 
             line = re.sub(re.escape(string), trans_line, line, flags=re.I)
 
         wf.write(line)
+
+
+import j_translate
+
+
+class TranslateWorkerForJ(BaseWorker):
+    """
+        使用新的 j_translate
+    """
+    def __init__(self, arg):
+        super(TranslateWorkerForJ, self).__init__()
+        self.arg = arg
+        while self.arg["target_dir"][-1] == "/": self.arg["target_dir"] = self.arg["target_dir"][:-1]
+        self.text_cache = []
+
+    def grep_j(self):
+
+        for file_name in jass_work_files:
+            file_path = "%s/%s" % (self.arg["target_dir"], file_name)
+            # worker = jass_work_files[file_name]
+            # if not worker:
+            #     continue
+
+            if not Path(file_path).is_file():
+                print("[EMPTY]", file_path)
+                continue
+
+            worker = j_translate.Worker({"file_path": file_path})
+            string_list = worker.grep_string()
+            string_list = [x.strip().lower() for x in string_list]
+            self.text_cache += string_list
+
+    def rewrite_j(self):
+
+        def _wrap(word):
+            trans_line = word.lower()
+            word_list = self.take_string_from_sentense(trans_line)
+            word_list = list(set(word_list))
+            if word_list:
+                word_list.sort(key=lambda x: -len(x))
+                # print("word_list:", word_list)
+                # for key in word_list:
+                #     trans_line = re.sub(re.escape(key), self.trans_result[key], trans_line, flags=re.I)
+
+                trans_line = re.sub(self.RSTRING, self.re_escape, trans_line)
+                for key in word_list:
+                    trans_line = re.sub(re.escape(key), self.trans_result[key], trans_line, flags=re.I)
+                    # trans_line = trans_line.replace(key, good_trans[key])
+
+                self.re_cache.reverse()
+                trans_line = re.sub(r"[\0]", self.re_unescape, trans_line)
+
+            return trans_line
+
+        self.trans_result_keys = self.trans_result.keys()
+        for file_name in jass_work_files:
+            file_path = "%s/%s" % (self.arg["target_dir"], file_name)
+            if not Path(file_path).is_file():
+                print("[EMPTY]:", file_path)
+                continue
+            # with open(file_path, "r") as rf:
+            #     contents = rf.readlines()
+
+            worker = j_translate.Worker({"file_path": file_path})
+            worker.rewrite_j(_wrap, "%s.mta2.cache" % file_path)
+
+            # with open("%s.mta2.cache" % file_path, "w") as wf:
+            #     key_index = None
+            #     wait_line1 = False
+            #     for lineno, rawline in enumerate(contents):
+            #         line = rawline
+
+            #         if wait_line1:
+            #             # 双引号未闭合: 计算 " 但不计算 \"
+            #             if (line.count("\"") - line.count("\\\"")) % 2 == 0:
+            #                 self.write_translate_string(wf, rawline, line, key_index, "middle")
+            #             else:
+            #                 wait_line1 = False
+            #                 self.write_translate_string(wf, rawline, line, key_index, "end")
+            #         elif re.match(War3mapJWorker.re_call, line, flags=re.I):
+            #             key_index = re.match(War3mapJWorker.re_call, line, flags=re.I).group(1)
+            #             if (line.count("\"") - line.count("\\\"")) % 2 == 1:
+            #                 wait_line1 = True
+            #                 self.write_translate_string(wf, rawline, line, key_index, "start")
+            #             else:
+            #                 self.write_translate_string(wf, rawline, line, key_index, "inside")
+            #         else:
+            #             self.write_raw_string(wf, rawline)
 

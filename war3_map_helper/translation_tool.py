@@ -251,6 +251,11 @@ def test(from_lan):
 
         # q.d()
 
+    if os.path.isfile("/tmp/up/base.%s-zh.txt" % from_lan):
+        os.remove("/tmp/up/base.%s-zh.txt" % from_lan)
+    # with open("/tmp/up/base.%s-zh.txt" % from_lan, "w") as wf:
+    #     wf.write("")
+
 
 if __name__ == "__main__":
     test("en")

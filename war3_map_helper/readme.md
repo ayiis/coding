@@ -79,11 +79,11 @@
 
             ✅ unit.ini 的跨行问题
 
-            ⏱ mapskin.txt 并没有汉化所有字符串
+            ✅ mapskin.txt 并没有汉化所有字符串
 
             ✅ war3map.j 方法名orc被汉化了
 
-                ⏱ 这种网址可如何是好啊？
+                ✅ 这种网址可如何是好啊？
                     
                     ==> https://wintermaul.one/
 
@@ -94,7 +94,7 @@
                     call DisplayTimedTextToPlayer(loc_player01,0,0,10,"-disable - Disables reacts made by -reg")
                     -disable
 
-            ⏱ 没有lni 转换出来 《光束爆破, 警察菜刀》 的 模型丢了。。。
+            ✅ 没有lni 转换出来 《光束爆破, 警察菜刀》 的 模型丢了。。。
 
                 光束爆破: "war3mapImported\\Magic Orb.mdl"
                 警察菜刀: "war3mapImported\\GyroCopter.mdl"
@@ -200,20 +200,34 @@ rm "Otro Mapa TD de Warcraft III" -rf && cp -r "Otro Mapa TD de Warcraft III.bak
 rm "Schizophrenia 1.23.10" -rf && cp -r "Schizophrenia 1.23.10.bak" "Schizophrenia 1.23.10"
 rm "ArtededefensaV4.7" -rf && cp -r "ArtededefensaV4.7.bak" "ArtededefensaV4.7"
 rm "opt-The Black Road v1.2" -rf && cp -r "opt-The Black Road v1.2.bak" "opt-The Black Road v1.2"
+rm "Daemonic Sword ORPG 6.79" -rf && cp -r "Daemonic Sword ORPG 6.79.bak" "Daemonic Sword ORPG 6.79"
+
 
 python map_analyzer.py
 
-“”“”
+
 
 ```code
 
-    call TransmissionFromUnitWithNameBJ(GetPlayersAllies(Player(0)),udg_unit32,"农夫罗德里克
-",空值,"那些强盗偷了我的账本, 没有它，我将失去我的整个农场. 请从他们的营地取回, 对我们来说意义重大.
+进度：
 
-",0,15.,true)
+    ✅. fomatter 已经修复
+    ⏱. 改造 TranslateWorkerForJ
 
 ```
 
 
-Buen@s días, tardes, noches
-早上好，下午，晚上。 告诉我如何让一个单位“没有英雄”获得生命点，伤害攻击点，单位等级...
+``` 待处理
+call CreateQuestBJ(bj_QUESTTYPE_OPT_DISCOVERED,"Daemonic Sword ORPG","Created by: Shea Easterbrook
+Battle.net: Daemonic
+Email: sheaeasterbrook@hotmail.com
+Website: www.daemonicswordorpg.com
+Discord: https://discord.gg/kXwTqB9","war3mapPreview.tga")
+
+map/ 是好的
+
+
+排除法/ table 下面 6个ok
+
+```
+

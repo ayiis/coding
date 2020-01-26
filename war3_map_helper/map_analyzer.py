@@ -188,7 +188,8 @@ def test_en():
         # "target_dir": "/mine/war3work/Wintermaul_One_Revolution_v1.3/",
         # "target_dir": "/mine/war3work/PatisauR's ORPG 1/",
         # "target_dir": "/mine/war3work/Justice of Shadow 1.0/",
-        "target_dir": "/mine/war3work/opt-The Black Road v1.2/",
+        # "target_dir": "/mine/war3work/opt-The Black Road v1.2/",
+        "target_dir": "/mine/war3work/Daemonic Sword ORPG 6.79/",
     }
 
     # if False:
@@ -250,8 +251,9 @@ def test_en():
 
         # tw.check_result(eee)  # 英文暂时不能check
 
-    if False:
-    # if True:
+    # 写进原文件
+    # if False:
+    if True:
 
         def move_file(file_name):
             file_path = "%s/%s" % (arg["target_dir"], file_name)
@@ -277,8 +279,8 @@ def test_en():
             move_file(file_name)
 
     # 删除 bak 文件
-    if False:
-    # if True:
+    # if False:
+    if True:
 
         def delete_file(file_name):
             file_path = "%s/%s" % (arg["target_dir"], file_name)
@@ -554,3 +556,26 @@ if __name__ == "__main__":
     test_en()
     # test_es()
     # test_vi()
+
+    # arg = {
+    #     # "target_dir": "/mine/war3work/Wintermaul_One_Revolution_v1.3/",
+    #     # "target_dir": "/mine/war3work/PatisauR's ORPG 1/",
+    #     # "target_dir": "/mine/war3work/ArtededefensaV4.7/",
+    #     "target_dir": "/mine/war3work/Daemonic Sword ORPG 6.79/",
+    # }
+    # tw = TranslateWorkerForJ(arg)
+    # tw.grep_j()
+
+    # text_set = list(set(tw.text_cache))
+    # # print("text_set:", text_set)
+    # print("Count in set:", len(text_set))
+
+    # tw.restruct_strings()
+    # print("sentence_set:", len(tw.sentence_set))
+
+    # tw.do_translate("test", "vi", "zh")
+    # # tw.do_translate("baidu", "vi", "zh")
+    # print("trans_result:", len(tw.trans_result))
+
+    # tw.rewrite_j()
+

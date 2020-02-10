@@ -5,12 +5,24 @@ import re
 def main(args):
     lineno = 0
     print_line = 0
-    with open(args["fa"], "r") as ra:
-        with open(args["fb"], "r") as rb:
+    with open(args["fa"], "rb") as ra:
+        with open(args["fb"], "rb") as rb:
             while True:
                 la = ra.readline()
                 lb = rb.readline()
                 lineno += 1
+
+                if lineno % 1000 == 999:
+                    print("lineno:", lineno)
+
+                if repr(la) != repr(lb):
+                    print(repr(la), repr(lb))
+                    q.d()
+
+                if not la and not lb:
+                    break
+
+                continue
                 # if lineno < 65701:
                 #     continue
                 if not la and not lb:
@@ -30,6 +42,9 @@ def main(args):
                     # else:
                     #     continue
 
+                    if la.count("\"") == lb.count("\"") > 0:
+                        continue
+
                     # while True:
                     #     if not la or not lb:
                     #         break
@@ -47,13 +62,13 @@ def main(args):
                     # else:
                     #     pass
 
-                    if re.search(r"[\<\>]", la, flags=re.I):
-                    # if re.search(r"[\{\}]", lb, flags=re.I):
-                    # if re.search(r"[\[\]]", lb, flags=re.I):
-                    # if re.search(r"[\(\)]", lb, flags=re.I):
-                        pass
-                    else:
-                        continue
+                    # if re.search(r"[\<\>]", la, flags=re.I):
+                    # # if re.search(r"[\{\}]", lb, flags=re.I):
+                    # # if re.search(r"[\[\]]", lb, flags=re.I):
+                    # # if re.search(r"[\(\)]", lb, flags=re.I):
+                    #     pass
+                    # else:
+                    #     continue
 
                     print("-" * 64, lineno, ":")
                     print(la)
@@ -66,8 +81,13 @@ def main(args):
 
 
 if __name__ == "__main__":
+    # fa 源文件
     main({
-        "fa": "/mine/war3work/Daemonic Sword ORPG 6.79.bak/table/ability.ini",
-        "fb": "/mine/war3work/Daemonic Sword ORPG 6.79/table/ability.ini.mta2.cache",
+        # "fa": "/mine/war3work/Daemonic Sword ORPG 6.79.bak/table/ability.ini",
+        # "fb": "/mine/war3work/Daemonic Sword ORPG 6.79/table/ability.ini.mta2.cache",
+        # "fa": "/mine/war3work/The-Chosen-Ones-1.0_x.bak/map/prologue - the chosen ones campaign/map/scripts/war3map.j",
+        # "fb": "/mine/war3work/The-Chosen-Ones-1.0_x/map/prologue - the chosen ones campaign/map/scripts/war3map.j",
+        "fa": "/tmp/diff/war3campaign.working.wts",
+        "fb": "/tmp/diff/war3campaign.done.wts",
     })
 

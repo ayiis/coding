@@ -177,6 +177,33 @@
         jass的 漂浮文字 的地名都集中在 Trig_Loki_Actions ？
 
 
+# 战役地图汉化方法
+
+    1. 火龙重写 listfile
+
+    2. w3x2lni 解压成 lni
+
+    3. 在map文件夹里面把所有章节的 w3x 汉化
+
+        - 删除最外层 w3n 的 war3mapskin.txt 文件的自定义字体
+        - 删除所有 w3x 的 war3mapskin.txt 文件的自定义字体
+
+    4. 在火龙里面直接替换 w3x
+
+    5. 最外层的 w3n 需要先 w3x2lni 打包成 w3x 再替换资源
+
+        对应关系：
+
+            - war3mapskin.txt -> war3mapskin.txt
+            - war3campaign.wts -> war3campaign.wts
+
+# 注意事项
+
+    搜索 #!!!!
+
+    1. worker.py 开启/关闭 wts 翻译跳过空格
+
+
 
 python map_analyzer.py
 
@@ -201,6 +228,8 @@ rm "Schizophrenia 1.23.10" -rf && cp -r "Schizophrenia 1.23.10.bak" "Schizophren
 rm "ArtededefensaV4.7" -rf && cp -r "ArtededefensaV4.7.bak" "ArtededefensaV4.7"
 rm "opt-The Black Road v1.2" -rf && cp -r "opt-The Black Road v1.2.bak" "opt-The Black Road v1.2"
 rm "Daemonic Sword ORPG 6.79" -rf && cp -r "Daemonic Sword ORPG 6.79.bak" "Daemonic Sword ORPG 6.79"
+rm "The-Chosen-Ones-1.0_x" -rf && cp -r "The-Chosen-Ones-1.0_x.bak" "The-Chosen-Ones-1.0_x"
+rm "Paranormal_Underworld_ORPG_Final_L" -rf && cp -r "Paranormal_Underworld_ORPG_Final_L.bak" "Paranormal_Underworld_ORPG_Final_L"
 
 
 python map_analyzer.py
@@ -218,16 +247,37 @@ python map_analyzer.py
 
 
 ``` 待处理
-call CreateQuestBJ(bj_QUESTTYPE_OPT_DISCOVERED,"Daemonic Sword ORPG","Created by: Shea Easterbrook
-Battle.net: Daemonic
-Email: sheaeasterbrook@hotmail.com
-Website: www.daemonicswordorpg.com
-Discord: https://discord.gg/kXwTqB9","war3mapPreview.tga")
 
-map/ 是好的
-
-
-排除法/ table 下面 6个ok
+call DisplayTimedTextToForce(bj_FORCE_ALL_PLAYERS, 5., ("|c00ff0303最多 " +(I2S(udg_TempInteger4) + " potions of this kind can be held at the same time.")))
+call DisplayTimedTextToForce(bj_FORCE_ALL_PLAYERS, 9., ((udg_Interlude_Colors[1] + "黑头巾的男人: ") +(udg_Interlude_Colors[2] + "Money... That is what matters in the end of the day for me. Hand over the money, if you will.")))
+call DisplayTimedTextToForce(bj_FORCE_ALL_PLAYERS, 38., ((udg_Interlude_Colors[1] + "黑头巾的男人: ") +(udg_Interlude_Colors[2] + "The job is done... Phodom's family is dead.")))
+call QuestSetTitle(udg_Optional_Q_5, "|c00FEBA0EOgre Dungeon")
 
 ```
 
+
+
+我对地图做了2点改动：
+1. 开放单机模式
+2. 去除反作弊模块
+
+
+
+``` 巨大的BUG
+
+    w3x2lni 解压出来是重新构建了 wts 的
+    所以必须，重新用 w3x2lni 打包！！！
+
+    已确认:
+        j
+        wts
+
+    如果只有任务(j)用到 wts 的时候，打包的时候 wts 文件就不见了？？？？？？
+
+    还是直接用火龙解压吧。。。。。。
+
+    w3n - the chosen one
+        wts 有些字符串被用来命名了，不能翻译成中文，否则会死
+        - 如果名称字符串也写到了 wts 里，那么遇到 没有空格的 不翻译
+
+```

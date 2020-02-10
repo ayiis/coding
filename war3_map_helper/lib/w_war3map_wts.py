@@ -21,6 +21,10 @@ class Worker(object):
         key_index = None
         wait_line1 = False
         wait_line2 = False
+
+        if contents[0][0] == "\ufeff":
+            contents[0] = contents[0][1:]
+
         for lineno, rawline in enumerate(contents):
             line = rawline
 
@@ -48,16 +52,26 @@ class Worker(object):
 
         for i in wts_obj:
             string_list += wts_obj[i]
+            # if len(("".join(wts_obj[i])).encode("utf8")) > 600:
+            #     print(wts_obj[i])
+            #     q.d()
 
         return string_list
 
 
 def test():
     wk = Worker({
-        "file_path": "/mine/war3work/(2)Game of Life and Death-v2/map/war3map.wts"
+        # "file_path": "/mine/war3work/(2)Game of Life and Death-v2/map/war3map.wts"
+        # "file_path": "/mine/war3work/The-Chosen-Ones-1.0_x/map/war3campaign.wts"
+        "file_path": "/mine/war3work/The-Chosen-Ones-1.0_x/map/war3campaign.wts.mta2.cache"
+        # "file_path": "/mine/war3work/The-Chosen-Ones-1.0_x.bak/map/war3campaign.wts"
     })
     string_list = wk.grep_string_from_config()
-    print("string_list:", string_list)
+    for lineno, line in enumerate(string_list):
+        if len(line.encode("utf8")) > 800:
+            print(len(line.encode("utf8")))
+            q.d()
+    # print("string_list:", string_list)
 
 
 if __name__ == "__main__":

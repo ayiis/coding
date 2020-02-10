@@ -212,7 +212,7 @@ def main(file_path):
 
 if __name__ == "__main__":
 
-    file_path = "/mine/github/coding/temp/data/2.j"
+    # file_path = "/mine/github/coding/temp/data/2.j"
     # file_path = "/mine/github/coding/temp/data/1.j"
-    # file_path = "/mine/war3work/Daemonic Sword ORPG 6.79/map/scripts/war3map.j"
+    file_path = "/mine/war3work/Daemonic Sword ORPG 6.79/map/scripts/war3map.j"
     main(file_path)

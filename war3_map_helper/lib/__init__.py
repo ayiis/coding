@@ -17,6 +17,10 @@ class BaseWorker(object):
         self.arg["config"] = MyReader(self.arg["file_path"])
         self.WORK_ITEM = set([x.lower() for x in self.WORK_ITEM])
 
+        # # !!!!
+        # if "name" in self.WORK_ITEM:
+        #     self.WORK_ITEM.remove("name")
+
     def get_deep_string_from_list(self, item_list):
         res = []
         if isinstance(item_list, list):
@@ -53,15 +57,42 @@ class BaseWorker(object):
 def MyReader(file_path):
 
     ini_obj = {}
-    with open(file_path, "r") as rf:
+    with open(file_path, "rb") as rf:
+        contents_tmp = rf.readlines()
+        contents = []
+        i = 0
+        for c in contents_tmp:
+            i = i + 1
+
+            # if i >= 34700:
+            #     # наносящее его противникам по
+            #     q.d()
+
+            # w3x2lni cannot handle (\xd0, \xd1)
+            if c[-4:] in (b"\xd0\"\r\n", b"\xd1\"\r\n"):
+                print("Line", i, "is bad char")
+                c = c[:-4] + b" \"\r\n"
+            else:
+                pass
+
+            try:
+                contents.append(c.decode("utf8"))
+            except Exception as e:
+                print(e, "is bad char")
+                q.d()
+
+            # if "наносящее его противникам по" in contents[-1]:
+            #     print("in the MyReader")
+            #     q.d()
+
         wait_end = False
         sect_name = None
         key_name = None
         wait_string = False
-        start_debug = False
+        # start_debug = False
         wait_string2 = False
         w_index = 0
-        for lineno, line in enumerate(rf):
+        for lineno, line in enumerate(contents):
 
             # 兼容平台换行格式
             while line[-1:] == "\n":
@@ -155,6 +186,10 @@ def MyReader(file_path):
                     print("warn:", "Be not 'abcd' type ID:", line)
                     sect_name = re.match(r"^\[([^\[\]\"\']+)\]$", line, re.I).group(1)
                     ini_obj[sect_name] = {}
+                elif re.match(r"^\[(.+)\]$", line, re.I):
+                    print("warn:", "Very bad [\"\\\\I0F\"] type ID:", line)
+                    sect_name = re.match(r"^\[(.+)\]$", line, re.I).group(1)
+                    ini_obj[sect_name] = {}
                 # 直接赋值
                 elif "=" in line:
                     key_name = line.split("=")[0]
@@ -163,7 +198,7 @@ def MyReader(file_path):
                     ini_obj[sect_name][key_name] = key_val.strip()
 
                 else:
-                    print("[SKIP]", line)
+                    print("[!CANNOT PARSE]", line)
                     # raise Exception("[CANNOT PARSE]")
 
             except Exception:
@@ -183,9 +218,60 @@ def MyReader(file_path):
     return ini_obj
 
 
+def format_str(string):
+    string = re.sub(r"\|c[a-zA-Z0-9]{8}", "", string, flags=re.I)
+    string = re.sub(r"\|r", "", string, flags=re.I)
+    string = re.sub(r"\|n", ", ", string, flags=re.I)
+
+    return string
+
+
 def test():
-    rr = MyReader("/mine/war3work/(2)Game of Life and Death-v2/table/ability.ini")
-    print("rr:", rr)
+    # rr = MyReader("/mine/war3work/(2)Game of Life and Death-v2/table/ability.ini")
+    # rr = MyReader("/mine/war3work/PatisauR's ORPG 1/table/item.ini")
+    # rr = MyReader("/mine/war3work/Daemonic Sword ORPG 6.79/table/item.ini")
+    rr = MyReader("/mine/war3work/Daemonic Sword ORPG 6.79/table/unit.ini")
+    # print("rr:", rr)
+    for key in rr:
+        item = rr[key]
+        if "公主" in item.get("Name", ""):
+            print(item)
+            print()
+
+    exit()
+    rrr = []
+    for x in rr:
+        rr[x]["id"] = x
+        rrr.append(rr[x])
+    print(len(rrr))
+    rrr = filter(lambda x: int(x.get("Level") or "0") >= 350 and "最终" not in x.get("Name", ""), rrr)
+    rrr = list(rrr)
+    print(len(rrr))
+    rrr.sort(key=lambda x: -int(x.get("Level") or "0"))
+    print(len(rrr))
+    cgood = 0
+    for item in rrr:
+        lv = item.get("Level")
+        if "精美" not in item.get("Name", ""):
+            continue
+        print(lv, item)
+        print()
+        if "Description" in item and "Ubertip" in item:
+            good = False
+            content = ""
+            if "必填项" in item.get("Description", ""):
+                good = True
+                content = item.get("Description")
+            if "必填项" in item.get("Ubertip", ""):
+                good = True
+                content = item.get("Ubertip")
+
+            if good:
+                cgood += 1
+                print(format_str(item.get("Name", "")), "说明：", format_str(content))
+                print()
+
+    print("cgood:", cgood)
 
 
 if __name__ == "__main__":

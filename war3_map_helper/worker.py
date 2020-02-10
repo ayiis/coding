@@ -7,6 +7,7 @@
     5. <确认步骤> 是否
     6. 替换原来的文件的字符串
     -  火龙替换文件
+        注意，wts 文件 要使用 \r\n 来保存换行符
 """
 import q
 import os
@@ -41,6 +42,9 @@ from lib.w_common_ini import (
 ini_work_files = {
     # "table/ability.2.ini": AbilityWorker,
     # "table/ability.ini": AbilityWorker,
+    # "table/item.ini": ItemWorker,
+
+    # GOOD
 
     "map/war3mapskin.txt": War3mapskinWorker,
 
@@ -49,8 +53,8 @@ ini_work_files = {
     "table/buff.ini": BuffWorker,
     "table/destructable.ini": DestructableWorker,
     "table/doodad.ini": DoodadWorker,
-    "table/item.ini": ItemWorker,
     "table/upgrade.ini": UpgradeWorker,
+    "table/item.ini": ItemWorker,
 
     "table/w3i.ini": W3iWorker,
 
@@ -63,6 +67,7 @@ slk_work_files = {
 
 wts_work_files = {
     "map/war3map.wts": War3mapWtsWorker,
+    "map/war3campaign.wts": War3mapWtsWorker,
 }
 
 jass_work_files = {
@@ -152,8 +157,16 @@ class BaseWorker(object):
         self.sentence_set = set([])
         temp_list = list(set(self.text_cache))
         for i, sentence in enumerate(temp_list):
+            # if 'наносящее его противникам по'.lower() in sentence.lower():
+            #     print("waiting")
+            #     q.d()
             strings = list(self.take_string_from_sentense(sentence))
             self.sentence_set.update(strings)
+
+        # trans {'лвл', 'урона в секунду', 'ед', 'наносящее его противникам по', 'нужен', 'героя окутывает пламя'}
+        # good ['нужен', 'лвл', 'ед']
+        # print("in restruct_strings:")
+        # q.d()
 
     def check_result(self, eee, files):
         for file_name in files:
@@ -200,14 +213,20 @@ class TranslateWorkerForIni(BaseWorker):
                 print("[EMPTY]", file_path)
                 continue
 
+            print("Worker on:", file_path)
             wk = worker({"file_path": file_path})
             string_list = wk.grep_string_from_config()
             string_list = [x.lower() for x in string_list]
+            # for s in string_list:
+            #     if 'наносящее его противникам по' in s:
+            #         q.d()
+            # print("exiting")
             # q.d()
             # exit()
             self.text_cache += string_list
 
         # print("self.text_cache:", self.text_cache)
+        # q.d()
 
     def write_translate_string(self, wf, line, string):
         """
@@ -229,7 +248,7 @@ class TranslateWorkerForIni(BaseWorker):
             if good_key:
                 # print("good_key:", good_key)
                 if not len(good_key) == len(set(trans_strings)):
-                    print("len is not good")
+                    print("len is not good", "TranslateWorkerForIni")
                     q.d()
                     raise("1")
                 good_trans = {x: self.trans_result[x] for x in good_key}
@@ -264,8 +283,24 @@ class TranslateWorkerForIni(BaseWorker):
 
     def my_writer(self, file_path, work_item):
 
-        with open(file_path, "r") as rf:
-            contents = rf.readlines()
+        with open(file_path, "rb") as rf:
+            contents_tmp = rf.readlines()
+            contents = []
+            i = 0
+            for c in contents_tmp:
+                i = i + 1
+
+                # w3x2lni cannot handle (\xd0, \xd1)
+                if c[-4:] in (b"\xd0\"\r\n", b"\xd1\"\r\n"):
+                    print("Line", i, "is bad char:", repr(c[-4]))
+                    c = c[:-4] + b" \"\r\n"
+
+                try:
+                    contents.append(c.decode("utf8"))
+                except Exception as e:
+                    print(e, "is bad char")
+                    q.d()
+
         with open("%s.mta2.cache" % file_path, "w") as wf:
             wait_end = False
             key_name = None
@@ -395,6 +430,10 @@ class TranslateWorkerForIni(BaseWorker):
                         # ini_obj[sect_name] = {}
                         self.write_raw_string(wf, rawline)
 
+                    elif re.match(r"^\[(.+)\]$", line, re.I):
+                        # print("warn:", "Very bad [\"\\\\I0F\"] type ID:", line)
+                        self.write_raw_string(wf, rawline)
+
                     # 直接赋值
                     elif "=" in line:
                         key_name = line.split("=")[0]
@@ -470,15 +509,18 @@ class TranslateWorkerForWts(BaseWorker):
             if not Path(file_path).is_file():
                 print("[EMPTY]", file_path)
                 continue
-            with open(file_path, "r") as rf:
+            with open(file_path, "rb") as rf:
                 contents = rf.readlines()
+                contents = [content.decode("utf8") for content in contents]
                 # contents = contents.replace("\r", "\1").replace("\n", "\2")
 
             with open("%s.mta2.cache" % file_path, "w") as wf:
                 for lineno, rawline in enumerate(contents):
                     line = rawline
 
-                    if re.match(r"^([\{\}]|(STRING [\d]+))$", line):
+                    #!!!! 如果作者瞎几把将所有字符串都写到wts里，遇到 没有空格的 不翻译
+                    if re.match(r"^([\{\}]|(STRING [\d]+))$", line) or " " not in line:
+                    # if re.match(r"^([\{\}]|(STRING [\d]+))$", line):
                         self.write_raw_string(wf, rawline)
                     else:
                         self.write_translate_string(wf, rawline, line)
@@ -500,7 +542,7 @@ class TranslateWorkerForWts(BaseWorker):
             if good_key:
                 # print("good_key:", good_key)
                 if not len(good_key) == len(set(trans_strings)):
-                    print("len is not good")
+                    print("len is not good", "TranslateWorkerForWts")
                     q.d()
                 good_trans = {x: self.trans_result[x] for x in good_key}
                 # print("good_trans:", good_trans)
@@ -768,6 +810,8 @@ class TranslateWorkerForJ(BaseWorker):
             if not Path(file_path).is_file():
                 print("[EMPTY]", file_path)
                 continue
+            else:
+                print("working on:", file_path)
 
             worker = j_translate.Worker({"file_path": file_path})
             string_list = worker.grep_string()
@@ -802,6 +846,8 @@ class TranslateWorkerForJ(BaseWorker):
             if not Path(file_path).is_file():
                 print("[EMPTY]:", file_path)
                 continue
+            else:
+                print("working on:", file_path)
             # with open(file_path, "r") as rf:
             #     contents = rf.readlines()
 

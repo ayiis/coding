@@ -9,11 +9,13 @@ WORK_ITEM = [
     "QuestMessageBJ", "CreateQuestBJ", "CreateTextTagLocBJ", "QuestSetDescriptionBJ",
     "DisplayTimedTextToForce", "DialogAddButtonBJ", "SetMapDescription", "DisplayTextToPlayer",
     "DisplayTextToForce", "DisplayTimedTextToPlayer",
-    "CustomDefeatBJ", "DialogSetMessageBJ", "MultiboardSetItemValueBJ",
+    "CustomDefeatBJ", "DialogSetMessage", "DialogSetMessageBJ", "MultiboardSetItemValueBJ",
     "CreateTextTagUnitBJ", "SetPlayerName", "SetMapName",
     "TransmissionFromUnitWithNameBJ", "CreateQuestItemBJ",
     "TransmissionFromUnitTypeWithNameBJ", "CreateMultiboardBJ",
     "QuestSetTitleBJ", "CreateTimerDialogBJ",
+    "QuestSetDescription",
+    "QuestSetTitle",
     # "Preload",  # ?
 ]
 # WORK_ITEM = set([x.lower() for x in WORK_ITEM])
@@ -35,6 +37,7 @@ LINE_PLACE = {
     "DisplayTextToForce": [1, 2],
     "DisplayTimedTextToPlayer": [4, 5],
     "CustomDefeatBJ": [1, 2],
+    "DialogSetMessage": [1, 2],
     "DialogSetMessageBJ": [0, 2],
     "MultiboardSetItemValueBJ": [3, 4],
     "CreateTextTagUnitBJ": [0, 8],
@@ -45,6 +48,8 @@ LINE_PLACE = {
     "CreateMultiboardBJ": [2, 3],
     "QuestSetTitleBJ": [1, 2],
     "CreateTimerDialogBJ": [1, 2],
+    "QuestSetDescription": [1, 2],
+    "QuestSetTitle": [1, 2],
     # "Preload": [0, 1],    # ?
 }
 
@@ -57,7 +62,7 @@ DEBUG = False
 
 
 def translate(word):
-    print("[translate]", word.replace("\n", "\\n"))
+    print("[ !translate ]", word.replace("\n", "\\n"))
     # return "\"*AY_STRING_HERE\""
 
     return word
@@ -233,31 +238,15 @@ class CallWorker(object):
 
     def get_translate_result(self):
 
-        def loop_obj_0(obj, p, name, i):
-
-            # This is the para of string
-            if name in WORK_ITEM and i in LINE_PLACE[name][:-1]:
-
-                return p.join([((item and item[0] == "\"") and COMMON_TRANSLATE_WRAP["translate"](item) or item) for item in obj])
-
-                # for item in obj:
-                #     if item[0] == "\"":
-                #         return translate(obj)
-                #     else:
-                #         return obj
-
-            if type(obj) is str:
-                return obj
-
-            if type(obj) is list:
-                return p.join([loop_obj(x, " ", name, k) for k, x in enumerate(obj)])
-
-            elif type(obj) is dict:
-                for key in obj:
-                    left_c, right_c = CATCH_PLE[obj[key][0][0]]
-                    return "%s%s%s%s" % (key, left_c, loop_obj(obj[key][1:], ", ", key, i), right_c)
+        self.debug = False
 
         def loop_obj(obj, p, name, i):
+
+            #!!!!
+            # print("$" * 16, name, i)
+            # print(obj)
+            # if self.debug:
+            #     q.d()
 
             # This is the para of string
             if type(obj) is list and name in WORK_ITEM and i in LINE_PLACE[name][:-1]:
@@ -268,6 +257,7 @@ class CallWorker(object):
                 for item in obj:
                     # q.d()
                     if type(item) is str and item[0] == "\"":
+                        # print("[ !translate ]", item.replace("\n", "\\n"))
                         re2.append(COMMON_TRANSLATE_WRAP["translate"](item))
                     elif type(item) is list:
                         re2.append(loop_obj(item, " ", name, i))
@@ -296,8 +286,11 @@ class CallWorker(object):
             elif type(obj) is dict:
                 for key in obj:
                     left_c, right_c = CATCH_PLE[obj[key][0][0]]
-                    if key == "":
+                    if key == "" or key == "+":
                         return "%s%s%s%s" % (key, left_c, loop_obj(obj[key][1:], ", ", name, i), right_c)
+                    # elif key == "+":
+                    #     self.debug = True
+                    #     return "%s%s%s%s" % (key, left_c, loop_obj(obj[key][1:], ", ", name, i), right_c)
                     else:
                         return "%s%s%s%s" % (key, left_c, loop_obj(obj[key][1:], ", ", key, i), right_c)
 
@@ -307,6 +300,7 @@ class CallWorker(object):
         # print(ree)
         # print()
         # q.d()
+        # exit()
         return ree
 
 
@@ -368,7 +362,7 @@ class Worker(object):
     """
         (-1+1) and (1-1) is hard to split, ignore for now
     """
-    KEYWORD = r"^([\W]|\=\=|\!\=|\>\=|\<\=|\w+|\s+|//|(?=^([^\.]*\.?[^\.]*)$)[0-9a-f\.]+)$"
+    KEYWORD = r"^([\W]|\=\=|\!\=|\>\=|\<\=|\w+|\s+|//|(?=^([^\.]*\.?[^\.]*)$)\$?[0-9a-f\.]+)$"
     PAD = " " * 4
     PAD_PLUS = ("function", "globals", "if", "loop")
     PAD_TWICE = ("elseif", "else")
@@ -377,7 +371,7 @@ class Worker(object):
     def __init__(self, arg):
         super(Worker, self).__init__()
         self.arg = arg
-        self.fp = open(arg["file_path"], "r")
+        self.fp = open(arg["file_path"], "rb")
         self.pre_char = ""
         self.line_pad = 0
         # self.line_no = 0
@@ -396,21 +390,47 @@ class Worker(object):
             已知问题:
                 self.pre_char 会影响下一次
         """
-        buf, line_end = "", False
+        buf, line_end = "", ""
         while True:
             if self.pre_char:
                 # has_pre = True
                 char = self.pre_char
                 self.pre_char = ""
             else:
-                char = self.fp.read(1)
+
+                # handle (0xd0, 0xd1)
+                zchar = b""
+                tchar = None
+                while True:
+                    try:
+                        tchar = self.fp.read(1)
+                        zchar = zchar + tchar
+                        char = zchar.decode("utf8")
+                        break
+                    except Exception:
+                        if len(zchar) >= 3:
+                            print("[J met an error char]", zchar)
+
+                        if len(zchar) > 1:
+                            if zchar in (b"\xd1\"", b"\xd0\""):
+                                # zchar = b" \""
+                                # char = zchar.decode("utf8")
+                                char = "\""
+                                break
+                            # \xe2\x80\x93 ==> –
+                            else:
+                                pass
+                        else:
+                            pass
+                        # print(e)
+                        # q.d()
 
             if not char:
                 raise Exception("EOF")
 
             if self.status["in_note"]:
-                if char == "\n":
-                    line_end = True
+                if char == "\n" or char == "\r":
+                    line_end = char
                     break
                 else:
                     buf += char
@@ -454,8 +474,8 @@ class Worker(object):
             else:
                 pass
 
-            if char == "\n":
-                line_end = True
+            if char == "\n" or char == "\r":
+                line_end = char
                 break
             else:
                 pass
@@ -514,8 +534,10 @@ class Worker(object):
         # ss = None
         # function_deep = 0
         sw = SentenseWorker()
+        line_end = "\n"
         while True:
-            word, new_line = self.read_next_word()
+
+            word, line_end = self.read_next_word()
 
             # pass `call`
             if not first_word:
@@ -532,8 +554,8 @@ class Worker(object):
 
             buf += word
 
-            if new_line:
-                buf += "\n"
+            if line_end:
+                buf += line_end
                 # self.line_no += 1
                 # print(">", self.line_no, buf[:20])
                 sw.end_sentense()
@@ -542,12 +564,14 @@ class Worker(object):
         # if ss:
         #     print("get_para_list:", ss.get_para_list())
 
+        # #!!!!
+        # print("-" * 64)
         # print(buf, first_word)
         if first_word == "call":
             # print("------" * 16)
             # print(buf)
             ree = "call " + sw.get_translate_result()
-            ree += "\n"
+            ree += line_end
             buf = ree
 
             # print(ree)
@@ -605,6 +629,9 @@ class Worker(object):
                 print(traceback.format_exc())
                 q.d()
 
+            # #!!!!
+            # break
+
         return self.result_list
 
     def rewrite_j(self, _wrap, new_file_path):
@@ -635,12 +662,12 @@ def main(file_path):
 
     worker = Worker({"file_path": file_path})
     re = worker.grep_string()
-    print("worker:", re)
+    # print("worker:", re)
 
 
 if __name__ == "__main__":
 
-    # file_path = "/mine/github/coding/temp/data/2.j"
+    file_path = "/mine/github/coding/war3_map_helper/temp/2.j"
     # file_path = "/mine/github/coding/temp/data/1.j"
-    file_path = "/mine/war3work/Daemonic Sword ORPG 6.79/map/scripts/war3map.j"
+    # file_path = "/mine/war3work/The-Chosen-Ones-1.0_x/map/prologue - the chosen ones campaign/map/scripts/war3map.j"
     main(file_path)

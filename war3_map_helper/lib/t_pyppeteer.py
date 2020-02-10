@@ -206,6 +206,8 @@ async def main(from_lan, to_lan):
                     contents = re.sub(r"\<[\/]?span[^\>]*\>", "", contents, flags=re.I)
                     # contents = contents.replace("</span>", "").replace("<span>", "").split("<br>")
 
+                    contents = re.sub(r"[\0\u200b]+", "", contents, flags=re.I)
+
                     print("in contents:", len(contents))
 
                     if "\0" in contents:

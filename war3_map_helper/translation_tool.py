@@ -258,7 +258,7 @@ def test(from_lan):
 
 
 if __name__ == "__main__":
-    test("en")
+    # test("en")
     # test("es")
     # test("vi")
-    # test("ru")
+    test("ru")

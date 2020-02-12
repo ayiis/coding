@@ -519,8 +519,8 @@ class TranslateWorkerForWts(BaseWorker):
                     line = rawline
 
                     #!!!! 如果作者瞎几把将所有字符串都写到wts里，遇到 没有空格的 不翻译
-                    if re.match(r"^([\{\}]|(STRING [\d]+))$", line) or " " not in line:
-                    # if re.match(r"^([\{\}]|(STRING [\d]+))$", line):
+                    # if re.match(r"^([\{\}]|(STRING [\d]+))$", line) or " " not in line:
+                    if re.match(r"^([\{\}]|(STRING [\d]+))$", line):
                         self.write_raw_string(wf, rawline)
                     else:
                         self.write_translate_string(wf, rawline, line)

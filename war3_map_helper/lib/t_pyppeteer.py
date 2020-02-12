@@ -244,13 +244,13 @@ async def main(from_lan, to_lan):
 
 
 def test():
-    # # RU
-    # asyncio.get_event_loop().run_until_complete(main(from_lan="ru", to_lan="zh-CN"))
-    # print("cp /tmp/up/base.ru-zh.txt /mine/github/coding/war3_map_helper/data/")
+    # RU
+    asyncio.get_event_loop().run_until_complete(main(from_lan="ru", to_lan="zh-CN"))
+    print("cp /tmp/up/base.ru-zh.txt /mine/github/coding/war3_map_helper/data/")
 
-    # EN
-    asyncio.get_event_loop().run_until_complete(main(from_lan="en", to_lan="zh-CN"))
-    print("cp /tmp/up/base.en-zh.txt /mine/github/coding/war3_map_helper/data/")
+    # # EN
+    # asyncio.get_event_loop().run_until_complete(main(from_lan="en", to_lan="zh-CN"))
+    # print("cp /tmp/up/base.en-zh.txt /mine/github/coding/war3_map_helper/data/")
 
     # # ES
     # asyncio.get_event_loop().run_until_complete(main(from_lan="es", to_lan="zh-CN"))

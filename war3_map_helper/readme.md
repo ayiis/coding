@@ -248,10 +248,11 @@ python map_analyzer.py
 
 ``` 待处理
 
-call DisplayTimedTextToForce(bj_FORCE_ALL_PLAYERS, 5., ("|c00ff0303最多 " +(I2S(udg_TempInteger4) + " potions of this kind can be held at the same time.")))
-call DisplayTimedTextToForce(bj_FORCE_ALL_PLAYERS, 9., ((udg_Interlude_Colors[1] + "黑头巾的男人: ") +(udg_Interlude_Colors[2] + "Money... That is what matters in the end of the day for me. Hand over the money, if you will.")))
-call DisplayTimedTextToForce(bj_FORCE_ALL_PLAYERS, 38., ((udg_Interlude_Colors[1] + "黑头巾的男人: ") +(udg_Interlude_Colors[2] + "The job is done... Phodom's family is dead.")))
-call QuestSetTitle(udg_Optional_Q_5, "|c00FEBA0EOgre Dungeon")
+目前具备 词法分析 能力
+
+# 对这样的字符串无能为力，除非我能写一个运行时出来
+set a = "test string"
+call diaplayMsg(a)
 
 ```
 
@@ -273,6 +274,9 @@ call QuestSetTitle(udg_Optional_Q_5, "|c00FEBA0EOgre Dungeon")
         wts
 
     如果只有任务(j)用到 wts 的时候，打包的时候 wts 文件就不见了？？？？？？
+
+        trigstr_000 ==> TRIGSTR_000
+        需要转换成大写！
 
     还是直接用火龙解压吧。。。。。。
 

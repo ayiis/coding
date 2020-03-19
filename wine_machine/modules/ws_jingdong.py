@@ -17,8 +17,8 @@ table_jingdong_price = DBS["wm"]["jingdong_price"]
 table_jingdong_price_old = DBS["wm"]["jingdong_price_old"]
 
 BASE_NAME = ("name", "cat", "venderId", "shopId")
-COMPARE_KEYS = ("price", "stock", "promote", "quan", "presale_info")    # gift ads vender good_price feedback
-PROMOTE_FILTER = "换购|换购"
+COMPARE_KEYS = ("price", "stock", "promote", "presale_info")    # gift ads vender good_price feedback # quan单独计算
+PROMOTE_FILTER = "换购|即赠"
 
 
 @tornado.gen.coroutine
@@ -73,7 +73,7 @@ def execute():
     # 查 item 的： 商品id & 店铺id 之类的基本信息 状态为 1 的商品
     jingdong_itemid_list = yield table_jingdong_itemid.find(
         {"status": 1}, {"status": False}
-        # {"itemid": "100003378175"}, {"status": False}
+        # {"itemid": "44066755622"}, {"status": False}
     ).to_list(length=None)
 
     for item in jingdong_itemid_list:
@@ -191,6 +191,39 @@ def execute():
 
                     diff_keys = [x for x in COMPARE_KEYS if item.get(x) and item[x] != old_item.get(x)]
 
+                    # 单独处理 quan
+                    if "quan" in item:
+                        if "quan" in old_item:
+                            """
+                                如果券过期，就过滤掉
+                                如果旧的券只推送1次，在新券里没有，如果券未过期，就需要继承到新券里
+                            """
+                            new_quan = {}
+                            for it in (old_item["quan"] + item["quan"]):
+
+                                # 旧数据 len == 2
+                                if len(it) == 2:
+                                    continue
+
+                                # 已过期
+                                if it[1].split(" ~ ")[-1] < tool.get_date("today"):
+                                    continue
+
+                                new_quan[it[2]] = it
+
+                            old_quan_all = {x[2] for x in old_item["quan"] if len(x) > 3}
+                            item["quan"] = [new_quan[x] for x in new_quan]
+                            if set(new_quan.keys()) != old_quan_all:
+                                diff_keys.append("quan")
+                            else:
+                                # 如果没有其他的 diff_keys，则全部都一样，不需要更新
+                                if not diff_keys:
+                                    continue
+                                else:
+                                    pass
+                        else:
+                            diff_keys.append("quan")
+
                     item["datetime"] = tool.get_datetime_string()
                     yield table_jingdong_price.update_one({
                         "_id": item["_id"]
@@ -241,6 +274,10 @@ def execute():
                             diff_keys.remove("stock")
 
                     if not diff_keys:
+                        continue
+
+                    # 如果计算后的价格+20% 仍然没有达到好价，忽略
+                    if (old_item.get("good_price") or 0) * 1.20 < item["calc_price"] or item["calc_price"] < 1.0:
                         continue
 
                     content = "\r\n".join([

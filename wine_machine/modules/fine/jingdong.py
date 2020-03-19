@@ -91,14 +91,15 @@ def get_base_info(item):
             "url": item["url"],
             "method": "GET",
             "headers": {
-                # "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3",
-                # "Accept-Encoding": "gzip, deflate, br",
-                # "Accept-Language": "en-US,en;q=0.9,zh-CN;q=0.8,zh-TW;q=0.7,zh;q=0.6",
-                # "Referer": item["url"],
-                # "Pragma": "no-cache",
-                # "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.132 Safari/537.36",
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3",
+                "Accept-Encoding": "gzip, deflate, br",
+                "Accept-Language": "en-US,en;q=0.9,zh-CN;q=0.8,zh-TW;q=0.7,zh;q=0.6",
+                "Referer": item["url"],
+                "Pragma": "no-cache",
+                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.132 Safari/537.36",
             }
         })
+        # q.d()
         open("content_page.html", "w").write(tool.try_decode_html_content(response.body))
     item_content = open("content_page.html", "r").read()
 
@@ -110,7 +111,6 @@ def get_base_info(item):
         if "<title>" in line:
             info["name"] = re.sub(r"""([\W]*<title>|[【][^【]*[】][^】]*</title>[\W]*$)""", "", line)
 
-    # q.d()
     return info
 
 
@@ -281,6 +281,8 @@ def get_promote_info(info):
         for item in promote_api_content_json["skuCoupon"]:
             quan_string = item.get("allDesc") or "满%s减%s" % (item["quota"], item["discount"])
             quan_strings.append([quan_string, "%s ~ %s" % (item.get("beginTime", ""), item.get("endTime", ""))])
+            quan_strings[-1].append(item.get("key"))
+            quan_strings[-1].append(item.get("url", ""))
 
     # q.d()
 

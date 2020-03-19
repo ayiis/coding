@@ -25,6 +25,8 @@ def init():
 
     # yield ws_douban.execute()
 
+    # exit(1)
+
     # yield ws_jingdong.execute()
     # yield ws_kaola.execute()
     # yield ws_yanxuan.execute()
@@ -52,7 +54,7 @@ def init():
         # tornado_timmer.set_interval(config.WATCH_DOGS["yanxuan"]["period"], ws_yanxuan.execute)
         tornado_timmer.MinuteTimmer(ws_yanxuan.execute, config.WATCH_DOGS["yanxuan"]["minute_list"])
 
-    # if config.WATCH_DOGS["douban"]["enable"]:
-    #     tornado_timmer.set_interval(config.WATCH_DOGS["douban"]["period"], ws_douban.execute)
+    if config.WATCH_DOGS["douban"]["enable"]:
+        tornado_timmer.set_interval(config.WATCH_DOGS["douban"]["period"], ws_douban.execute)
 
 

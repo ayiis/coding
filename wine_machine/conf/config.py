@@ -40,7 +40,7 @@ WATCH_DOGS = {
     },
     "douban": {
         "enable": True,
-        "period": 60 * 23,  # every x minutes
+        "period": 60 * 30,  # every x minutes
     },
 }
 

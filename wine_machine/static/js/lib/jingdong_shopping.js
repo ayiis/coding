@@ -72,7 +72,11 @@ window.jingdong_shopping = {
                         if (item["quan"] && item["quan"].length > 0) {
                             var quan_html = [""];
                             for (var j = 0 ; j < item["quan"].length ; j++ ) {
-                                quan_html.push('<span class="info_quan" title="' + item["quan"][j][1] + '">' + item["quan"][j][0] + '</span>');
+                                if(item["quan"][j].length == 4){
+                                    quan_html.push('<a class="info_quan" title="' + item["quan"][j][1] + '" href="' + item["quan"][j][3].split(",")[0] + '" target="_blank">' + item["quan"][j][0] + '</a>');
+                                } else {
+                                    quan_html.push('<span class="info_quan" title="' + item["quan"][j][1] + '">' + item["quan"][j][0] + '</span>');
+                                }
                             }
                             name_html.push('<br/>');
                             name_html.push(quan_html.join(" "));

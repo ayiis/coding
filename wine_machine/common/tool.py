@@ -154,3 +154,6 @@ def try_decode_html_content(content, encoding_list=["utf8", "gb2312", "gbk", "gb
 def get_datetime_from_stamp(stamp):
     return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(int(stamp)))
 
+
+def compare_date(date1, date2):
+    pass

@@ -64,7 +64,7 @@ def execute():
 
         got_first_date = None
         # 最多翻 99*25 = 2500 条
-        for i in range(99):
+        for i in range(9):
             result = yield douban_group_worker.get_page(group, i)
             if not result:
                 break
@@ -100,7 +100,7 @@ def execute():
         # 清空 douban_tmp 数据
         yield table_rent_a_life[douban_tmp_name].delete_many({})
 
-        yield tornado.gen.sleep(4)
+        yield tornado.gen.sleep(9)
 
 
 if __name__ == "__main__":

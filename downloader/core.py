@@ -15,6 +15,42 @@ import requests
 READ_CHUNK_SIZE = requests.models.CONTENT_CHUNK_SIZE or (10 * 1024)     # 默认 10K
 MAX_TRUNK_SIZE = READ_CHUNK_SIZE * 1024     # 默认 10M
 
+EXTRA_HEADER = {
+    "authority": "doc-04-54-docs.googleusercontent.com",
+    "method": "GET",
+    "path": "/docs/securesc/vvpa1q10oug3vquft86ivr7plm6q3sla/26u4svlbu2h7nq8nmfujlkcn85g1p2oc/1583489400000/18431970658961034166/00172790170065809857/1KcMYcNJgtK1zZvfl_9sTqnyBUTri2aP2?e=download&authuser=0&nonce=avu4itpqep8lc&user=00172790170065809857&hash=66ninfqk0ceutsdfdn9aolnpe61mk0ri",
+    "scheme": "https",
+    "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+    "accept-encoding": "gzip, deflate, br",
+    "accept-language": "en-US,en;q=0.9,zh-CN;q=0.8,zh-TW;q=0.7,zh;q=0.6,ja;q=0.5",
+    "cookie": "AUTH_kbhrccdq67k69icoe2cbkthei47asm5n=00172790170065809857|1583489100000|8dvh8b3h8gehkn9mf85a0dc87mi0nhd3; AUTH_kbhrccdq67k69icoe2cbkthei47asm5n_nonce=avu4itpqep8lc; NID=197=VN4_yh3cdfVbWHTmCSJ4Jl96OywHMJ3m5vibcBob-2T34ihjD2cLKkBTiZlVZa3toflRCEzX5I_5ASX-m2XQoDK3aUClZnOVBocmq3nXVtCEHa6qkotiI0ElCv1AS-In4hcmhfM0nPEOOBP6BOwcCirNB4xgZmmzlR2O5mt9XtI",
+    "referer": "https://drive.google.com/uc?export=download&confirm=TDUT&id=1KcMYcNJgtK1zZvfl_9sTqnyBUTri2aP2",
+    "sec-fetch-dest": "document",
+    "sec-fetch-mode": "navigate",
+    "sec-fetch-site": "cross-site",
+    "sec-fetch-user": "?1",
+    "upgrade-insecure-requests": "1",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.122 Safari/537.36",
+    "x-client-data": "CIq2yQEIo7bJAQjBtskBCKmdygEIt6rKAQjLrsoBCNCvygEIvbDKAQiXtcoBCO21ygEIjrrKAQ==",
+}
+
+# for key in list(EXTRA_HEADER.keys()):
+#     if key[0] == ":":
+#         key_new = key[1:]
+#     EXTRA_HEADER[key_new] = EXTRA_HEADER[key]
+#     del EXTRA_HEADER[key]
+
+# ENABLE_EXTRA_HEADER = True
+ENABLE_EXTRA_HEADER = False
+
+
+PROXIES = {
+    "http": "127.0.0.1:1087",
+    "https": "127.0.0.1:1087",
+}
+ENABLE_PROXY = True
+# ENABLE_PROXY = False
+
 
 class SingleThreadDownloader(object):
     """
@@ -70,19 +106,24 @@ class SingleThreadDownloader(object):
         thread = threading.Thread(target=self.bar.start, args=())
         thread.start()
 
+        headers = {
+            # 2020-01-14 因为ayiis.me的nginx存在 transfer-encoding 覆盖 range 的问题，在此处增加 Accept-Encoding
+            "Accept-Encoding": "*",
+            "Accept": "*/*",
+            "Referer": self.arg.target_url,
+            "User-Agent": "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.1; WOW64; Trident/7.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; .NET4.0C; .NET4.0E)",
+        }
+        if ENABLE_EXTRA_HEADER:
+            headers.update(EXTRA_HEADER)
+
         self.fd = open(self.arg.file_name, "wb+")
         with requests.Session() as session:
             res = session.get(
                 self.arg.target_url,
-                headers={
-                    # 2020-01-14 因为ayiis.me的nginx存在 transfer-encoding 覆盖 range 的问题，在此处增加 Accept-Encoding
-                    "Accept-Encoding": "*",
-                    "Accept": "*/*",
-                    "Referer": self.arg.target_url,
-                    "User-Agent": "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.1; WOW64; Trident/7.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; .NET4.0C; .NET4.0E)",
-                },
+                headers=headers,
                 timeout=180,
                 stream=True,
+                proxies=ENABLE_PROXY and PROXIES or None,
             )
 
             while True:
@@ -229,11 +270,15 @@ class MultiThreadDownloader(object):
                         "Referer": self.arg.target_url,
                         "User-Agent": "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.1; WOW64; Trident/7.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; .NET4.0C; .NET4.0E)",
                     }
+                    if ENABLE_EXTRA_HEADER:
+                        headers.update(EXTRA_HEADER)
+
                     res = session.get(
                         self.arg.target_url,
                         headers=headers,
                         timeout=(5, self.arg.chunk_timeout),
                         stream=True,
+                        proxies=ENABLE_PROXY and PROXIES or None,
                     )
 
                     while True:
@@ -248,7 +293,7 @@ class MultiThreadDownloader(object):
 
                         # DEBUG: never should this happened. `the above break` should works.
                         if len(content) < READ_CHUNK_SIZE:
-                            raise Exception("[ERROR] Something is wrong.")
+                            raise Exception("[ERROR] Something is wrong: %s - %s != %s or %s" % (task["start"], task["end"], len(content), READ_CHUNK_SIZE))
 
                         task["start"] = task["start"] + READ_CHUNK_SIZE
 
@@ -258,6 +303,7 @@ class MultiThreadDownloader(object):
                     requests.exceptions.ConnectTimeout,
                     requests.exceptions.ReadTimeout,
                 ):
+                    print(traceback.format_exc())
                     retry = True
                     self.fail_task(task)
                     time.sleep(0.2)
@@ -281,7 +327,7 @@ class MultiThreadDownloader(object):
 
         ts = time.time()
         print(
-            "[⏱  START]",
+            "[START]",
             time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time())),
             "File size:", utils.pretty_file_size(self.arg.file_size),
         )
@@ -304,7 +350,7 @@ class MultiThreadDownloader(object):
 
         print()
         print(
-            "[✅ DONE]",
+            "[DONE]",
             time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time())),
             "Total time: %ss" % round(time.time() - ts, 3),
             "Avg speed: %s/s" % utils.pretty_file_size(self.arg.file_size / max(time.time() - ts, 1)),
@@ -375,16 +421,20 @@ class DownloadBuilder(object):
             "Referer": self.target_url,
             "User-Agent": "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.1; WOW64; Trident/7.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; .NET4.0C; .NET4.0E)",
         }
+        if ENABLE_EXTRA_HEADER:
+            headers.update(EXTRA_HEADER)
         # 重试3次
         for i in range(3):
             if self.header_info_done:
                 break
             try:
+                # print("headers:", headers)
                 res = requests.get(
                     self.target_url,
                     headers=headers,
                     timeout=self.chunk_timeout,
                     stream=True,
+                    proxies=ENABLE_PROXY and PROXIES or None,
                 )
                 hcr = res.headers.get("Content-Range")
 
@@ -452,6 +502,8 @@ class DownloadBuilder(object):
         downloader.run()
 
     def multi_thread_downloader(self):
+        # self.addr_list = [x for x in self.addr_list if x not in ["127.0.0.1"]]
+        self.addr_list = ["127.0.0.1"]
 
         # 强制使用指定IP解析域名，提高速度
         self.connect_patch = utils.ConnectPatch(self.addr_list)
@@ -490,10 +542,11 @@ class DownloadBuilder(object):
 if __name__ == "__main__":
 
     args = {
-        "target_url": "https://github.com/ayiis/chinese-poetry/archive/v0.1.zip",
-        "file_name": "test",
-        "max_thread": None,
-        "chunk_timeout": None,
+        "target_url": "https://github.com/lyswhut/lx-music-desktop/releases/download/v0.17.0/lx-music-desktop-v0.17.0-x86_64-Setup.exe.blockmap",
+        # "target_url": "https://ayiis.me/ip",
+        "file_name": "test.zip",
+        "max_thread": 2,
+        "chunk_timeout": 9,
     }
     db = DownloadBuilder(args)
     db.start_task()

@@ -3,13 +3,28 @@ import os
 import re
 import q
 """
+    https://www.baidu.com/img/bd_logo.png
     TODO:
         1. 下载的最终网址是跳转后的网址，则获取到的host是错误的
             - done
         2. Working on 'Accept-Ranges': 'bytes' => 抓包迅雷吧
             - 没想到竟然是 bytes 的大小写问题
+            - done
         3. nginx存在 transfer-encoding 覆盖 range 的问题
+            一般情况下 transfer-encoding 和 content-encodeing 不会共存
             - 在请求header和多线程下载时移除 Accept-Encoding
+            - done
+        4. 批量下载多个文件
+            - Is it necessary?
+
+        5. 下载 Google drive
+            ✅ https://drive.google.com/uc?id=1KcMYcNJgtK1zZvfl_9sTqnyBUTri2aP2&export=download
+            实测cooker02使用了4线程会超时，目前使用2线程
+            需要完整 header
+            下载链接过期时间太快，3分钟没有tcp包交换就直接失败了
+                - 看来需要补链功能 + 断点续传
+            使用 cooker02 不稳定，一旦挂了那就下载失败了
+            ❌ [ERROR] Something is wrong.
 """
 
 
@@ -130,9 +145,9 @@ def test():
 
 def multi_proc():
 
-    for i in range(1, 63):
-        rno = str(i).rjust(3, "0")
-        print("https://pic.kissgoddess.com/gallery/26679/28022/%s.jpg" % rno)
+    # for i in range(1, 63):
+    #     rno = str(i).rjust(3, "0")
+    #     print("https://pic.kissgoddess.com/gallery/26679/28022/%s.jpg" % rno)
         # args = {
         #     "target_url": "https://pic.kissgoddess.com/gallery/26679/28022/%s.jpg" % rno,
         #     "file_name": "%s.jpg" % rno,
@@ -142,7 +157,42 @@ def multi_proc():
         # db.start_task()
         # q.d()
 
+    zzz = [
+        "http://ayiis.me/aydocs/download/hand/MOHI-S1-P1-50.rar",
+        "http://ayiis.me/aydocs/download/hand/MOHI-S1-P51-100.rar",
+        "http://ayiis.me/aydocs/download/hand/MOHI-S1-P101-150.rar",
+        "http://ayiis.me/aydocs/download/hand/MOHI-S1-P151-200.rar",
+        "http://ayiis.me/aydocs/download/hand/MOHI-S2-P1-50.rar",
+        "http://ayiis.me/aydocs/download/hand/MOHI-S2-P51-100.rar",
+        "http://ayiis.me/aydocs/download/hand/MOHI-S2-P101-150.rar",
+        "http://ayiis.me/aydocs/download/hand/MOHI-S2-P151-200.rar",
+        "http://ayiis.me/aydocs/download/hand/MOHI-S3-P1-50.rar",
+        "http://ayiis.me/aydocs/download/hand/MOHI-S3-P51-100.rar",
+        "http://ayiis.me/aydocs/download/hand/MOHI-S3-P101-150.rar",
+        "http://ayiis.me/aydocs/download/hand/MOHI-S3-P151-200.rar",
+        "http://ayiis.me/aydocs/download/hand/WEHI-S1-P1-50.rar",
+        "http://ayiis.me/aydocs/download/hand/WEHI-S1-P51-100.rar",
+        "http://ayiis.me/aydocs/download/hand/WEHI-S1-P101-150.rar",
+        "http://ayiis.me/aydocs/download/hand/WEHI-S1-P151-200.rar",
+        "http://ayiis.me/aydocs/download/hand/WEHI-S2-P1-50.rar",
+        "http://ayiis.me/aydocs/download/hand/WEHI-S2-P51-100.rar",
+        "http://ayiis.me/aydocs/download/hand/WEHI-S2-P101-150.rar",
+        "http://ayiis.me/aydocs/download/hand/WEHI-S2-P151-200.rar",
+        "http://ayiis.me/aydocs/download/hand/WEHI-S3-P1-50.rar",
+        "http://ayiis.me/aydocs/download/hand/WEHI-S3-P51-100.rar",
+        "http://ayiis.me/aydocs/download/hand/WEHI-S3-P101-150.rar",
+        "http://ayiis.me/aydocs/download/hand/WEHI-S3-P151-200.rar"
+    ]
+    for z in zzz:
+        args = {
+            "target_url": z,
+            "file_name": z.split("/")[-1],
+            "max_thread": 3,
+        }
+        db = core.DownloadBuilder(args)
+        db.start_task()
+
 
 if __name__ == "__main__":
-    # multi_proc()
-    test()
+    multi_proc()
+    # test()

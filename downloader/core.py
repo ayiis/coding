@@ -48,8 +48,8 @@ PROXIES = {
     "http": "127.0.0.1:1087",
     "https": "127.0.0.1:1087",
 }
-ENABLE_PROXY = True
-# ENABLE_PROXY = False
+# ENABLE_PROXY = True
+ENABLE_PROXY = False
 
 
 class SingleThreadDownloader(object):
@@ -502,8 +502,10 @@ class DownloadBuilder(object):
         downloader.run()
 
     def multi_thread_downloader(self):
-        # self.addr_list = [x for x in self.addr_list if x not in ["127.0.0.1"]]
-        self.addr_list = ["127.0.0.1"]
+        if not ENABLE_PROXY:
+            self.addr_list = [x for x in self.addr_list if x not in ["127.0.0.1"]]
+        else:
+            self.addr_list = ["127.0.0.1"]
 
         # 强制使用指定IP解析域名，提高速度
         self.connect_patch = utils.ConnectPatch(self.addr_list)
@@ -542,10 +544,11 @@ class DownloadBuilder(object):
 if __name__ == "__main__":
 
     args = {
-        "target_url": "https://github.com/lyswhut/lx-music-desktop/releases/download/v0.17.0/lx-music-desktop-v0.17.0-x86_64-Setup.exe.blockmap",
+        # "target_url": "https://github.com/lyswhut/lx-music-desktop/releases/download/v0.17.0/lx-music-desktop-v0.17.0-x86_64-Setup.exe.blockmap",
+        "target_url": "https://www.charlesproxy.com/assets/release/4.5.6/charles-proxy-4.5.6-win64.msi",
         # "target_url": "https://ayiis.me/ip",
         "file_name": "test.zip",
-        "max_thread": 2,
+        "max_thread": 1,
         "chunk_timeout": 9,
     }
     db = DownloadBuilder(args)

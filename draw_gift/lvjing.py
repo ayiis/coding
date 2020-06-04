@@ -8,20 +8,34 @@ cv.imwrite("temp.jpg", test)
 来吧 描线 边缘计算 再只提取边缘附近的色彩
 """
 
+from core import basic_filter
+from core.spec_filter import FilterR
+from core.complex_filter import ComplexFilter
 from core import filter_oil
 from core import dnn_filters
+from core.cover import Cover
+from core.cover2 import Cover2
 
 
-class LvJing(object):
+class LvJing:
 
-    @staticmethod
-    def draw_oil(frame, templateSize=3, bucketSize=3, step=1):
+    def suggest(frame, template_size, bucket_size, step):
+        step = min(frame.shape[:2]) // 420 + 1
+        template_size = step
+        bucket_size = 3
+        return template_size, bucket_size, step
+
+    def draw_oil(frame, template_size=3, bucket_size=3, step=1, suggest=False):
         """
-            将模版(templateSize)里出现最多的像素（灰度区间(bucketSize)范围内）的均值赋值给 模版中央的(step*step)个像素
+            将模版(template_size)里出现最多的像素（灰度区间(bucket_size)范围内）的均值赋值给 模版中央的(step*step)个像素
         """
-        return filter_oil.apply(frame, templateSize, bucketSize, step)
+        # 使用推荐配置
+        if suggest:
+            template_size, bucket_size, step = LvJing.suggest(frame, template_size, bucket_size, step)
 
-    @staticmethod
+        print("draw oil args:", frame.shape, template_size, bucket_size, step)
+        return filter_oil.apply(frame, template_size, bucket_size, step)
+
     def draw_dnn_models(frame, model_name="eccv16_the_wave"):
         """
             使用已经训练好的模型：
@@ -38,82 +52,84 @@ class LvJing(object):
         """
         return dnn_filters.apply_model(frame, model_name)
 
-    @staticmethod
-    def draw_edge(frame):
+    def draw_edge(frame, min_val=168, max_val=252):
         # 使用 HSV 颜色空间，提取第三个通道作为灰度
         hsv_gray = cv.cvtColor(frame.astype(np.uint8), cv.COLOR_BGR2HSV)[:, :, 2]
         # 提取边缘使用Canny过滤器: https://docs.opencv.org/trunk/da/d22/tutorial_py_canny.html
-        return cv.Canny(hsv_gray, 192, 256)
+        # `NotEdge` < min_val < `MaybeEdge` < max_val < `SureEdge`
+        return cv.Canny(hsv_gray, min_val, max_val)
 
 
-class Cover(object):
+def wrapper(clss):
     """
-        A: 上面图层像素的色彩值（A=像素值/255）
-        B: 下面图层像素的色彩值（B=像素值/255）
-        C: 混合像素的色彩值（C=像素值/255）
-        该公式也应用于层蒙板
+        将默认的 uint8 转成范围更大的 int16 以便计算
     """
-    @staticmethod
-    def apply(frame_a, frame_b, method="v1", **args):
-        func = getattr(Cover, method)
-        return func(frame_a / 255, frame_b / 255) * 255
+    def _wrap(func):
+        return lambda frame_a, frame_b: func(frame_a.astype(np.int32), frame_b.astype(np.int32)).astype(np.uint8)
 
-    @staticmethod
-    def v1(frame_a, frame_b, d=0.618):
-        """
-            不透明模式 C = d*A + (1-d)*B
-        """
-        frame_c = d * frame_a + (1 - d) * frame_b
-        return frame_c
+    funcs = [a for a in dir(clss) if a[0] != "_"]
+    for func_name in funcs:
+        setattr(clss, func_name, _wrap(getattr(clss, func_name)))
 
-    @staticmethod
-    def v2(frame_a, frame_b):
-        """
-            正片叠底模式 C = A*B
-        """
-        frame_c = frame_a * frame_b
-        return frame_c
 
-    @staticmethod
-    def v3(frame_a, frame_b):
-        """
-            颜色加深模式 C = 1 - (1-B)/A
-        """
-        frame_c = 1 - (1 - frame_b) / frame_a
-        return frame_c
+class BasicTool(object):
+    def zoom(frame, rate):
+        return cv.resize(frame, (int(frame.shape[1] * rate), int(frame.shape[0] * rate)))
 
-    @staticmethod
-    def v4(frame_a, frame_b):
-        """
-            颜色减淡模式 C = B/(1-A)
-        """
-        frame_c = frame_b / (1 - frame_a)
-        return frame_c
+    def resize(frame, width, height):
+        return cv.resize(frame, (int(height), int(width)))
 
 
 def main():
-    # raw_frame_name = "frame.jpg"
-    raw_frame_name = "%s.oil.jpg" % "frame.jpg"
-    raw_frame = cv.imread(raw_frame_name)
 
-    # ts = time.time()
-    # res_frame = LvJing.draw_oil(raw_frame)
-    # cv.imwrite("%s.oil.jpg" % (raw_frame_name), res_frame)
-    # print("duration:", time.time() - ts)    # 3.06s
+    base_name = "gift.png"
+    base_name = "frame.jpg"
+    base_name = "me2.png"
+    base_name = "cc2.png"
 
-    # ts = time.time()
-    # res_frame = LvJing.draw_dnn_models(raw_frame, model_name="instance_norm_mosaic")
-    # cv.imwrite("%s.oil.dnn.jpg" % (raw_frame_name), res_frame)
-    # print("duration:", time.time() - ts)    # 3.06s
+    raw_frame = cv.imread(base_name)
+    print("raw_frame:", raw_frame.shape)
 
-    frame_a = cv.imread("frame.jpg.oil.jpg")
-    frame_b = cv.imread("frame.jpg.oil.jpg.oil.dnn.jpg")
-    resss = Cover.apply(frame_a, frame_b, method="v1")
-    cv.imwrite("frame.jpg.oil.jpg.oil.dnn.rssss.jpg", resss)
+    # DEBUG = True
+    DEBUG = False
 
-    ree = LvJing.draw_edge(frame_a)
-    cv.imwrite("frame.ree.192.jpg", ree)
+    if DEBUG:
+        ts = time.time()
+        # oil_frame = LvJing.draw_oil(raw_frame, template_size=1, bucket_size=1, step=1)
+        oil_frame = LvJing.draw_oil(raw_frame, suggest=True)
+        cv.imwrite("%s.oil.png" % (base_name), oil_frame)
+        print("oil duration:", time.time() - ts)
+
+    frame_oil = cv.imread("%s.oil.png" % (base_name))
+    for model in dnn_filters.models:
+        ts = time.time()
+        dnn_frame = LvJing.draw_dnn_models(raw_frame, model_name=model)
+        cv.imwrite("%s.dnn.%s.png" % (base_name, model), dnn_frame)
+        print("dnn %s duration:" % (model), time.time() - ts)
+
+        # q.d()
+        resss = Cover.apply(frame_oil, dnn_frame, method="v1", d=1 - 0.618)
+        cv.imwrite("%s.oil.dnn.%s.png" % (base_name, model), resss)
+
+        # ree = LvJing.draw_edge(frame_oil)
+        # cv.imwrite("frame.edge.jpg", ree)
 
 
 if __name__ == "__main__":
-    main()
+    # main()
+    # # frame = cv.imread("me.png")
+    # frame = cv.imread("cc.jpg")
+    # frame = BasicTool.resize(frame, frame.shape[0]//2.6, frame.shape[1]//2.6)
+    # cv.imwrite("cc2.png", frame)
+    # exit()
+    wrapper(Cover2)
+    frame_a = cv.imread("me2.png.dnn.eccv16_starry_night.png")
+    frame_b = cv.imread("me2.png")
+    frame_b = cv.imread("fruit.jpg")
+    # ddd = Cover2.v4(frame_a, frame_b)
+    # ddd = FilterR.vignetting(frame_b)
+    # ddd = ComplexFilter.light_mask_points(frame_b, points=[(0, 0), (0, frame_b.shape[1])], distance_fix=1.0 / 4)
+    ddd = ComplexFilter.light_mask_line(frame_b, distance_fix=1.0 / 2.6)
+    # ddd = ComplexFilter.color_mask(frame_b, point_src=None, color_from=(0, 120, 255), color_to=(255, 0, 120))
+    cv.imwrite("me2.ddd.png", ddd)
+

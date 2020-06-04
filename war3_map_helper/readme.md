@@ -254,6 +254,11 @@ python map_analyzer.py
 set a = "test string"
 call diaplayMsg(a)
 
+
+跟 call 应该是一致的
+set last=DialogAddButton(d,"Следующая страница",0)
+
+н
 ```
 
 
@@ -281,7 +286,7 @@ call diaplayMsg(a)
     还是直接用火龙解压吧。。。。。。
 
     w3n - the chosen one
-        wts 有些字符串被用来命名了，不能翻译成中文，否则会死
+        wts 有些字符串被用来命名了，不能翻译成中文，否则会丢失一些技能
         - 如果名称字符串也写到了 wts 里，那么遇到 没有空格的 不翻译
 
 ```

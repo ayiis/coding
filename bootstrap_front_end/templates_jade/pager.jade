@@ -1,4 +1,4 @@
-div.mu-pd-10-0.modal-header
+.mu-pd-10-0.modal-header.col-lg-12
     a(href="/index") 
         span.glyphicon.glyphicon-home 
         |  首页
@@ -7,76 +7,77 @@ div.mu-pd-10-0.modal-header
     span.mu-ml-5.mu-mr-5 &gt;
     a(href="#") 账号列表
 
+br
+
+h1.col-lg-12 独立的分页控件
+
+#pagination1.col-lg-12
 
 br
 
-h1 独立的分页控件
-
-#pagination1
+h1.col-lg-12 用户管理
 
 br
 
-h1 用户管理
-
-br
-
-.btn-group
-  button.btn.btn-info(type='button') 所有状态
-  button.btn.btn-info.dropdown-toggle(type='button', data-toggle='dropdown', aria-haspopup='true', aria-expanded='false')
-    span.caret
-  ul.dropdown-menu
-    li
-      a(href='#') 激活
-    li
-      a(href='#') 非激活
-    li.divider(role='separator')
-    li
-      a(href='#') 所有状态
-.btn-group
-  button.btn.btn-info(type='button') 所有用户
-  button.btn.btn-info.dropdown-toggle(type='button', data-toggle='dropdown', aria-haspopup='true', aria-expanded='false')
-    span.caret
-  ul.dropdown-menu
-    li
-      a(href='#') 管理员
-    li
-      a(href='#') 普通用户
-    li.divider(role='separator')
-    li
-      a(href='#') 所有用户
-.btn-group
-  button.btn.btn-info(type='button') 默认排序
-  button.btn.btn-info.dropdown-toggle(type='button', data-toggle='dropdown', aria-haspopup='true', aria-expanded='false')
-    span.caret
-  ul.dropdown-menu
-    li
-      a(href='#') 用户名排序
-    li
-      a(href='#') 时间排序
-    li.divider(role='separator')
-    li
-      a(href='#') 默认排序
-.btn-group.mu-w50
-    .input-group
-        input.form-control(type='text', placeholder='Search for...')
-        span.input-group-btn
-            button.btn.btn-primary(type='button') Search
+.col-lg-6
+    .btn-group
+      button.btn.btn-info(type='button') 所有状态
+      button.btn.btn-info.dropdown-toggle(type='button', data-toggle='dropdown', aria-haspopup='true', aria-expanded='false')
+        span.caret
+      ul.dropdown-menu
+        li
+          a(href='#') 激活
+        li
+          a(href='#') 非激活
+        li.divider(role='separator')
+        li
+          a(href='#') 所有状态
+    .btn-group
+      button.btn.btn-info(type='button') 所有用户
+      button.btn.btn-info.dropdown-toggle(type='button', data-toggle='dropdown', aria-haspopup='true', aria-expanded='false')
+        span.caret
+      ul.dropdown-menu
+        li
+          a(href='#') 管理员
+        li
+          a(href='#') 普通用户
+        li.divider(role='separator')
+        li
+          a(href='#') 所有用户
+    .btn-group
+      button.btn.btn-info(type='button') 默认排序
+      button.btn.btn-info.dropdown-toggle(type='button', data-toggle='dropdown', aria-haspopup='true', aria-expanded='false')
+        span.caret
+      ul.dropdown-menu
+        li
+          a(href='#') 用户名排序
+        li
+          a(href='#') 时间排序
+        li.divider(role='separator')
+        li
+          a(href='#') 默认排序
+.col-lg-6
+    .btn-group
+        .input-group
+            input.form-control(type='text', placeholder='Search for...')
+            span.input-group-btn
+                button.btn.btn-primary(type='button') Search
 
 
+.col-lg-12
+    table.table.table-hover
+        thead
+            th 激活
+            th 组
+            th 用户名
+            th 所有任务
+            th 已完成任务
+            th 进度
+            th 更新时间
+            th 操作
+        tbody#tbody_2
 
-table.table.table-hover
-    thead
-        th 激活
-        th 组
-        th 用户名
-        th 所有任务
-        th 已完成任务
-        th 进度
-        th 更新时间
-        th 操作
-    tbody#tbody_2
-
-#pagination2
+#pagination2.col-lg-12
 
 #my_modal.modal.fade(tabindex='-1', role='dialog')
   .modal-dialog(role='document')

@@ -11,6 +11,12 @@ const _ = `
     6. wait for anything(with a function)
     7. wait for ajax 
         request.resourceType() === 'xhr'
+
+    BUG:
+
+        <visible>   Not work if element under z-index discover
+                    Even worse: click will fire the top element instead of the target element
+                    e.g. In test_download_file.js 
 `;
 
 const target_page = 'https://fanyi.baidu.com';
@@ -77,7 +83,7 @@ async function networkidle_timeout(page, timeout=500, max_timeout=30000) {
 (async () => {
 
     const browser = await puppeteer.launch({headless: true, devtools: false});
-    // const browser = await puppeteer.launch({headless: false, devtools: true});
+    // const browser = await puppeteer.launch({headless: false, devtools: false});
 
     const context = browser.defaultBrowserContext();
     context.clearPermissionOverrides();

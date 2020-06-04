@@ -6,4 +6,10 @@ __pycache__/
 *.txt
 ProxyPool/config.pro.py
 ProxyPool/logs/*
-
+download_website/
+amobbs/
+.DS_Store
+templates/
+*.sublime-package
+downloader/*
+!downloader/*.py

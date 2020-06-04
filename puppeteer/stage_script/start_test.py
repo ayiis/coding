@@ -283,11 +283,11 @@ def new_or_existing_chrome():
 
 def main():
 
-    # basic_test()
+    basic_test()
     # return
 
-    new_or_existing_chrome()
-    new_or_existing_chrome()
+    # new_or_existing_chrome()
+    # new_or_existing_chrome()
 
     # @wrap_test
     # def test_use_this_page(result):

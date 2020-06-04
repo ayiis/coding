@@ -7,11 +7,14 @@
     "test": "tests"
   },
   "dependencies": {
+    "commander": "^4.1.1",
     "dateformat": "^3.0.3",
-    "expect-puppeteer": "^4.3.0",
+    "expect-puppeteer": "^4.4.0",
+    "fs-extra": "^8.1.0",
+    "iconv-lite": "^0.5.1",
     "p-all": "^2.1.0",
     "puppeteer": "^1.20.0",
-    "uuid": "^3.3.3"
+    "uuid": "^3.4.0"
   },
   "devDependencies": {},
   "scripts": {

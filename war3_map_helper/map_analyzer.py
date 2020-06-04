@@ -154,8 +154,8 @@ def test_fanyi(lang="en", target_dir=None):
         "ini": True,
         "wts": True,
         "j": True,
-        # "movefile": True,
-        # "delbak": True,
+        "movefile": True,
+        "delbak": True,
     }
 
     if debugs.get("ini"):
@@ -272,7 +272,7 @@ def test_fanyi(lang="en", target_dir=None):
 
 if __name__ == "__main__":
     # test_fanyi(lang="en")
-    test_fanyi(lang="ru", target_dir="/mine/war3work/Paranormal_Underworld_ORPG_Final_L")
+    test_fanyi(lang="ru", target_dir="/mine/war3work/BossBattleDarkness")
     # test_fanyi(lang="es")
 
     # arg = {

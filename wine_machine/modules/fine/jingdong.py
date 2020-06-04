@@ -9,6 +9,9 @@ from common.tool import aprint as ap
 import tornado.gen
 """
     完全自营的 venderId=0 && shopId=0
+
+    增加 - 粉丝价 - https://item.jd.com/5176532.html
+    5176532
 """
 
 # 收货地址
@@ -155,8 +158,12 @@ def get_store_info(info):
     # 取plus的价格（一般更低）或者原价
     if store_api_content_json["stock"].get("jdPrice"):
         price = store_api_content_json["stock"]["jdPrice"].get("tpp") or store_api_content_json["stock"]["jdPrice"]["p"]
+        if store_api_content_json["stock"]["jdPrice"].get("sfp"):
+            price = min(store_api_content_json["stock"]["jdPrice"].get("sfp"), price)
     else:
         price = "-1.00"
+
+    # q.d()
 
     return {
         "price": float(price),
@@ -196,6 +203,8 @@ def get_presale_info(info):
     presale_api_content = open("presale_api.js", "r").read()
     presale_api_content_json = get_jsonp_json(presale_api_content)
     # ap(presale_api_content_json)
+
+    # q.d()
 
     if not presale_api_content_json.get("ret"):
         return None

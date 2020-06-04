@@ -8,9 +8,9 @@ const pAll = require("p-all");
         executablePath: '/mine/soft/Google Chrome.app/Contents/MacOS/Google Chrome',
         // userDataDir: '/Users/yangyang/Library/Application Support/Google/Chrome/',
         userDataDir: '/tmp/tmp',
-        // headless: true,
+        headless: true,
         devtools: false,
-        headless: false,
+        // headless: false,
         // devtools: true,
         slowMo: 10,
         defaultViewport: null

@@ -19,6 +19,10 @@
     5. fill struct with colors
 
     6. paint the image
+
+TODO: four number: against gray by each use a different color and against R/G/B sigle tunel
+
+
 """
 import numpy as np
 import random
@@ -53,7 +57,7 @@ DIGIT = {"0": None, "1": None, "2": None, "3": None, "4": None, "5": None, "6": 
 def print_array(arr):
     arr = arr.astype("str").tolist()
     for l in arr:
-        print " ".join(l)
+        print(" ".join(l))
 
 
 def prepare_struct():
@@ -111,7 +115,7 @@ def prepare_color():
         return delta_e_cie2000(color1_lab, color2_lab)
 
     while 1:
-        print "n time."
+        print("n time.")
         while 1:
             R, G, B = random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)
             if fc(R, G, B) > 64**2:
@@ -172,8 +176,8 @@ def prepare_digit():
 
 def prepare_image(color):
     digit = [str(random.choice([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])) for i in range(4)]
-    print "digit:", "".join(digit)
-    print "color:", " ".join(["%02x%02x%02x" % (r, g, b) for (r, g, b) in color])
+    print("digit:", "".join(digit))
+    print("color:", " ".join(["%02x%02x%02x" % (r, g, b) for (r, g, b) in color]))
     number = [DIGIT[i] for i in digit]
     base = np.zeros((63, 137), dtype=int)
     a, b = 5, 28+5

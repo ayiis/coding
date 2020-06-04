@@ -1,15 +1,39 @@
 const puppeteer = require('puppeteer');
 
 (async () => {
-    // const browser = await puppeteer.launch({headless: true, devtools: false});
-    const browser = await puppeteer.launch({headless: false, devtools: true});
-    const page = await browser.newPage();
-    await page.goto('https://www.douban.com/group/gz_rent/');
 
-    await page.click('#kw');
-    page.keyboard.type('时间');
-    await page.click("#su");
-    // await page.waitForNavigation({ waitUntil: 'networkidle2' });
+    const browser = await puppeteer.launch({
+        executablePath: '/mine/soft/Google Chrome.app/Contents/MacOS/Google Chrome',
+        userDataDir: '/tmp/tmp',
+        // headless: true,
+        devtools: false,
+        headless: false,
+        // devtools: true,
+        slowMo: 10,
+        defaultViewport: null
+    });
+    const page = await browser.newPage();
+    await page.goto('https://www.douban.com/group/?start=0', { waitUntil: 'networkidle2' });
+
+    $('#content').find("table>tbody>tr");
+
+    for(var i = 0; i < 3; i++) {
+        await page.click('#content .next');
+        await page.waitForNavigation({ waitUntil: 'networkidle2' });
+    }
+
+    // https://www.douban.com/group/?start=50
+    // await browser.disconnect();
+
+    return;
+
+    debugger;
+
+    $('#content .next')
+
+    await page.click('#content .next');
+    await page.waitForNavigation({ waitUntil: 'networkidle2' });
+
     await page.mainFrame().waitForSelector('.op-beijingtime-time');
 
     const href_list = await page.evaluate(() => {

@@ -73,7 +73,7 @@ def execute():
     # 查 item 的： 商品id & 店铺id 之类的基本信息 状态为 1 的商品
     jingdong_itemid_list = yield table_jingdong_itemid.find(
         {"status": 1}, {"status": False}
-        # {"itemid": "44066755622"}, {"status": False}
+        # {"itemid": "5176532"}, {"status": False}
     ).to_list(length=None)
 
     for item in jingdong_itemid_list:

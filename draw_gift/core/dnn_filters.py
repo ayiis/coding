@@ -20,6 +20,7 @@ models = {
 
 def apply_model(frame, model_name="eccv16_the_wave"):
     """
+        -(120, 120, 120) 相当于模糊细节
         +(120, 120, 120) 相当于增加一个白色蒙版
     """
     net = cv.dnn.readNetFromTorch(models[model_name])
@@ -42,5 +43,7 @@ def apply_model(frame, model_name="eccv16_the_wave"):
     out[1] += 116.779
     out[2] += 123.68
     out = out.transpose(1, 2, 0)
+    if out.shape != frame.shape:
+        out = out[:frame.shape[0], :frame.shape[1], :frame.shape[2]]
 
     return out

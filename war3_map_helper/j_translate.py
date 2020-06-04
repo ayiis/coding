@@ -16,6 +16,9 @@ WORK_ITEM = [
     "QuestSetTitleBJ", "CreateTimerDialogBJ",
     "QuestSetDescription",
     "QuestSetTitle",
+    "BJDebugMsg",
+    "DialogAddButton",
+    "QuestItemSetDescriptionBJ",
     # "Preload",  # ?
 ]
 # WORK_ITEM = set([x.lower() for x in WORK_ITEM])
@@ -50,6 +53,8 @@ LINE_PLACE = {
     "CreateTimerDialogBJ": [1, 2],
     "QuestSetDescription": [1, 2],
     "QuestSetTitle": [1, 2],
+    "DialogAddButton": [1, 3],
+    "QuestItemSetDescriptionBJ": [1, 2],
     # "Preload": [0, 1],    # ?
 }
 
@@ -267,7 +272,7 @@ class CallWorker(object):
                         # print("wtf????")
                         # q.d()
                         re2.append(item)
-
+                        
                 # elif type(obj) is list:
                 #     return p.join([((item and item[0] == "\"") and translate(item) or item) for item in obj])
                 # else:

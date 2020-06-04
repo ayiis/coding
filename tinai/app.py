@@ -10,6 +10,7 @@ import ubelt
 import requests
 from extract_article import extract_article
 from nlp import cut, recognize
+import q
 
 UPLOAD_FILE_PATH = "static"
 ubelt.ensuredir(UPLOAD_FILE_PATH)
@@ -41,6 +42,7 @@ def get_start():
         # article = article.replace(" ", "")
 
         article = article[:520]
+        q.d()
 
         return json.dumps({
             "desc": "success",

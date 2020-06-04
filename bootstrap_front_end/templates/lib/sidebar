@@ -1,6 +1,6 @@
 <div class="col-lg-2 mu-sidebar mu-bar-top mu-mt-42">
   <ul class="nav nav-sidebar">
-    <li><a href="/index"><span class="glyphicon glyphicon-home"></span> 首页</a>
+    <li><a href="/article"><span class="glyphicon glyphicon-home"></span> 首页</a>
     </li>
     <li><a href="#"><span class="glyphicon glyphicon-th-list"></span> 任务列表</a>
     </li>

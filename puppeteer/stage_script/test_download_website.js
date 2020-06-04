@@ -55,6 +55,7 @@ async function start(urlToFetch) {
         local_path = local_path + "_";
       }
       const eee = await fse.pathExists(local_path);
+      // if (eee && local_path.match(/^.*(jpg|jpeg|png|bmp|gif)$/i)) {
       if (eee) {
         console.log(`[✅CACHED] ${interceptedRequest.method()} ${local_path}`);
         const buffer= await fse.readFile(local_path);
@@ -68,7 +69,7 @@ async function start(urlToFetch) {
           body: buffer,
         });
       } else {
-        console.log(`[✖️ NO DATA] ${url}`);
+        console.log(`[⏱ NO DATA] ${url}`);
         interceptedRequest.continue();
       }
   });
@@ -130,6 +131,8 @@ async function start(urlToFetch) {
   // setTimeout(async () => {await browser.close(); }, 1000 * 60);
 }
 
-const output_dir = './download_website';
-start('http://www.weather.com.cn/weather/101280101.shtml');
+const output_dir = './colorizer';
+start('http://colorizer.org/');
+// http://www.cnu.cc/selectedPage
+// http://www.cnu.cc/works/379254
 // start('https://www.baidu.com');

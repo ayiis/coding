@@ -1,5 +1,5 @@
 {% include './lib/nav'%}
-<div class="container">
+<div class="container mu-mt-42">
   <h1>STOP TRYING TO BE HAPPY</h1>
   <p>2019/09/12 11:52, 8 minutes read, by <a target="_blank" href="https://markmanson.net/stop-trying-to-be-happy">Mark Manson</a>
   </p>

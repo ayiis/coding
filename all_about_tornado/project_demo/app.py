@@ -10,13 +10,12 @@ import tornado.ioloop
 import tornado.web
 import tornado.gen
 
-import logging
-logging.basicConfig(level=logging.DEBUG)
-logging.getLogger("tornado.application")
-
 
 @tornado.gen.coroutine
 def make_app():
+
+    from tornado.log import enable_pretty_logging
+    enable_pretty_logging()
 
     from handlers import StaticHandler, TemplateHandler, ApiHandler, main
     from build import build

@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 # - author: ayiis@2019/05/01
 """
+Newspaper is able to do the job at most time, still readability can find article most accurate.
 Thanks for the great job of newspaper and readability.
 readability: pip install readability-lxml
 newspaper: pip3 install newspaper3k
@@ -15,6 +16,8 @@ def extract_article(html_content, language="zh", holding_url="http://127.0.0.1/"
     doc = Document(html_content)
     title = doc.title()
     html = doc.summary(True)
+
+    # return title, html
 
     article = Article(url=holding_url, language=language)
     article.download(input_html=html)
@@ -34,6 +37,8 @@ if __name__ == "__main__":
     url = "http://news.sznews.com/content/2019-04/26/content_21699029.htm"
     url = "http://forthxu.com/blog/article/73.html"
     url = "http://bm.szhk.com/2019/04/30/283029943930124.html"
+    url = "https://news.cnblogs.com/n/626360/"
+    url = "https://news.cnblogs.com/n/626359/"
 
     response = requests.get(url)
 

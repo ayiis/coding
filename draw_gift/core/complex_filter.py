@@ -79,7 +79,11 @@ class ComplexFilter:
         frame_cast = cv.cvtColor(frame_lab, cv.COLOR_Lab2BGR)
         return frame_cast
 
-    def color_mask(frame, point_src=None, color_from=None, color_to=None, blend_rate=0.42):
+    def color_mask(frame, point_src=None, color_light=None, color_background=None, weight=0.42):
+        """
+            底色 color_background
+            1个亮点 point_src 颜色为 color_light，向四周衰减
+        """
         height, width, _ = frame.shape
         if point_src is None:
             xo, yo = width, height
@@ -87,7 +91,7 @@ class ComplexFilter:
             xo, yo = point_src
 
         image = np.ndarray((height, width, 3))
-        image[:, :] = color_from
+        image[:, :] = color_light
         origin = np.array([yo, xo])
         center = np.array([image.shape[1] // 2, image.shape[0] // 2])
 
@@ -103,9 +107,9 @@ class ComplexFilter:
         else:
             distance = sqrt_dist(xo, yo)
 
-        weight_b = (color_to[0] - color_from[0]) / distance
-        weight_g = (color_to[1] - color_from[1]) / distance
-        weight_r = (color_to[2] - color_from[2]) / distance
+        weight_b = (color_background[0] - color_light[0]) / distance
+        weight_g = (color_background[1] - color_light[1]) / distance
+        weight_r = (color_background[2] - color_light[2]) / distance
 
         for i in range(width):
             for j in range(height):
@@ -113,5 +117,6 @@ class ComplexFilter:
                 image[j, i] += [weight_b * dist, weight_g * dist, weight_r * dist]
 
         image = image.astype(np.uint8)
-        blend = cv.addWeighted(frame, 1.0, image, blend_rate, 0.0)
+        blend = cv.addWeighted(frame, 1.0, image, weight, 0.0)
+        # return image
         return blend

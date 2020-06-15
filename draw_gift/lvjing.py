@@ -127,9 +127,15 @@ if __name__ == "__main__":
     frame_b = cv.imread("me2.png")
     frame_b = cv.imread("fruit.jpg")
     # ddd = Cover2.v4(frame_a, frame_b)
-    # ddd = FilterR.vignetting(frame_b)
+    ddd = FilterR.comic(frame_b)
     # ddd = ComplexFilter.light_mask_points(frame_b, points=[(0, 0), (0, frame_b.shape[1])], distance_fix=1.0 / 4)
-    ddd = ComplexFilter.light_mask_line(frame_b, distance_fix=1.0 / 2.6)
-    # ddd = ComplexFilter.color_mask(frame_b, point_src=None, color_from=(0, 120, 255), color_to=(255, 0, 120))
+    # ddd = ComplexFilter.light_mask_line(frame_b, distance_fix=1.0 / 2.6)
+    # ddd = ComplexFilter.color_mask(frame_b, point_src=(frame_b.shape[1] // 2, frame_b.shape[0] // 2), color_light=(0, 120, 255), color_background=(255, 0, 120))
     cv.imwrite("me2.ddd.png", ddd)
 
+"""
+
+2020-06-05 16:00
+working on create_gif.py
+
+"""

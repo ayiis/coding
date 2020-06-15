@@ -106,12 +106,50 @@ Stage and Target:
         - 让谷歌猜猜你是一个什么样的人，数据投毒才能治用户画像
 
 
-2013
-2014
-2015
-2016
 
- 4934 4934
+## 知道
+    page.evaluate => will run the code once and return data.
+    page.waitForFunction => will run the code repeatedly until the code returns truthy values.
+
+
+
+任务：
+
+    ✅ 1. 课程列表页
+
+        ✅ 获取所有课程的基本信息
+            ✅ 翻页
+
+    ✅ 2. 课程页
+
+        ✅ 获取课程名称
+
+        ✅ 获取章节（课程目录）
+
+            ✅ 获取章节名称
+
+            ✅ 每一个章节获取对应的视频
+
+                ✅ 下载mp4
+                
+                ✅ 下载ts
+
+                    ✅ 合并ts到一个文件
+
+                ✅ 下载key
+
+                ✅ 使用key生成m3u8文件，合并文件成output.ts
+
+                ✅ 将output.ts转成mp4
+
+                ✅ 视频使用章节名称命名
+
+    3 种资源：
+
+        1. mp4
+        2. ts
+        3. ts with aes 128 encrypt
+
 
 ```javascript
 

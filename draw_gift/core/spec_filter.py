@@ -31,6 +31,13 @@ class FilterR:
         hsv_gray = cv.cvtColor(frame, cv.COLOR_BGR2HSV)[:, :, 2]
         return cv.cvtColor(hsv_gray, cv.COLOR_GRAY2BGR)
 
+    def gray_lab(frame):
+        """
+            灰度化滤镜 lab
+        """
+        lab_gray = cv.cvtColor(frame, cv.COLOR_BGR2Lab)[:, :, 0]
+        return cv.cvtColor(lab_gray, cv.COLOR_GRAY2BGR)
+
     def gray_bgr(frame):
         """
             灰度化滤镜 bgr
@@ -107,9 +114,9 @@ class FilterR:
             连环画滤镜 https://mangoroom.cn/opencv/comic-filter.html
             效果和文章里的图片不一致
         """
-        frame_cast = frame.astype(np.int32)
+        frame_cast = frame.astype(np.double)
         b, g, r = frame_cast[:, :, 0], frame_cast[:, :, 1], frame_cast[:, :, 2]
-        frame_cast[:, :, 0] = abs(b - g + b + r) * g / 256  # B
+        frame_cast[:, :, 0] = abs(b - g + b + r) * r / 256  # B
         frame_cast[:, :, 1] = abs(b - g + b + r) * r / 256  # G
         frame_cast[:, :, 2] = abs(g - b + g + r) * r / 256  # R
         frame_cast[frame_cast < 0] = 0

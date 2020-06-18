@@ -10,6 +10,7 @@ cv.imwrite("temp.jpg", test)
 
 from core import basic_filter
 from core.spec_filter import FilterR
+from core.mine_filter import FilterM
 from core.complex_filter import ComplexFilter
 from core import filter_oil
 from core import dnn_filters
@@ -58,6 +59,39 @@ class LvJing:
         # 提取边缘使用Canny过滤器: https://docs.opencv.org/trunk/da/d22/tutorial_py_canny.html
         # `NotEdge` < min_val < `MaybeEdge` < max_val < `SureEdge`
         return cv.Canny(hsv_gray, min_val, max_val)
+
+
+class MyCombo:
+    def gaudiness(frame):
+        """
+            增艳滤镜
+        """
+        brighter_frame = FilterM.brighter(frame)
+        return Cover2.v5(frame, brighter_frame)
+
+    def tempo_star_night(frame):
+        pass
+
+    def good_dream(frame):
+        """
+            美梦滤镜（盗梦空间最后一幕）
+        """
+        obscure_frame = FilterM.obscure(frame, key_rate=0.15)
+        brighter_frame = FilterM.brighter(frame)
+        return Cover2.v5(obscure_frame, brighter_frame)
+
+    def grinding():
+        pass
+
+    def obscure(frame):
+        """
+            朦胧滤镜
+        """
+        brighter_frame1 = FilterM.obscure(frame, 1 / 4)
+        frame1 = Cover2.v8(frame, brighter_frame1)
+        brighter_frame2 = FilterM.obscure(frame, 1 / 8)
+        frame2 = Cover2.v8(frame1, brighter_frame2)
+        return frame2
 
 
 def wrapper(clss):
@@ -127,10 +161,15 @@ if __name__ == "__main__":
     frame_b = cv.imread("me2.png")
     frame_b = cv.imread("fruit.jpg")
     # ddd = Cover2.v4(frame_a, frame_b)
-    ddd = FilterR.comic(frame_b)
+    # ddd = FilterR.blizzard(frame_b)
+    # frame_b2 = FilterM.tempo_star_night(frame_b)
+    # ddd = Cover2.v5(frame_b, frame_b2)
+    # ddd = MyCombo.gaudiness(frame_b)
+    ddd = MyCombo.good_dream(frame_b)
     # ddd = ComplexFilter.light_mask_points(frame_b, points=[(0, 0), (0, frame_b.shape[1])], distance_fix=1.0 / 4)
     # ddd = ComplexFilter.light_mask_line(frame_b, distance_fix=1.0 / 2.6)
     # ddd = ComplexFilter.color_mask(frame_b, point_src=(frame_b.shape[1] // 2, frame_b.shape[0] // 2), color_light=(0, 120, 255), color_background=(255, 0, 120))
+    # ddd = ComplexFilter.mosaic_mask(frame_b, point_a=(119, 50), point_b=(419, 300), neighbor=9)
     cv.imwrite("me2.ddd.png", ddd)
 
 """

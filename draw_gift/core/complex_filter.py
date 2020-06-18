@@ -120,3 +120,21 @@ class ComplexFilter:
         blend = cv.addWeighted(frame, 1.0, image, weight, 0.0)
         # return image
         return blend
+
+    def mosaic_mask(frame, point_a, point_b, neighbor=9):
+        """
+            马赛克的实现原理是把图像上某个像素点一定范围邻域内的所有点用邻域内左上像素点的颜色代替
+            这样可以模糊细节，但是可以保留大体的轮廓
+            :param int neighbor:  马赛克每一块的宽
+        """
+        x1, y1 = point_a
+        x2, y2 = point_b
+        for i in range(0, y2 - y1 - neighbor, neighbor):  # 关键点0 减去neighbor 防止溢出
+            for j in range(0, x2 - x1 - neighbor, neighbor):
+                rect = [j + x1, i + y1, neighbor, neighbor]
+                color = frame[i + y1][j + x1].tolist()  # 关键点1的颜色
+                left_up = (rect[0], rect[1])
+                right_down = (rect[0] + neighbor - 1, rect[1] + neighbor - 1)  # 关键点2 减去一个像素
+                cv.rectangle(frame, left_up, right_down, color, -1)
+
+        return frame

@@ -124,7 +124,6 @@ class Cover2:
             差值 模式 (改)
         """
         frame_c = frame_a - frame_b
-        q.d()
         frame_c[frame_c < 0] = 127 + frame_c[frame_c < 0]
 
         return frame_c

@@ -1,4 +1,4 @@
-const ppt_base = require("./base.js");
+const tool = require("./tool.js");
 
 async function scroll_to_bottom_by_element(page, max_try, wait_time) {
     /*
@@ -13,7 +13,7 @@ async function scroll_to_bottom_by_element(page, max_try, wait_time) {
     */
     max_try = max_try || 20;
     wait_time = wait_time || 2;
-    let svc = ppt_base.same_val_counter(3);
+    let svc = tool.same_val_counter(3);
     let max_height = 0;
     for(let i = 0; i < max_try; i++ ) {
 
@@ -39,7 +39,7 @@ async function scroll_to_bottom_by_element(page, max_try, wait_time) {
             break;
         }
 
-        await ppt_base.sleep(wait_time);
+        await tool.sleep(wait_time);
     }
     return max_height;
 }
@@ -57,7 +57,7 @@ async function scroll_to_bottom_by_body(page, max_try, wait_time) {
     max_try = max_try || 20;
     wait_time = wait_time || 2;
     let max_height = 0;
-    let svc = ppt_base.same_val_counter(3);
+    let svc = tool.same_val_counter(3);
     for(let i = 0; i < max_try; i++ ) {
         max_height = await page.evaluate(() => {
             $("html, body").animate({ scrollTop: 0}, 100);
@@ -72,7 +72,7 @@ async function scroll_to_bottom_by_body(page, max_try, wait_time) {
             break;
         }
 
-        await ppt_base.sleep(wait_time);
+        await tool.sleep(wait_time);
     }
     return max_height;
 }
@@ -90,7 +90,7 @@ async function scroll_to_bottom_by_keyboard(page, max_try, wait_time) {
     */
     max_try = max_try || 20;
     wait_time = wait_time || 2;
-    let svc = ppt_base.same_val_counter(3);
+    let svc = tool.same_val_counter(3);
     let max_height = 0;
     for(let i = 0; i < max_try; i++ ) {
 
@@ -105,7 +105,7 @@ async function scroll_to_bottom_by_keyboard(page, max_try, wait_time) {
             break;
         }
 
-        await ppt_base.sleep(wait_time);
+        await tool.sleep(wait_time);
     }
     return max_height;
 }

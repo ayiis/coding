@@ -70,7 +70,8 @@ async function sleep(sec) {
 }
 
 async function fse_create_file(file_name) {
-    return new Promise(resolve => fse.ensureFile(file_name, resolve));
+    await fs.ensureFile(file_name);
+    // return new Promise(resolve => fse.ensureFile(file_name, resolve));
 }
 
 async function download_file(target_url, save_as_name, resolve, reject) {

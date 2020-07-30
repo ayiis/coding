@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <base target="_blank">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Github commit timeline</title>
+    <style type="text/css">@import url(./Chart.min.css);</style>
+    <script type="text/javascript" src="./Chart.min.js"></script>
+</head>
+<body>
+
+    <div style="display: inline-block;width: 500px;height: 500px;margin-left: 300px;">
+        <canvas id="myChart" width="400" height="400"></canvas>
+    </div>
+
+    <script type="text/javascript">
+        var ctx = document.getElementById('myChart').getContext('2d');
+        let clock_list = [];
+        for(var i=0; i<24; i++) {
+            clock_list.push((i));
+        }
+        var myChart = new Chart(ctx, {
+            type: 'polarArea',
+            data: {
+                datasets: [{
+                    data: [62, 5, 30, 10, 20, 30, 10, 20, 30, 10, 20, 30, 60, 20, 30, 10, 20, 30, 10, 20, 30, 10, 20, 30],
+                    backgroundColor: ["#ff6384", "red"],
+                    borderWidth: 1,
+                    borderColor: "#fff",
+                    borderAlign: "inner",
+                    hoverBackgroundColor: "yellow",
+                    hoverBorderColor: "green",
+                    hoverBorderWidth: 0,
+                }],
+
+                // These labels appear in the legend and in the tooltips when hovering different arcs
+                labels: clock_list,
+            },
+            options: {
+                animation: {
+                    animateRotate: false,
+                    animateScale: false,
+                },
+                startAngle: 0,
+                legend: {
+                    display: false,
+                },
+                title: {
+                    display: false,
+                },
+                tooltips: {
+                    enabled: false,
+                }
+            }
+        });
+    </script>
+</body>
+</html>

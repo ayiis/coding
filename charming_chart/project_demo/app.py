@@ -18,7 +18,7 @@ def make_app():
     enable_pretty_logging()
 
     from handlers import StaticHandler, TemplateHandler, ApiHandler, main
-    from handlers import guesture
+    from handlers import guesture, github
     from build import build
 
     build("templates_jade", "templates")
@@ -39,6 +39,7 @@ def make_app():
         "/api/500": main.do_return_error,
         "/api/get_sequence_name": main.do_return_sequence_name,
         "/api/weekly_summary": guesture.weekly_summary,
+        "/api/daily_summary": github.daily_summary,
     })
 
     app = tornado.web.Application([

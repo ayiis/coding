@@ -13,6 +13,13 @@ MONGODB = {
         "USERNAME": "",
         "PASSWORD": "",
     },
+    "db_github_stat": {
+        "HOST": "127.0.0.1",
+        "PORT": 27017,
+        "DATABASE_NAME": "db_github_stat",
+        "USERNAME": "",
+        "PASSWORD": "",
+    },
     # "db_gestureapi": {
     #     "HOST": "127.0.0.1",
     #     "PORT": 27171,

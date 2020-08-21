@@ -107,10 +107,19 @@ Stage and Target:
 
 
 
+        使用 google 的 cdn 插入 jQuery
+
+        document.body.appendChild(document.createElement("script")).setAttribute('src', 'https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js');
+
+        直接做成 js 标签:
+        javascript:(function() { alert(1); })();
+
+
 ## 知道
     page.evaluate => will run the code once and return data.
     page.waitForFunction => will run the code repeatedly until the code returns truthy values.
 
+    puppeteer 目前不能在 headless=false 的模式下 打印
 
 
 任务：

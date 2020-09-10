@@ -42,4 +42,4 @@ def get_next_sequence(dbname, sequence_name):
     if doc is None:
         doc = {"sequence_number": 0}
 
-    raise tornado.gen.Return(str(doc["sequence_number"]))
+    return str(doc["sequence_number"])

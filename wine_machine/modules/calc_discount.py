@@ -133,7 +133,7 @@ class JDDiscount(object):
         return discount, advice
 
     @classmethod
-    def calc(cls, item):
+    def calc(cls, item, old_item):
         """
         """
         price = float(item["price"])
@@ -157,9 +157,10 @@ class JDDiscount(object):
         else:
             promote_advice = "无活动"
 
+        all_quan = old_item["quan"] + [x for x in item["quan"] if x not in old_item["quan"]]
         # 计算优惠券
         quan_price_map = {}
-        for quan in set([x[0] for x in item["quan"]]):
+        for quan in set([x[0] for x in all_quan]):
             text = quan
             discount, advice = cls.find_discount_by_text(price, text)
             quan_price_map[discount] = advice

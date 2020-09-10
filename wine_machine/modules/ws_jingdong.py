@@ -73,7 +73,7 @@ def execute():
     # 查 item 的： 商品id & 店铺id 之类的基本信息 状态为 1 的商品
     jingdong_itemid_list = yield table_jingdong_itemid.find(
         {"status": 1}, {"status": False}
-        # {"itemid": "5176532"}, {"status": False}
+        # {"itemid": "7143389"}, {"status": False}
     ).to_list(length=None)
 
     for item in jingdong_itemid_list:
@@ -115,6 +115,7 @@ def execute():
         # 查 item 的： 库存 & 价格 & 店铺名称
         try:
             store_info = yield get_store_info(item)
+            # print("store_info:", store_info)
             if not store_info:
                 continue
 
@@ -162,7 +163,7 @@ def execute():
             calc_price_text = ""
             is_good_price = False
             try:
-                calc_discount.JDDiscount.calc(item)
+                calc_discount.JDDiscount.calc(item, old_item)
                 if 0 < item["calc_price"] < item.get("good_price", 0):
                     is_good_price = True
                 calc_price_text = "\r\n预估价：%s，%s\r\n" % (item["calc_price"], item["calc_advice"])

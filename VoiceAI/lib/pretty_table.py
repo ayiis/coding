@@ -35,7 +35,7 @@ def construct_a_line(data_tuple):
 
 def test():
     import struct
-    WAV_FILE_PATH = "/tmp/wav/16000x6s.wav"
+    WAV_FILE_PATH = "/tmp/data1/ooo.wav"
 
     with open(WAV_FILE_PATH, "rb") as rf:
         wav_content = rf.read(44)

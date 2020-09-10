@@ -3,6 +3,7 @@
 import os
 import re
 import json
+import time
 import traceback
 
 import tornado.web
@@ -10,6 +11,8 @@ import tornado.gen
 
 
 class BaseHandler(tornado.web.RequestHandler):
+
+    system_start_ts = time.time()
 
     def write_error(self, status_code, **kwargs):
         """

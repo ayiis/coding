@@ -168,7 +168,7 @@ async function valid_deepin_exists(page) {
     let chapter_map = {};
 
     // 监听文章列表接口
-    page.on('response', async (response) => {
+    page.on("response", async (response) => {
         const url = new URL(response.url());
         if (response.status() !== 200){
             return;
@@ -216,7 +216,6 @@ async function valid_deepin_exists(page) {
             article_list_ok = true;
         }
     });
-
 
     const rand_str = await ppt_insert_jquery.insert_jquery_0(page);
     await page.goto(settings["start_page"], {waitUntil: "networkidle0"});
@@ -305,8 +304,13 @@ async function valid_deepin_exists(page) {
             // 额外等待3秒
             await sleep(3);
 
-            await page.emulateMedia("print");
-            await page.pdf({path: pdf_filename, format: "A4", printBackground: true});
+            await page.emulateMedia("screen");
+            await page.pdf({
+                path: pdf_filename,
+                format: "A4",
+                printBackground: true,
+                displayHeaderFooter: false,
+            });
             // await page.screenshot({path: pdf_filename, fullPage: true});
 
             await page.close();

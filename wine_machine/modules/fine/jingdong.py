@@ -16,7 +16,7 @@ import tornado.gen
 
 # 收货地址
 MY_AREA = "19_1601_3635_0"
-JQNAME = "jQuery8287926"
+JQNAME = "jQuery4255721"
 
 ITEMID = "43871571802"
 # 基本页面
@@ -225,13 +225,16 @@ def get_promote_info(info):
     promote_api_url = PROMOTE_URL % (
         info["itemid"],
         MY_AREA,
-        info["venderId"],
         info["shopId"],
+        info["venderId"],
         info["cat"].replace(",", "%2C"),
         info["price"],
-        str(time.time()).replace(".", ""),
+        str(time.time()).replace(".", "")[:-3],
         JQNAME,
     )
+
+    # promote_api_url = """https://cd.jd.com/promotion/v2?callback=jQuery5415158&skuId=65610440044&area=19_1601_3635_0&shopId=10131385&venderId=10252350&cat=1672%%2C2599%%2C12078&isCanUseDQ=1&isCanUseJQ=1&platform=0&orgType=2&jdPrice=299.00&appid=1&_=%s""" % str(time.time()).replace(".", "")[:-3]
+    # promote_api_url = """https://cd.jd.com/promotion/v2?callback=jQuery4255721&skuId=65610440044&area=19_1601_3635_0&shopId=10131385&venderId=10252350&cat=1672%%2C2599%%2C12078&isCanUseDQ=1&isCanUseJQ=1&platform=0&orgType=2&jdPrice=299.00&appid=1&_=%s""" % str(time.time()).replace(".", "")[:-3]
     # ap(promote_api_url)
 
     if not DEBUG:
@@ -243,9 +246,18 @@ def get_promote_info(info):
                 # "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3",
                 # "Accept-Encoding": "gzip, deflate, br",
                 # "Accept-Language": "en-US,en;q=0.9,zh-CN;q=0.8,zh-TW;q=0.7,zh;q=0.6",
-                # "Referer": promote_api_url,
-                # "Pragma": "no-cache",
+                "accept": "*/*",
+                "accept-encoding": "gzip, deflate, br",
+                "accept-language": "en-US,en;q=0.9,zh-CN;q=0.8,zh-TW;q=0.7,zh;q=0.6,ja;q=0.5",
+                "Referer": "https://item.jd.com/65610440044.html",
+                "Pragma": "no-cache",
+                # 额，必须要有 cookie 了
+                "cookie": "shshshfp=0f4b96e804e6d3895bd8b5f2af9c3dc2; shshshfpa=d2bdd5ed-10f2-e108-e38a-a1494b6df77b-1596645451; __jda=122270672.1596645452032368846686.1596645452.1596645452.1596645452.1; __jdc=122270672; __jdv=122270672|direct|-|none|-|1596645452034; __jdu=1596645452032368846686; shshshfpb=b5GwjctQMeHqxHgzRyygMiA%3D%3D; areaId=19; ipLoc-djd=19-1601-3635-0; 3AB9D23F7A4B3C9B=RE4QF44JWCVUXEC7MQAZGA24NVF27LEI6CEQC4P7SABGXROC4ZDLKLWQBR6ULUZOEYHS5I7WMZBDNH5KDNWYC7VZFY; shshshsID=3e1e4647fb0f9e692fd5659506586dbd_4_1596646062157; __jdb=122270672.4.1596645452032368846686|1.1596645452",
+                "sec-fetch-dest": "script",
+                "sec-fetch-mode": "no-cors",
+                "sec-fetch-site": "same-site",
                 # "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.132 Safari/537.36",
+                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.89 Safari/537.36",
             }
         })
         open("promote_api.js", "w").write(tool.try_decode_html_content(response.body))

@@ -13,3 +13,5 @@ templates/
 *.sublime-package
 downloader/*
 !downloader/*.py
+node_modules/
+package-lock.json

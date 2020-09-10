@@ -22,6 +22,7 @@ async function start(urlToFetch) {
   // const browser = await puppeteer.launch({headless: true, devtools: false});
   const browser = await puppeteer.launch({
     executablePath: '/mine/soft/Google Chrome.app/Contents/MacOS/Google Chrome',
+    userDataDir: "/tmp/tmp",
     headless: false,
     devtools: true,
     // headless: false,
@@ -65,6 +66,9 @@ async function start(urlToFetch) {
         // buffer.toString('utf8')
         interceptedRequest.respond({
           status: 200,
+          headers: {
+            "access-control-allow-origin": "*",
+          },
           // contentType: 'text/html',  // leave the contentType to browser
           body: buffer,
         });
@@ -92,7 +96,7 @@ async function start(urlToFetch) {
       if (got === false) {
         redirect_list[response.url()] = response.headers().location;
       }
-      console.log(`[〇redirect]   ${response.status()}   ${response.url()}   ${response.headers().location}`);
+      console.log(`[〇 redirect]   ${response.status()}   ${response.url()}   ${response.headers().location}`);
       return;
     }
     let filePath = `${output_dir}/${url.host}/${url.pathname}`;
@@ -131,8 +135,8 @@ async function start(urlToFetch) {
   // setTimeout(async () => {await browser.close(); }, 1000 * 60);
 }
 
-const output_dir = './colorizer';
-start('http://colorizer.org/');
+const output_dir = './lagou';
+start('https://kaiwu.lagou.com/');
 // http://www.cnu.cc/selectedPage
 // http://www.cnu.cc/works/379254
 // start('https://www.baidu.com');

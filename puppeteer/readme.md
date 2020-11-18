@@ -171,11 +171,16 @@ Stage and Target:
 
             self._url, max_size=None, loop=self._loop)
             =>
-            self ._url, max_size=None, loop=self ._loop, ping_interval=None, ping_timeout=None)
+            self ._url, max_size=None, loop=self._loop, ping_interval=None, ping_timeout=None)
 
-    [debug](https://www.jianshu.com/p/6505515d73d5)
+    [DEBUG](https://www.jianshu.com/p/6505515d73d5)
         node inspect test.js
         c n repl
+
+        const util = require('util');
+        util.inspect(any_object);
+
+    - 浏览器 <-> puppeteer 传数据，都是使用 JSON，默认将对象 JSON.stringify 再传
 
     page.waitForSelector('#myId', {visible: true})
 

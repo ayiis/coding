@@ -22,7 +22,7 @@ async function start(urlToFetch) {
   // const browser = await puppeteer.launch({headless: true, devtools: false});
   const browser = await puppeteer.launch({
     executablePath: '/mine/soft/Google Chrome.app/Contents/MacOS/Google Chrome',
-    userDataDir: "/tmp/tmp",
+    userDataDir: "/tmp/tmp3",
     headless: false,
     devtools: true,
     // headless: false,
@@ -135,8 +135,8 @@ async function start(urlToFetch) {
   // setTimeout(async () => {await browser.close(); }, 1000 * 60);
 }
 
-const output_dir = './lagou';
-start('https://kaiwu.lagou.com/');
+const output_dir = './geekbang';
+start('https://time.geekbang.org/dailylesson/detail/100022720');
 // http://www.cnu.cc/selectedPage
 // http://www.cnu.cc/works/379254
 // start('https://www.baidu.com');

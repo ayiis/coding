@@ -21,6 +21,16 @@
 
 ```
 
+#### 代码
+
+```code 迁移豆瓣数据
+db.getCollection('douban').aggregate([
+{ $match: {
+   date: /2020-09/
+}},
+{ $out: "douban_bak2020.09" }
+]);
+```
 
 
 ## next step

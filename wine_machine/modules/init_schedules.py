@@ -23,11 +23,10 @@ def do_return_sequence_name(handler, req_data):
 @tornado.gen.coroutine
 def init():
 
-    # yield ws_douban.execute()
-
+    # yield ws_jingdong.execute()
     # exit(1)
 
-    # yield ws_jingdong.execute()
+    # yield ws_douban.execute()
     # yield ws_kaola.execute()
     # yield ws_yanxuan.execute()
 

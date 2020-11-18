@@ -157,7 +157,10 @@ class JDDiscount(object):
         else:
             promote_advice = "无活动"
 
-        all_quan = old_item["quan"] + [x for x in item["quan"] if x not in old_item["quan"]]
+        if not (old_item and old_item.get("quan")):
+            all_quan = item["quan"]
+        else:
+            all_quan = old_item["quan"] + [x for x in item["quan"] if x not in old_item["quan"]]
         # 计算优惠券
         quan_price_map = {}
         for quan in set([x[0] for x in all_quan]):
@@ -234,12 +237,44 @@ def test():
 
 
 def test2():
-    item = {}
-    JDDiscount.calc(item)
-    print(item["price"])
-    print(item["quan"])
-    print(item["promote"])
-    print(item["calc_price"], item["calc_advice"])
+    item = {
+        "itemid" : "56746195796",
+        "good_price" : 800,
+        "url" : "https://item.jd.com/56746195796.html",
+        "name" : "尼康（Nikon）AF-S DX 尼克尔 35mm f/1.8G 标准定焦镜头",
+        "cat" : "652,654,834",
+        "venderId" : "10008806",
+        "shopId" : "843487",
+        "presale" : False,
+        "datetime" : "2020-09-23 15:21:52",
+        "price" : 1399.0,
+        "vender" : "尼康官方旗舰店",
+        "stock" : "现货",
+        "promote" : [ 
+            [ 
+                "满2件，总价打9.80折，包邮（限中国内地）", 
+                "https://search.jd.com/Search?activity_id=101782838006", 
+                "2020-09-01 16:10:53 ~ 2020-09-30 23:59:59"
+            ]
+        ],
+        "gift" : [ 
+            [ 
+                "限购", 
+                "2020-09-30 23:59:59"
+            ]
+        ],
+        "quan" : [],
+        "feedback" : "",
+        "ads" : [ 
+            "尼康Z5全新上市！部分商品下单立减900元，相机&镜头任意两件98折，还有分享有礼等丰富活动，&lt;a href=\"https://pro.m.jd.com/mall/active/2xtN2NXJ6Z55PtYvSGJWmLEx5txf/index.html\" target=\"_blank\"&gt;更多优惠，&lt;/a&gt;"
+        ]
+    }
+    new_item = JDDiscount.calc(item, item)
+    q.d()
+    print(new_item["price"])
+    print(new_item["quan"])
+    print(new_item["promote"])
+    print(new_item["calc_price"], new_item["calc_advice"])
 
 
 if __name__ == "__main__":
@@ -251,4 +286,4 @@ if __name__ == "__main__":
     # print(item["calc_price"], item["calc_advice"])
 
     # test2()
-    test()
+    test2()

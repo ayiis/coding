@@ -15,10 +15,12 @@
 
         // 绑定快捷键 ctrl + enter 查询事件
         $(".ivu-tabs-content .ivu-tabs-content").on("keydown", ".ace_text-input", (e) => {
-            if ((e.ctrlKey || e.metaKey) && e.keyCode == 13) {
+            if ((e.ctrlKey || e.metaKey) && (e.keyCode == 13 || e.keyCode == 82)) {
                 $(e.target).closest(".ivu-tabs-tabpane").find(".ivu-btn.ivu-btn-success").click();
                 return false;
             }
         });
     });
 })();
+
+

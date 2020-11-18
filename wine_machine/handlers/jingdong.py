@@ -155,7 +155,7 @@ def price_walk(handler, req_data):
     date_set = set([])
     for item in all_price:
         item["date"] = item["datetime"].split(" ")[0]
-        if item["calc_price"] <= 0:
+        if item.get("calc_price", 0) <= 0:
             continue
         date_set.add(item["date"])
 

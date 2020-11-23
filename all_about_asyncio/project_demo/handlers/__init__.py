@@ -100,16 +100,21 @@ class TemplateHandler:
     """
 
     @classmethod
-    def wrap(cls, templete_path, templete):
+    def wrap(cls, templete_path, templete, index="index"):
 
         cls.templete_path = os.path.abspath(os.path.join(os.path.abspath("."), templete_path))
         cls.templete = templete
 
         def do(req):
 
-            target_path = os.path.abspath("%s/%s.jade" % (cls.templete_path, req.path))
+            req_path = req.path
+
+            if req_path == "/":
+                req_path = "/%s" % (index)
+
+            target_path = os.path.abspath("%s/%s.jade" % (cls.templete_path, req_path))
             if not(target_path in cls.templete and target_path.startswith(cls.templete_path) and os.path.isfile(target_path)):
-                raise AyHTTPError(status_code=404, reason="%s Not found" % req.path)
+                raise AyHTTPError(status_code=404, reason="%s Not found" % req_path)
 
             return Response(
                 body=cls.templete[target_path],

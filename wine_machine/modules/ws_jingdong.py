@@ -123,6 +123,7 @@ def execute():
             item.update(store_info)
         except Exception:
             ap(traceback.format_exc())
+            yield tornado.gen.sleep(2)
             continue
         finally:
             yield tornado.gen.sleep(0.2)
@@ -137,6 +138,7 @@ def execute():
             item.update(promote_info)
         except Exception:
             ap(traceback.format_exc())
+            yield tornado.gen.sleep(2)
             continue
         finally:
             yield tornado.gen.sleep(0.2)
@@ -152,6 +154,7 @@ def execute():
                 # price
             except Exception:
                 ap(traceback.format_exc())
+                yield tornado.gen.sleep(2)
             finally:
                 yield tornado.gen.sleep(0.2)
 

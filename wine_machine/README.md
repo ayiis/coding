@@ -1,78 +1,59 @@
 
+# 这个项目是什么？
 
-# HOW TO
+信息收集 + 过滤器，提高使用者的购物决策的效果，“货比三家不吃亏，价看三次有实惠”
 
-- configure: modify `conf/config.py`
+包含：
 
-- start server: `python3 app.py`
++ 京东商品价格监控
++ 网易考拉价格监控
++ 网易严选价格监控
++ 豆瓣租房小组新帖浏览
 
-- run test: `python3 test_web_handler.py`
+## 功能
+
+### 商品价格展示（以京东为例）
+
+![京东商品列表](https://raw.githubusercontent.com/ayiis/coding/master/wine_machine/1610004918175.jpg)
+
+当前价格 + 当前活动 + 可领取的券 + 计算所有折扣和凑单后的最低价格 + 用户自定义的好价（微信通知） + 库存信息 + 商家信息
+
+### 商品历史价格
+
+![商品历史价格](https://raw.githubusercontent.com/ayiis/coding/master/wine_machine/1610004741446.jpg)
+
+记录每一次历史价格变动，包括 优惠券+活动折扣 之后的最低价格，图表化展示
+
+### 豆瓣租房
+
+![豆瓣租房小组新帖](https://raw.githubusercontent.com/ayiis/coding/master/wine_machine/1610005026521.jpg)
+
+收集豆瓣租房相关小组的租房/转租帖子，展示时过滤掉大部分 求租｜中介｜价格不匹配｜无关 帖子
+
+### 自定义过滤规则
+
+![豆瓣租房过滤规则](https://raw.githubusercontent.com/ayiis/coding/master/wine_machine/1610006608475.jpg)
+
+支持 标题 + 作者 + 价格范围匹配
 
 
-## When you need to add an empty directory to git
 
-+ create a `.gitignore` file in that directory
 
-```code
-# ignore all file in this dir
-*
-# except this file
-!.gitignore
+# 使用
 
+环境要求：
+```
+MacOS / CentOS
+python3.6+
+mongodb
 ```
 
-#### 代码
+安装依赖：
 
-```code 迁移豆瓣数据
-db.getCollection('douban').aggregate([
-{ $match: {
-   date: /2020-09/
-}},
-{ $out: "douban_bak2020.09" }
-]);
-```
+`pip install -i https://pypi.ayiis.me/simple/ --no-deps --upgrade aytool`
 
+`pip install -r requirements.txt`
 
-## next step
+启动：
 
-
-✅. 新增考拉列表。
-
-✅. 新增网易严选。
-
-✅. 新增删除功能。(把价格拉入历史价格)
-
-✅. 计算后预估价格。
-
-✅. 新增历史价格曲线。
-
-✅. 历史曲线里，增加一条最低价的直线。
-
-✖️. 新增苏宁易购。
-
-✖️. 新增亚马逊。
-
-✖️. 自定义显示名称。
-
-✅. 优惠券和活动，计算准确日期。如果前几天领的优惠券使用日期持续3天，第二天没有了券，仍然计算。
-
-    ✅ 更新到 quan 字段
-    ✅ quan 字段使用一个优惠券 id 标记
-    ✅ 相同 id 的券不叠加
-    ✅ 按照优惠券有效期来淘汰券，每次比对quan时淘汰过期的quan
-    ✅ 点击 券 可以跳转到领取的链接
-
-
-# ################################### 双十一 ###################################
-
-11.10 22:00 网易严选开始双11活动
-
-11:11 00:00 京东 天猫 苏宁易购
-
-
-
-
-
-
-
-
+`python app.py`

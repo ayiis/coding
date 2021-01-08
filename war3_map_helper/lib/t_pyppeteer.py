@@ -15,7 +15,8 @@ async def fff(interceptedRequest, rand_str):
         url = urlparse(interceptedRequest.url)
 
         # if url.netloc[-11:] == ".google.com":
-        if url.netloc == "apis.google.com":
+        if False:
+        # if url.netloc == "apis.google.com":
             print("[ABORT]", url)
             await interceptedRequest.abort()
 
@@ -37,8 +38,8 @@ async def fff(interceptedRequest, rand_str):
 async def main(from_lan, to_lan):
     args = {
         # "headless": True, "devtools": False,
-        # "headless": False, "devtools": True,
-        "headless": False, "devtools": False,
+        "headless": False, "devtools": True,
+        # "headless": False, "devtools": False,
         "executablePath": "/mine/soft/Google Chrome.app/Contents/MacOS/Google Chrome",
         "userDataDir": "/tmp/tmp",
         "ignoreHTTPSErrors": True,
@@ -46,7 +47,8 @@ async def main(from_lan, to_lan):
         #     "--proxy-server=",
         #     "--proxy-bypass-list=",
         # ],
-        "defaultViewport": False,
+        # "defaultViewport": False,
+        # "slowMo": 20,
         # "ignoreDefaultArgs": ["--enable-automation"],
         # "args": ["--disable-infobars"],
         # "executablePath": executablePath
@@ -56,6 +58,7 @@ async def main(from_lan, to_lan):
     browser = await launch(**args)
     pages = await browser.pages()
     page = pages[0]
+    await page.setBypassCSP(True)
     # await page.goto('https://translate.google.cn/#view=home&op=translate&sl=%s&tl=%s' % (from_lan, to_lan), waitUntil='networkidle2', timeout=1000 * 60)
     # await asyncio.sleep(20)
 
@@ -63,7 +66,7 @@ async def main(from_lan, to_lan):
     page.on('request', lambda x: fff(x, rand_str))
 
     # await page.goto('https://translate.google.cn/', waitUntil='networkidle2', timeout=1000 * 60)
-    await page.goto('https://translate.google.cn/#view=home&op=translate&sl=%s&tl=%s' % (from_lan, to_lan), waitUntil='networkidle2', timeout=1000 * 60)
+    await page.goto('https://translate.google.cn/?ui=tob&sl=%s&tl=%s' % (from_lan, to_lan), waitUntil='networkidle2', timeout=1000 * 60)
     # await page.goto('https://www.baidu.com/', waitUntil='networkidle2')
     await page.reload(waitUntil='networkidle2')
 
@@ -74,15 +77,22 @@ async def main(from_lan, to_lan):
         document.body.appendChild(document.createElement('script')).setAttribute('src', rand_str);
         return true;
     }""", rand_str)
-    await page.waitForResponse(lambda res: urlparse(res.url).path == "/" + rand_str and res.status == 200)
+    # await asyncio.sleep(9999);
+    print("Insert jquery..")
 
+    # def fuck(res):
+    #     print("fuck:", res.url)
+    #     return urlparse(res.url).path == "/" + rand_str and res.status == 200
+
+    # await page.waitForResponse(lambda res: urlparse(res.url).path == "/" + rand_str and res.status == 200)
+
+    await asyncio.sleep(2)
     print("Done insert jquery")
 
     # # 选原文 语言
     # button_from = '.sl-more.tlid-open-source-language-list'
     # await page.waitForSelector(button_from, visible=True)
     # await page.click(button_from, delay=20)
-    # await asyncio.sleep(0.2)
     # # 选
     # button_select_fl = '.language-list-unfiltered-langs-sl_list .language_list_item_wrapper.language_list_item_wrapper-ru'
     # # button_select_fl = '.language_list_item_wrapper.language_list_item_wrapper-ru.item-selected.item-emphasized'
@@ -106,9 +116,11 @@ async def main(from_lan, to_lan):
 
     print("Click:", "选译文 = zh")
     await asyncio.sleep(0.2)
+    # await asyncio.sleep(9999)
 
     # await page.waitForFunction('$(".select-from-language .language-selected").text().trim() === "瑞典语"')
-    await page.click('#source', delay=20)
+    # await page.click('#source', delay=20)
+    await page.click('textarea', delay=20)
 
     # await page.keyboard.type('baidu.com')
 
@@ -175,8 +187,9 @@ async def main(from_lan, to_lan):
 
                 # 清空翻译框
                 await page.evaluate("""() => {
-                    $('#source').val(null);
+                    $('textarea').val(null);
                 }""")
+                # $('#source').val(null);
                 await asyncio.sleep(1)
                 # while True:
                 #     await asyncio.sleep(0.5)
@@ -187,35 +200,45 @@ async def main(from_lan, to_lan):
                 #         break
 
                 # 开始翻译
-                print("开始翻译:", len(req_string))
+                print("开始翻译:", len(req_string), req_string)
                 await page.evaluate("""() => {
-                    $("#source").val("%s");
+                    $('textarea').val("%s");
                 }""" % (req_string))
+                await asyncio.sleep(0.5)
+                # $("#source").val("%s");
+                # await asyncio.sleep(20000)
+                await page.keyboard.type(' ')
+                await asyncio.sleep(0.5)
 
                 while True:
                     await asyncio.sleep(2)
 
-                    # $('.tlid-translation.translation')
-                    # $('.result-shield-container.tlid-copy-target>.tlid-translation.translation')
-                    # return $('.result-shield-container.tlid-copy-target>.tlid-translation.translation').find('span').map(function(){ return $(this).text() }).toArray().join('\\r\\n');
+                    # # $('.tlid-translation.translation')
+                    # # $('.result-shield-container.tlid-copy-target>.tlid-translation.translation')
+                    # # return $('.result-shield-container.tlid-copy-target>.tlid-translation.translation').find('span').map(function(){ return $(this).text() }).toArray().join('\\r\\n');
+                    # contents = await page.evaluate("""() => {
+                    #     return $('.result-shield-container.tlid-copy-target>.tlid-translation.translation').html();
+                    # }""")
+
+                    # # q.d()
+                    # contents = re.sub(r"\<[\/]?span[^\>]*\>", "", contents, flags=re.I)
+                    # # contents = contents.replace("</span>", "").replace("<span>", "").split("<br>")
+
+                    # contents = re.sub(r"[\0\u200b]+", "", contents, flags=re.I)
+
+                    # print("in contents:", len(contents))
+
+                    # if "\0" in contents:
+                    #     print("God damn hell!")
+                    #     contents = contents.replace("\0", "\t")
+
                     contents = await page.evaluate("""() => {
-                        return $('.result-shield-container.tlid-copy-target>.tlid-translation.translation').html();
+                        return $('[role="region"] span[lang="zh-CN"] span[data-language-for-alternatives="zh-CN"]>span').text();
                     }""")
 
-                    # q.d()
-                    contents = re.sub(r"\<[\/]?span[^\>]*\>", "", contents, flags=re.I)
-                    # contents = contents.replace("</span>", "").replace("<span>", "").split("<br>")
-
-                    contents = re.sub(r"[\0\u200b]+", "", contents, flags=re.I)
-
-                    print("in contents:", len(contents))
-
-                    if "\0" in contents:
-                        print("God damn hell!")
-                        contents = contents.replace("\0", "\t")
-
                     if len(contents) > 1:
-                        content_list = contents.split("<br>")
+                        content_list = contents.split("\n")
+                        # content_list = contents.split("<br>")
                         # content_list = contents.split("\r\n")
                         if len(content_list) == req_count:
                             break

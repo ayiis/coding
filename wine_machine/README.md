@@ -41,19 +41,23 @@
 
 # 使用
 
-环境要求：
+1. 环境要求：
 ```
 MacOS / CentOS
 python3.6+
 mongodb
 ```
 
-安装依赖：
+2. 安装依赖：
 
 `pip install -i https://pypi.ayiis.me/simple/ --no-deps --upgrade aytool`
 
 `pip install -r requirements.txt`
 
-启动：
+3. 配置mongodb数据库：
+
+配置文件位于 `./conf/config.py`
+
+4. 启动：
 
 `python app.py`

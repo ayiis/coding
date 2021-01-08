@@ -272,7 +272,7 @@ def test_fanyi(lang="en", target_dir=None):
 
 if __name__ == "__main__":
     # test_fanyi(lang="en")
-    test_fanyi(lang="ru", target_dir="/mine/war3work/BossBattleDarkness")
+    test_fanyi(lang="ru", target_dir="/mine/war3work/HolyWar20200404v3")
     # test_fanyi(lang="es")
 
     # arg = {

@@ -214,7 +214,7 @@ form {
 }
 
 .mu-mainbar {
-  position: fixed;  
+  position: fixed;
   top: 51px;
 }
 
@@ -240,4 +240,8 @@ form {
 
 .mu-bar-top {
   z-index: 1030;
+}
+
+.markdown pre {
+  padding: 0px;
 }

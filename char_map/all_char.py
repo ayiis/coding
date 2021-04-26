@@ -3,6 +3,7 @@
 # __author__ = "ayiis"
 # create on 2020/05/06
 
+# char_set = set([chr(i) for i in range(32, 127)])
 char_set = set([chr(i) for i in range(32, 127)])
 
 # print("char_set:", sorted(list(char_set)))

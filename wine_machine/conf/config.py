@@ -26,7 +26,7 @@ WATCH_DOGS = {
     "jingdong": {
         "enable": True,
         # "period": 60 * 6,  # every x minutes
-        "minute_list": [x * 5 + 1 for x in range(60 // 5)],  # run at x minute of every hours
+        "minute_list": [x * 5 + 1 for x in range(60 // 7)],  # run at x minute of every hours
     },
     "kaola": {
         "enable": True,
@@ -40,7 +40,7 @@ WATCH_DOGS = {
     },
     "douban": {
         "enable": True,
-        "period": 60 * 30,  # every x minutes
+        "period": 60 * 40,  # every x minutes
     },
 }
 

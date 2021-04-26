@@ -1,7 +1,7 @@
 const puppeteer = require('puppeteer');
 const fse = require('fs-extra'); // v 5.0.0
 const _ = `
-    1. wait for network done 
+    1. wait for network done
     1. body load
     1. load another page
     2. wait for element appeared
@@ -9,14 +9,14 @@ const _ = `
     4. wait for js execute
     5. wait for a reuqest
     6. wait for anything(with a function)
-    7. wait for ajax 
+    7. wait for ajax
         request.resourceType() === 'xhr'
 
     BUG:
 
         <visible>   Not work if element under z-index discover
                     Even worse: click will fire the top element instead of the target element
-                    e.g. In test_download_file.js 
+                    e.g. In test_download_file.js
 `;
 
 const target_page = 'https://fanyi.baidu.com';
@@ -26,12 +26,12 @@ async function human_type(page, sentence) {
     for(var i = 0 ; i < sentence.length ; i++ ) {
         if(/^[a-zA-Z]$/.test(sentence[i])) {
             await page.keyboard.type(
-                sentence[i], 
+                sentence[i],
                 {delay: parseInt(Math.random() * 10000 % 30 + 15)}
             );
         } else {
             await page.keyboard.type(
-                sentence[i], 
+                sentence[i],
                 {delay: parseInt(Math.random() * 10000 % 60 + 55)}
             );
         }
@@ -82,8 +82,8 @@ async function networkidle_timeout(page, timeout=500, max_timeout=30000) {
 
 (async () => {
 
-    const browser = await puppeteer.launch({headless: true, devtools: false});
-    // const browser = await puppeteer.launch({headless: false, devtools: false});
+    // const browser = await puppeteer.launch({headless: true, devtools: false});
+    const browser = await puppeteer.launch({headless: false, devtools: false});
 
     const context = browser.defaultBrowserContext();
     context.clearPermissionOverrides();
@@ -93,7 +93,7 @@ async function networkidle_timeout(page, timeout=500, max_timeout=30000) {
     const rand_str = `/${Math.random().toString(36)}`;
     const url = 'https://fanyi.baidu.com/';
 
-    const 
+    const
         WF_NEWWORK_DONE = true,
         WF_BODY_LOAD = true,
         WF_ELEMENT_APPEARED = true,

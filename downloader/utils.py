@@ -60,10 +60,33 @@ class BaseStatus(object):
 
     def __init__(self):
         self.lock = threading.Lock()
+        self.ts_counter = {
+            "total_size": 0,
+        }
 
-    def touch_status_bar(self):
+    def touch_status_bar(self, chunk_size=1):
+        # self.index / self.max
         try:
             self.lock.acquire()
+
+            prev_size = self._status_bar.index - self.ts_counter["total_size"]
+            ts = int(self._status_bar._ts)
+            self.ts_counter[ts] = self.ts_counter.get(ts, 0) + prev_size
+            if self.ts_counter.get(ts - 6):
+                del self.ts_counter[ts - 6]
+
+            self.ts_counter["total_size"] = self._status_bar.index
+
+            total_ts = 0
+            total_size = 0
+            ts = int(self._status_bar._ts)
+            for i in range(ts, ts - 6, -1):
+                if i in self.ts_counter:
+                    total_size += self.ts_counter[i]
+                    total_ts += 1
+
+            self.speed = " %s/s" % pretty_file_size(total_size * chunk_size / max(total_ts, 1))
+
             self._status_bar.next()
         finally:
             self.lock.release()
@@ -77,6 +100,17 @@ class BaseStatus(object):
     def finish_status_bar(self):
         self._status_bar.finish()
 
+    def update(self, raw_bar):
+        filled_length = int(raw_bar.width * raw_bar.progress)
+        empty_length = raw_bar.width - filled_length
+        message = raw_bar.message % raw_bar
+        bar = raw_bar.fill * filled_length
+        empty = raw_bar.empty_fill * empty_length
+        suffix = raw_bar.suffix % raw_bar
+
+        line = ''.join([message, raw_bar.bar_prefix, bar, empty, raw_bar.bar_suffix, suffix, ' ', self.speed])
+        raw_bar.writeln(line)
+
 
 class StatusBar(BaseStatus):
     """
@@ -86,6 +120,7 @@ class StatusBar(BaseStatus):
         super(StatusBar, self).__init__()
         self.arg = arg
         self._status_bar = Bar("Download status:", fill="█", max=total, suffix="%(percent)d%%")
+        self._status_bar.update = lambda: self.update(self._status_bar)
 
     def start():
         pass

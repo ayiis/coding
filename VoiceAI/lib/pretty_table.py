@@ -2,16 +2,16 @@
 # -*- coding: utf-8 -*-
 # __author__ = "ayiis"
 # create on 2019/03/07
-"""
-    可视化音频文件内的各种信息
+print("""
+    表格化输出
 
-    ┌───┬───┐
-    │ 1 │ 2 │
-    ├───┼───┤
-    │ 4 │ 3 │
-    └───┴───┘
+    ┌───┬─────┬───┐
+    │ 1+│  11 │ 11│
+    ├───┼─────┼───┤
+    │ a │   a │ a │
+    └───┴─────┴───┘
 
-"""
+""")
 
 
 def construct_a_line(data_tuple):
@@ -35,7 +35,7 @@ def construct_a_line(data_tuple):
 
 def test():
     import struct
-    WAV_FILE_PATH = "/tmp/data1/ooo.wav"
+    WAV_FILE_PATH = "../000.wav"
 
     with open(WAV_FILE_PATH, "rb") as rf:
         wav_content = rf.read(44)

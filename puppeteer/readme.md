@@ -1,9 +1,7 @@
 When I got a list, I got a fire in my soul.
 
-꧁༺༽༾ཊ࿈ཏ༿༼༻꧂
-
 ✅❌⭕️
-☑️✖️ 
+☑️✖️
 
 Stage and Target:
 
@@ -95,6 +93,11 @@ Stage and Target:
 
 ✖️ Stage 0x03:
 
+✅    使用 https://github.com/berstend/puppeteer-extra/tree/master/packages/puppeteer-extra-plugin-stealth
+
+            https://bot.sannysoft.com/
+            尽可能掩饰自动化的特征
+
 ✅    1. using user's data
 
 ✖️    0. Grep from douban zufang.
@@ -140,7 +143,7 @@ Stage and Target:
             ✅ 每一个章节获取对应的视频
 
                 ✅ 下载mp4
-                
+
                 ✅ 下载ts
 
                     ✅ 合并ts到一个文件
@@ -158,6 +161,12 @@ Stage and Target:
         1. mp4
         2. ts
         3. ts with aes 128 encrypt
+
+
+```python
+"""
+"""
+```
 
 
 ```javascript
@@ -249,7 +258,7 @@ var saveData = (function () {
         window.URL.revokeObjectURL(blob_url);
     };
 }());
-window.URL.revokeObjectURL = function(video_url){ 
+window.URL.revokeObjectURL = function(video_url){
     var xhr = new XMLHttpRequest(); xhr.open('get', video_url, true); xhr.responseType = 'blob';
     xhr.onload = () => { saveData(this.blob, "111.mp4"); }; xhr.send();
 }
@@ -428,7 +437,7 @@ xhr.onload = () => {
   document.querySelector('#myimage').src = URL.createObjectURL(this.response);
 };
 
-xhr.send(); 
+xhr.send();
 
 ------
 
@@ -440,7 +449,7 @@ await page.evaluate('document.body.innerHTML = document.body.innerHTML')
 ------
 
 var blob = ... // Your Blob capture from the stream
- 
+
 var tempVideoEl = document.createElement('video');
 tempVideoEl.addEventListener('loadedmetadata', function() {
   // duration is now available here -- store it somewhere as you like

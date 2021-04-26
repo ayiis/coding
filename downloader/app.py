@@ -1,5 +1,5 @@
 """
-    超级无敌神速霹雳下载器
+    超级无敌霹雳闪电火花四溅神速下载器
     - github
     - uuu9
     - epicwar3
@@ -12,7 +12,6 @@
             2. ayiis 表现是(错误)，只要设置了nginx的压缩，就无视 range
             3. sksedu 表现是(正确)，只要请求里有 range，就无视 content-encoding:gzip
 """
-# import wrap_request
 import argparse
 import uuid
 import core

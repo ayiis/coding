@@ -286,7 +286,7 @@ class MultiThreadDownloader(object):
                         content = res.raw.read(READ_CHUNK_SIZE)     # no headers, only the content
 
                         self.write_file(content, task["start"])
-                        self.bar.touch_status_bar()
+                        self.bar.touch_status_bar(READ_CHUNK_SIZE)
 
                         if len(content) == task["end"] - task["start"]:
                             break

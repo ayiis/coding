@@ -175,7 +175,7 @@ async function valid_deepin_exists(page) {
         }
         // 章节信息 - 接口解析
         if (
-            url.hostname == target_url_chapter_list["hostname"] 
+            url.hostname == target_url_chapter_list["hostname"]
             && url.pathname == target_url_chapter_list["pathname"]
         ) {
             let chapter_list_content = await response.buffer();
@@ -188,7 +188,7 @@ async function valid_deepin_exists(page) {
         }
         // 文章列表信息 - 接口解析
         else if (
-            url.hostname == target_url_article_list["hostname"] 
+            url.hostname == target_url_article_list["hostname"]
             && url.pathname == target_url_article_list["pathname"]
         ) {
             let article_list_content = await response.buffer();
@@ -297,7 +297,7 @@ async function valid_deepin_exists(page) {
             }
 
             const pdf_filename = `${info.author_name}.${info.column_name}/${info.chapter_id}.${info.chapter_name} - ${info.article_id}.${info.article_title}.pdf`;
-            
+
             console.log("pdf_filename:", pdf_filename);
             await fse_create_file(pdf_filename);
 

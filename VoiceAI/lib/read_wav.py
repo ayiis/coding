@@ -109,6 +109,6 @@ def do(wav_path):
 
 
 if __name__ == "__main__":
-    res = do("/tmp/wav/16000x6s.wav")
+    res = do("../000.wav")
     res["data"] = "..."
     print("res:", res)

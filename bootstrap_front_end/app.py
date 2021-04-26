@@ -27,6 +27,7 @@ def make_app():
         "template_path": "templates",
         "autoreload": True,
         "debug": False,
+        "cookie_secret": "123456",
     }
 
     app = tornado.web.Application([

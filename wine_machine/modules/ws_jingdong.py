@@ -126,7 +126,7 @@ def execute():
             yield tornado.gen.sleep(2)
             continue
         finally:
-            yield tornado.gen.sleep(0.2)
+            yield tornado.gen.sleep(0.5)
 
         # 查 item 的：促销 & 赠品 & 返券 & 活动广告
         try:
@@ -141,7 +141,7 @@ def execute():
             yield tornado.gen.sleep(2)
             continue
         finally:
-            yield tornado.gen.sleep(0.2)
+            yield tornado.gen.sleep(0.5)
 
         if item.get("presale"):
             # 查 预售 价格
@@ -156,7 +156,7 @@ def execute():
                 ap(traceback.format_exc())
                 yield tornado.gen.sleep(2)
             finally:
-                yield tornado.gen.sleep(0.2)
+                yield tornado.gen.sleep(0.5)
 
         # 对比之前的数据，如果有不同，则插入一条信新的记录，并发送信息到微信上
         try:

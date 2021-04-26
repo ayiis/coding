@@ -252,12 +252,12 @@ def get_promote_info(info):
                 "Referer": "https://item.jd.com/65610440044.html",
                 "Pragma": "no-cache",
                 # 额，必须要有 cookie 了
-                "cookie": "shshshfp=0f4b96e804e6d3895bd8b5f2af9c3dc2; shshshfpa=d2bdd5ed-10f2-e108-e38a-a1494b6df77b-1596645451; __jda=122270672.1596645452032368846686.1596645452.1596645452.1596645452.1; __jdc=122270672; __jdv=122270672|direct|-|none|-|1596645452034; __jdu=1596645452032368846686; shshshfpb=b5GwjctQMeHqxHgzRyygMiA%3D%3D; areaId=19; ipLoc-djd=19-1601-3635-0; 3AB9D23F7A4B3C9B=RE4QF44JWCVUXEC7MQAZGA24NVF27LEI6CEQC4P7SABGXROC4ZDLKLWQBR6ULUZOEYHS5I7WMZBDNH5KDNWYC7VZFY; shshshsID=3e1e4647fb0f9e692fd5659506586dbd_4_1596646062157; __jdb=122270672.4.1596645452032368846686|1.1596645452",
+                "cookie": "__jdv=76161171|direct|-|none|-|1614594740019; __jdu=1614594740018869872184; areaId=19; ipLoc-djd=19-1601-3633-0; PCSYCityID=CN_440000_440100_440106; shshshfpa=00883b4f-d3c1-1602-7cd6-17731ed20a6e-1614594741; shshshfpb=m8UQnw74GyqJycpcp0lvCLg%3D%3D; __jda=122270672.1614594740018869872184.1614594740.1614594740.1614594740.1; __jdc=122270672; 3AB9D23F7A4B3C9B=RE4QF44JWCVUXEC7MQAZGA24NVF27LEI6CEQC4P7SABGXROC4ZDLKLWQBR6ULUZOEYHS5I7WMZBDNH5KDNWYC7VZFY; shshshfp=0263d234510f0c11eede903101b88cca; shshshsID=4122aa91f19c1d2e5fbd4fbec3deab0d_3_1614594756699; __jdb=122270672.4.1614594740018869872184|1.1614594740",
                 "sec-fetch-dest": "script",
                 "sec-fetch-mode": "no-cors",
                 "sec-fetch-site": "same-site",
                 # "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.132 Safari/537.36",
-                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.89 Safari/537.36",
+                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.192 Safari/537.36",
             }
         })
         open("promote_api.js", "w").write(tool.try_decode_html_content(response.body))
@@ -267,7 +267,7 @@ def get_promote_info(info):
     # ap(promote_api_content_json)
 
     # 行间广告
-    ads_strings = [x["ad"].replace("<", "&lt;").replace(">", "&gt;") for x in promote_api_content_json.get("ads", [])]
+    ads_strings = [x["ad"].replace("<", "&lt;").replace(">", "&gt;") for x in promote_api_content_json.get("ads") or []]
 
     # 促销活动
     promote_strings = map(lambda x: [
@@ -301,9 +301,9 @@ def get_promote_info(info):
     if promote_api_content_json.get("skuCoupon"):
         for item in promote_api_content_json["skuCoupon"]:
             quan_string = item.get("allDesc") or "满%s减%s" % (item["quota"], item["discount"])
-            quan_strings.append([quan_string, "%s ~ %s" % (item.get("beginTime", ""), item.get("endTime", ""))])
+            quan_strings.append([quan_string, "%s ~ %s" % (item.get("beginTime") or "", item.get("endTime") or "")])
             quan_strings[-1].append(item.get("key"))
-            quan_strings[-1].append(item.get("url", ""))
+            quan_strings[-1].append(item.get("url") or "")
 
     # q.d()
 

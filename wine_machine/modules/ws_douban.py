@@ -84,7 +84,7 @@ def execute():
                 print("Reached end_condition:", result[-1])
                 break
 
-            yield tornado.gen.sleep(3)
+            yield tornado.gen.sleep(6)
 
         if got_first_date:
             yield table_rent_a_life["douban_config"].update_one({
@@ -100,7 +100,7 @@ def execute():
         # 清空 douban_tmp 数据
         yield table_rent_a_life[douban_tmp_name].delete_many({})
 
-        yield tornado.gen.sleep(9)
+        yield tornado.gen.sleep(15)
 
 
 if __name__ == "__main__":

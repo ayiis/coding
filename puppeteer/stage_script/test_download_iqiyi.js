@@ -6,19 +6,20 @@ const path = require('path');
 
 const domains_in_blacklist = [
     // "ss1.bdstatic.com",
-    "jvc.flashapp.cn",
+    // "jvc.flashapp.cn",
     // "hm.baidu.com",     // block main site
 ];
 // application/octet-stream
 let re_dont_save_type = [
-  "^image/.*$",
+  // "^image/.*$",
   "^text/.*$",
   "^application/.*$",
 ].join("|");
 re_dont_save_type = new RegExp(`(${re_dont_save_type})`);
 
 let re_save_type = [
-  "^application/octet-stream.*$",
+  // "^application/octet-stream.*$",
+  "^image/.*$",
 ].join("|");
 re_save_type = new RegExp(`(${re_save_type})`);
 
@@ -41,7 +42,7 @@ async function start(urlToFetch) {
   const page = await browser.newPage();
 
   await page.setRequestInterception(true);
-  page.on('request', interceptedRequest => {
+  page.on('request', async(interceptedRequest) => {
       // const url = new URL(interceptedRequest.url())
       // if (domains_in_blacklist.includes(url.host) || /(image|stylesheet)$/.test(interceptedRequest.resourceType())) {
       //     interceptedRequest.abort()
@@ -54,6 +55,26 @@ async function start(urlToFetch) {
       //   interceptedRequest.abort();
       //   return;
       // }
+
+      const url = new URL(interceptedRequest.url());
+      let converted_path = url.pathname.replace(/\//g, '#');
+      let filePath = path.resolve(`./${output_dir}/${converted_path}`);
+      let eee = await fse.pathExists(filePath);
+      if(eee) {
+        console.log(`[✅CACHED] ${interceptedRequest.method()} ${filePath}`);
+        const buffer= await fse.readFile(filePath);
+        if(buffer.length > 0) {
+          interceptedRequest.respond({
+            status: 200,
+            headers: {
+              "access-control-allow-origin": "*",
+              "ayskip": "1",
+            },
+            body: buffer,
+          });
+          return;
+        }
+      }
       interceptedRequest.continue();
   });
 
@@ -65,6 +86,9 @@ async function start(urlToFetch) {
     }
     if (response.status() >= 300) {
       console.log(`[redirect]   ${response.status()}   ${url.pathname}`);
+      return;
+    }
+    if(response.headers()['ayskip']) {
       return;
     }
     const content_type = response.headers()['content-type'];
@@ -101,8 +125,9 @@ async function start(urlToFetch) {
   // }, 1000 * 60);
 }
 
-const output_dir = 'weather';
+const output_dir = 'acgbox';
 
-start('https://www.iqiyi.com/v_19rvma2gwk.html');
+// start('https://www.iqiyi.com/v_19rvma2gwk.html');
+start('https://tu.acgbox.org/index.php/category/srww/');
 // start('http://www.weather.com.cn/weather/101280101.shtml');
 // start('https://simpl.info/video/offline/');

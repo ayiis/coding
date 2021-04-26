@@ -1,4 +1,8 @@
-const puppeteer = require('puppeteer');
+// const puppeteer = require('puppeteer');
+const puppeteer = require('puppeteer-extra');
+const StealthPlugin = require('puppeteer-extra-plugin-stealth');
+puppeteer.use(StealthPlugin());
+
 const fse = require('fs-extra'); // v 5.0.0
 const { URL } = require('url');
 const path = require('path');
@@ -37,12 +41,13 @@ const fs = require('fs');
 const settings = {
 
     // ⚠️ 专栏的首页
-    "start_page": "https://time.geekbang.org/column/article/99635",
+    "start_page": "https://time.geekbang.org/column/article/14252",
+    // "start_page": "https://bot.sannysoft.com/",
     // ⚠️ 是否第一次爬取该网站
     // "first_run": false,
-    "first_run": true,
+    "first_run": false,
     // ⚠️ chrome数据缓存路径，建议空目录
-    "chrome_cache": "/tmp/tmp3",
+    "chrome_cache": "/tmp/tmp5",
     // ⚠️ chrome路径
     "chrome_path": "/mine/soft/Google Chrome.app/Contents/MacOS/Google Chrome",
     // ⚠️ 本地jQuery路径，版本需要2.0以上
@@ -168,9 +173,9 @@ async function valid_deepin_exists(page) {
         executablePath: settings.chrome_path,
         userDataDir: settings.chrome_cache,
         // userDataDir: "/tmp/tmp2",
-        headless: settings.first_run ? false: true,
-        devtools: settings.first_run ? true : false,
-        // headless: false,
+        // headless: settings.first_run ? false: true,
+        devtools: false,
+        headless: false,
         // devtools: true,
         slowMo: 20,
         defaultViewport: null,
@@ -184,13 +189,18 @@ async function valid_deepin_exists(page) {
 
     // 0. 打开起始页面
     const page = await browser.newPage();
-    await page.setUserAgent("user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36");
+    // await page.setUserAgent("user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36");
+    if(settings.first_run == true) {
+        await page.goto(settings["start_page"], {waitUntil: "networkidle0"});
+        return true;
+    }
     await page.setRequestInterception(true);
 
     // 文章列表保存到此变量
     let article_list = [];
     let article_list_ok = false;
     let chapter_map = {};
+
 
     // 监听文章列表接口
     page.on("response", async (response) => {
@@ -200,7 +210,7 @@ async function valid_deepin_exists(page) {
         }
         // 章节信息 - 接口解析
         if (
-            url.hostname == target_url_chapter_list["hostname"] 
+            url.hostname == target_url_chapter_list["hostname"]
             && url.pathname == target_url_chapter_list["pathname"]
         ) {
             let chapter_list_content = await response.buffer();
@@ -213,7 +223,7 @@ async function valid_deepin_exists(page) {
         }
         // 文章列表信息 - 接口解析
         else if (
-            url.hostname == target_url_article_list["hostname"] 
+            url.hostname == target_url_article_list["hostname"]
             && url.pathname == target_url_article_list["pathname"]
         ) {
             let article_list_content = await response.buffer();
@@ -243,13 +253,12 @@ async function valid_deepin_exists(page) {
     });
 
     const rand_str = await insert_jquery_0(page);
-    await page.goto(settings["start_page"], {waitUntil: "networkidle0"});
-    await insert_jquery_1(page, rand_str);
+    try{
+        await page.goto(settings["start_page"], {waitUntil: "networkidle2"});
+    }catch(err){
 
-    if(settings.first_run == true) {
-        await sleep(9999999);
-        return true;
     }
+    await insert_jquery_1(page, rand_str);
 
     await page.screenshot({path: "base_page.0.png", fullPage: true, format: "A4"});
 
